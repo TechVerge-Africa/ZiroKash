@@ -1,0 +1,144 @@
+
+import { useState } from 'react';
+import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
+import { 
+  Home, 
+  CreditCard, 
+  Send, 
+  LineChart, 
+  Wallet, 
+  Globe, 
+  ShieldCheck, 
+  Settings, 
+  Menu, 
+  X 
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+
+type NavItem = {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+};
+
+const mainNavItems: NavItem[] = [
+  { name: "Dashboard", href: "/", icon: <Home size={20} /> },
+  { name: "Wallet", href: "/wallet", icon: <Wallet size={20} /> },
+  { name: "Cards", href: "/cards", icon: <CreditCard size={20} /> },
+  { name: "Payments", href: "/payments", icon: <Send size={20} /> },
+  { name: "Investments", href: "/investments", icon: <LineChart size={20} /> },
+  { name: "Global Markets", href: "/markets", icon: <Globe size={20} /> },
+];
+
+const secondaryNavItems: NavItem[] = [
+  { name: "Security", href: "/security", icon: <ShieldCheck size={20} /> },
+  { name: "Settings", href: "/settings", icon: <Settings size={20} /> },
+];
+
+export default function Sidebar() {
+  const location = useLocation();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const NavLink = ({ item }: { item: NavItem }) => {
+    const isActive = location.pathname === item.href;
+    
+    return (
+      <Link
+        to={item.href}
+        className={cn(
+          "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all",
+          isActive 
+            ? "bg-sidebar-accent text-primary font-medium" 
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        )}
+        onClick={() => isMobile && setIsOpen(false)}
+      >
+        {item.icon}
+        <span>{item.name}</span>
+        {isActive && (
+          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+        )}
+      </Link>
+    );
+  };
+
+  const sidebarContent = (
+    <>
+      <div className="flex items-center gap-2 px-3 py-4">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+            P
+          </div>
+          <span className="text-xl font-bold gradient-text">PayNex</span>
+        </div>
+        {isMobile && (
+          <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
+            <X size={20} />
+          </Button>
+        )}
+      </div>
+      <div className="px-3 py-2">
+        <div className="space-y-1">
+          {mainNavItems.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
+        </div>
+        <div className="mt-6 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground px-3 mb-2">ACCOUNT</p>
+          {secondaryNavItems.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
+        </div>
+      </div>
+      <div className="mt-auto px-3 py-4">
+        <div className="glass-card rounded-lg p-3 mb-4">
+          <p className="text-xs text-muted-foreground">Go Pro</p>
+          <p className="text-sm font-medium mt-1">Upgrade to Premium</p>
+          <Button size="sm" className="mt-2 w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
+            Upgrade Now
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+
+  // Mobile menu button
+  const menuButton = isMobile && (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
+      onClick={toggleSidebar}
+    >
+      <Menu size={20} />
+    </Button>
+  );
+
+  return (
+    <>
+      {menuButton}
+      <aside
+        className={cn(
+          "flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-40 border-r border-sidebar-border transition-transform duration-300",
+          isMobile 
+            ? isOpen ? "translate-x-0 w-64" : "-translate-x-full" 
+            : "w-64"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+      {/* Overlay for mobile */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </>
+  );
+}

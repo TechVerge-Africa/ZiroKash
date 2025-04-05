@@ -1,79 +1,87 @@
 
-import { ArrowDown, ArrowUp, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { ArrowDownLeft, ArrowUpRight, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export type Transaction = {
+export interface Transaction {
   id: string;
   type: "incoming" | "outgoing" | "pending";
   title: string;
   amount: number;
   currency: string;
   date: string;
-  recipient?: string;
   sender?: string;
-  status?: "completed" | "processing" | "failed";
-};
+  recipient?: string;
+  status: "completed" | "processing" | "failed";
+}
 
 interface TransactionsListProps {
   transactions: Transaction[];
+  className?: string;
 }
 
-export default function TransactionsList({ transactions }: TransactionsListProps) {
+export default function TransactionsList({ transactions, className }: TransactionsListProps) {
+  if (!transactions || transactions.length === 0) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-muted-foreground py-6">No transactions yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="glass-card border-white/10">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4">
-        <CardTitle className="text-md font-medium">Recent Transactions</CardTitle>
-        <Button variant="ghost" size="sm" className="text-primary">
-          View All
-        </Button>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>Recent Transactions</CardTitle>
       </CardHeader>
-      <CardContent className="px-0">
-        <div className="space-y-1">
+      <CardContent>
+        <div className="space-y-2">
           {transactions.map((transaction) => (
             <div
               key={transaction.id}
-              className="flex items-center justify-between hover:bg-white/5 py-3 px-4 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full",
-                  transaction.type === "incoming" ? "bg-green-500/10" : 
-                  transaction.type === "outgoing" ? "bg-red-500/10" : "bg-yellow-500/10"
-                )}>
-                  {transaction.type === "incoming" ? (
-                    <ArrowDown className={cn(
-                      "h-5 w-5",
-                      transaction.type === "incoming" ? "text-green-500" : 
-                      transaction.type === "outgoing" ? "text-red-500" : "text-yellow-500"
-                    )} />
-                  ) : transaction.type === "outgoing" ? (
-                    <ArrowUp className={cn(
-                      "h-5 w-5",
-                      transaction.type === "incoming" ? "text-green-500" : 
-                      transaction.type === "outgoing" ? "text-red-500" : "text-yellow-500"
-                    )} />
-                  ) : (
-                    <Clock className="h-5 w-5 text-yellow-500" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-medium text-sm">{transaction.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {transaction.type === "incoming" 
-                      ? `From: ${transaction.sender}` 
-                      : `To: ${transaction.recipient}`}
-                  </p>
-                </div>
+              <div className="h-8 w-8 rounded-full flex items-center justify-center">
+                {transaction.type === "incoming" ? (
+                  <div className="bg-green-500/20 h-8 w-8 rounded-full flex items-center justify-center">
+                    <ArrowDownLeft className="h-4 w-4 text-green-500" />
+                  </div>
+                ) : transaction.type === "outgoing" ? (
+                  <div className="bg-red-500/20 h-8 w-8 rounded-full flex items-center justify-center">
+                    <ArrowUpRight className="h-4 w-4 text-red-500" />
+                  </div>
+                ) : (
+                  <div className="bg-amber-500/20 h-8 w-8 rounded-full flex items-center justify-center">
+                    <Clock className="h-4 w-4 text-amber-500" />
+                  </div>
+                )}
               </div>
+              
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{transaction.title}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {transaction.type === "incoming" 
+                    ? `From: ${transaction.sender}` 
+                    : transaction.type === "outgoing" 
+                    ? `To: ${transaction.recipient}` 
+                    : "Processing..."}
+                </p>
+              </div>
+              
               <div className="text-right">
-                <p className={cn(
-                  "font-medium",
-                  transaction.type === "incoming" ? "text-green-500" : 
-                  transaction.type === "outgoing" ? "text-red-500" : "text-yellow-500"
-                )}>
-                  {transaction.type === "incoming" ? "+" : "-"}{transaction.amount} {transaction.currency}
+                <p className={`font-medium ${
+                  transaction.type === "incoming" 
+                    ? "text-green-500" 
+                    : transaction.type === "outgoing" 
+                    ? "text-red-500" 
+                    : "text-amber-500"
+                }`}>
+                  {transaction.type === "incoming" ? "+" : transaction.type === "outgoing" ? "-" : ""}
+                  {transaction.currency}{transaction.amount.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground">{transaction.date}</p>
               </div>

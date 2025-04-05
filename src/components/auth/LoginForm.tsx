@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,12 +20,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,11 +37,19 @@ export default function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    toast({
-      title: "Login attempt",
-      description: "This is a demo. In production, this would authenticate you.",
-    });
+    // In development, accept any credentials
     console.log(values);
+    
+    // Show success toast
+    toast({
+      title: "Login successful",
+      description: "Welcome to PayNex! Redirecting to dashboard...",
+    });
+    
+    // Navigate to dashboard after a short delay
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 1000);
   }
 
   return (

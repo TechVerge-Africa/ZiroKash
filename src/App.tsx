@@ -27,15 +27,20 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/wallet" element={<Wallet />} />
-          <Route path="/cards" element={<Cards />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/investments" element={<Investments />} />
-          <Route path="/credit" element={<Credit />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* Protected routes wrapped in MainLayout */}
+          <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/cards" element={<Cards />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/investments" element={<Investments />} />
+            <Route path="/credit" element={<Credit />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

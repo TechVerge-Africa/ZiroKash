@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,15 +17,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
+  const { login } = useAuth();
+  const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,11 +39,13 @@ export default function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // In development mode, accept any credentials
+    login(values.email, values.password);
+    
     toast({
-      title: "Login attempt",
-      description: "This is a demo. In production, this would authenticate you.",
+      title: "Login successful",
+      description: "Welcome to PayNex dashboard!",
     });
-    console.log(values);
   }
 
   return (

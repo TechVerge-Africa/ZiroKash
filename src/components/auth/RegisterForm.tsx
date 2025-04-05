@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z
   .object({
@@ -35,6 +36,8 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
+  const { login } = useAuth();
+  const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,10 +52,12 @@ export default function RegisterForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     toast({
-      title: "Registration attempt",
-      description: "This is a demo. In production, this would register your account.",
+      title: "Registration successful",
+      description: "Your account has been created successfully!",
     });
-    console.log(values);
+    
+    // In development mode, log the user in right after registration
+    login(values.email, values.password);
   }
 
   return (

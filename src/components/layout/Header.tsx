@@ -1,5 +1,5 @@
 
-import { Bell, ChevronDown, User } from "lucide-react";
+import { Bell, ChevronDown, User, LogOut, Settings as SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
@@ -10,9 +10,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
   const isMobile = useIsMobile();
+  const { user, logout } = useAuth();
+  
+  // Function to get user initials
+  const getUserInitials = () => {
+    if (!user) return "?";
+    const name = user.name || user.email || "";
+    return name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2);
+  };
   
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -40,12 +49,12 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2 pl-2 pr-3">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-secondary">JD</AvatarFallback>
+                <AvatarFallback className="bg-secondary">{getUserInitials()}</AvatarFallback>
               </Avatar>
               {!isMobile && (
                 <>
                   <div className="flex flex-col items-start text-xs">
-                    <span className="font-medium">John Doe</span>
+                    <span className="font-medium">{user?.name || "User"}</span>
                     <span className="text-muted-foreground">Premium</span>
                   </div>
                   <ChevronDown size={14} className="text-muted-foreground" />
@@ -59,10 +68,19 @@ export default function Header() {
               <span>My Account</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem>
+              <SettingsIcon className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Bell className="mr-2 h-4 w-4" />
+              <span>Notifications</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

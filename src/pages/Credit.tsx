@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreditCard, DollarSign, Gift, Plus, ShieldCheck, Zap } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 
 export default function Credit() {
   return (
@@ -13,9 +13,11 @@ export default function Credit() {
           <p className="text-muted-foreground">Manage your credit cards and credit score</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Apply for Credit
+          <Button asChild>
+            <Link to="/credit">
+              <Plus className="mr-2 h-4 w-4" />
+              Apply for Credit
+            </Link>
           </Button>
         </div>
       </div>
@@ -44,7 +46,9 @@ export default function Credit() {
                   </div>
                   
                   <div className="mt-4">
-                    <Button className="w-full">Make a Payment</Button>
+                    <Button className="w-full" asChild>
+                      <Link to="/payments">Make a Payment</Link>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -72,9 +76,11 @@ export default function Credit() {
                   </div>
                   
                   <div className="mt-6">
-                    <Button variant="outline" className="w-full">
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      View Credit Report
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/settings">
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        View Credit Report
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -174,24 +180,32 @@ export default function Credit() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <DollarSign className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Pay Balance</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/payments">
+                    <DollarSign className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Pay Balance</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <ShieldCheck className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Freeze Card</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/settings">
+                    <ShieldCheck className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Freeze Card</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <Zap className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Increase Limit</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/settings">
+                    <Zap className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Increase Limit</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <Gift className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Rewards</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/credit">
+                    <Gift className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Rewards</span>
+                  </Link>
                 </Button>
               </div>
             </CardContent>
@@ -220,7 +234,9 @@ export default function Credit() {
                   <span className="font-medium">$3,764.58</span>
                 </div>
                 
-                <Button className="w-full">Make a Payment</Button>
+                <Button className="w-full" asChild>
+                  <Link to="/payments">Make a Payment</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

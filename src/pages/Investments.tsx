@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AreaChart, BarChart, LineChart, PieChart, Plus, TrendingUp, Wallet, DollarSign, Info } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 
 export default function Investments() {
   return (
@@ -15,9 +15,11 @@ export default function Investments() {
           <p className="text-muted-foreground">Track and manage your investment portfolio</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Investment
+          <Button asChild>
+            <Link to="/investments">
+              <Plus className="mr-2 h-4 w-4" />
+              New Investment
+            </Link>
           </Button>
         </div>
       </div>
@@ -309,24 +311,32 @@ export default function Investments() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <TrendingUp className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Buy Assets</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/investments">
+                    <TrendingUp className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Buy Assets</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <TrendingUp className="h-5 w-5 mb-2 transform rotate-180" />
-                  <span className="text-xs">Sell Assets</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/investments">
+                    <TrendingUp className="h-5 w-5 mb-2 transform rotate-180" />
+                    <span className="text-xs">Sell Assets</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <Wallet className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Deposit</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/wallet">
+                    <Wallet className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Deposit</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <DollarSign className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Withdraw</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/wallet">
+                    <DollarSign className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Withdraw</span>
+                  </Link>
                 </Button>
               </div>
             </CardContent>
@@ -387,8 +397,8 @@ export default function Investments() {
                   </div>
                 </div>
                 
-                <Button variant="outline" className="w-full">
-                  Rebalance Portfolio
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/investments">Rebalance Portfolio</Link>
                 </Button>
               </div>
             </CardContent>
@@ -441,8 +451,8 @@ export default function Investments() {
                   </div>
                 </div>
                 
-                <Button variant="outline" className="w-full">
-                  View Full Market Data
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/investments">View Full Market Data</Link>
                 </Button>
               </div>
             </CardContent>

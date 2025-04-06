@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Plus, ShieldCheck, Check, Zap, Settings, Wifi } from "lucide-react";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 
 export default function Cards() {
   return (
@@ -13,9 +13,11 @@ export default function Cards() {
           <p className="text-muted-foreground">Manage your payment cards</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Order New Card
+          <Button asChild>
+            <Link to="/cards">
+              <Plus className="mr-2 h-4 w-4" />
+              Order New Card
+            </Link>
           </Button>
         </div>
       </div>
@@ -305,24 +307,32 @@ export default function Cards() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <ShieldCheck className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Freeze Card</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/settings">
+                    <ShieldCheck className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Freeze Card</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <Settings className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Pin Settings</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/settings">
+                    <Settings className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Pin Settings</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <Zap className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Increase Limit</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/settings">
+                    <Zap className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Increase Limit</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <Plus className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Add Card</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/cards">
+                    <Plus className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Add Card</span>
+                  </Link>
                 </Button>
               </div>
             </CardContent>

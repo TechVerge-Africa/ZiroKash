@@ -1,9 +1,9 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Calendar, Plus, Search, SendHorizontal, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 
 export default function Payments() {
   return (
@@ -14,13 +14,17 @@ export default function Payments() {
           <p className="text-muted-foreground">Send, receive, and manage payments</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline">
-            <Calendar className="mr-2 h-4 w-4" />
-            Scheduled
+          <Button variant="outline" asChild>
+            <Link to="/payments">
+              <Calendar className="mr-2 h-4 w-4" />
+              Scheduled
+            </Link>
           </Button>
-          <Button>
-            <SendHorizontal className="mr-2 h-4 w-4" />
-            New Payment
+          <Button asChild>
+            <Link to="/payments">
+              <SendHorizontal className="mr-2 h-4 w-4" />
+              New Payment
+            </Link>
           </Button>
         </div>
       </div>
@@ -77,7 +81,9 @@ export default function Payments() {
                   </div>
                 </div>
                 
-                <Button className="w-full">Send Money</Button>
+                <Button className="w-full" asChild>
+                  <Link to="/payments">Send Money</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -223,9 +229,11 @@ export default function Payments() {
                   </p>
                 </div>
                 
-                <Button variant="outline" className="w-full">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Payment Method
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/wallet">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Payment Method
+                  </Link>
                 </Button>
               </div>
             </CardContent>
@@ -257,8 +265,8 @@ export default function Payments() {
                   </div>
                 </div>
                 
-                <Button variant="outline" className="w-full">
-                  Increase Limits
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/settings">Increase Limits</Link>
                 </Button>
               </div>
             </CardContent>

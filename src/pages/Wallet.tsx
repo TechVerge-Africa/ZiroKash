@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, CreditCard, DollarSign, Plus, Wallet as WalletIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Wallet() {
   return (
@@ -13,17 +14,23 @@ export default function Wallet() {
           <p className="text-muted-foreground">Manage your digital assets and payments</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline">
-            <ArrowDown className="mr-2 h-4 w-4" />
-            Deposit
+          <Button variant="outline" asChild>
+            <Link to="/payments">
+              <ArrowDown className="mr-2 h-4 w-4" />
+              Deposit
+            </Link>
           </Button>
-          <Button variant="outline">
-            <ArrowUp className="mr-2 h-4 w-4" />
-            Withdraw
+          <Button variant="outline" asChild>
+            <Link to="/payments">
+              <ArrowUp className="mr-2 h-4 w-4" />
+              Withdraw
+            </Link>
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Money
+          <Button asChild>
+            <Link to="/payments">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Money
+            </Link>
           </Button>
         </div>
       </div>
@@ -44,13 +51,17 @@ export default function Wallet() {
                   <span className="text-muted-foreground text-sm">Available balance</span>
                   
                   <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="outline">
-                      <ArrowUp className="mr-2 h-3 w-3" />
-                      Send
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to="/payments">
+                        <ArrowUp className="mr-2 h-3 w-3" />
+                        Send
+                      </Link>
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <ArrowDown className="mr-2 h-3 w-3" />
-                      Receive
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to="/payments">
+                        <ArrowDown className="mr-2 h-3 w-3" />
+                        Receive
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -70,13 +81,17 @@ export default function Wallet() {
                   <span className="text-muted-foreground text-sm">In cryptocurrencies</span>
                   
                   <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="outline">
-                      <DollarSign className="mr-2 h-3 w-3" />
-                      Buy
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to="/investments">
+                        <DollarSign className="mr-2 h-3 w-3" />
+                        Buy
+                      </Link>
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <CreditCard className="mr-2 h-3 w-3" />
-                      Sell
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to="/investments">
+                        <CreditCard className="mr-2 h-3 w-3" />
+                        Sell
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -176,24 +191,32 @@ export default function Wallet() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <ArrowUp className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Send Money</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/payments">
+                    <ArrowUp className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Send Money</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <ArrowDown className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Receive</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/payments">
+                    <ArrowDown className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Receive</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <DollarSign className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Exchange</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/investments">
+                    <DollarSign className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Exchange</span>
+                  </Link>
                 </Button>
                 
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
-                  <CreditCard className="h-5 w-5 mb-2" />
-                  <span className="text-xs">Pay Bills</span>
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
+                  <Link to="/payments">
+                    <CreditCard className="h-5 w-5 mb-2" />
+                    <span className="text-xs">Pay Bills</span>
+                  </Link>
                 </Button>
               </div>
             </CardContent>

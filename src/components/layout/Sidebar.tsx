@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
@@ -71,12 +70,12 @@ export default function Sidebar() {
   const sidebarContent = (
     <>
       <div className="flex items-center gap-2 px-3 py-4">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
             P
           </div>
           <span className="text-xl font-bold gradient-text">PayNex</span>
-        </div>
+        </Link>
         {isMobile && (
           <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
             <X size={20} />
@@ -108,7 +107,6 @@ export default function Sidebar() {
     </>
   );
 
-  // Mobile menu button
   const menuButton = isMobile && (
     <Button 
       variant="ghost" 
@@ -133,7 +131,6 @@ export default function Sidebar() {
       >
         {sidebarContent}
       </aside>
-      {/* Overlay for mobile */}
       {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30"

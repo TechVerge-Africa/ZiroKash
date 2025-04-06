@@ -1,250 +1,276 @@
 
-import { useState } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import TransactionsList, { Transaction } from "@/components/dashboard/TransactionsList";
-import { ArrowLeftRight, CreditCard, Download, Plus, Send, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, CreditCard, DollarSign, Plus, Wallet as WalletIcon } from "lucide-react";
 
 export default function Wallet() {
-  const [activeTab, setActiveTab] = useState("overview");
-  
-  // Mock transactions
-  const transactions: Transaction[] = [
-    {
-      id: "txn1",
-      type: "incoming",
-      title: "Received Payment",
-      amount: 250.00,
-      currency: "USD",
-      date: "Today, 10:32 AM",
-      sender: "John Smith",
-      status: "completed"
-    },
-    {
-      id: "txn2",
-      type: "outgoing",
-      title: "Rent Payment",
-      amount: 800.00,
-      currency: "USD",
-      date: "Yesterday, 3:15 PM",
-      recipient: "Landlord LLC",
-      status: "completed"
-    },
-    {
-      id: "txn3",
-      type: "incoming",
-      title: "Salary Deposit",
-      amount: 3200.00,
-      currency: "USD",
-      date: "Mar 28, 9:00 AM",
-      sender: "TechCorp Inc.",
-      status: "completed"
-    },
-    {
-      id: "txn4",
-      type: "outgoing",
-      title: "Grocery Shopping",
-      amount: 75.50,
-      currency: "USD",
-      date: "Mar 27, 6:22 PM",
-      recipient: "Whole Foods",
-      status: "completed"
-    },
-    {
-      id: "txn5",
-      type: "pending",
-      title: "BTC Purchase",
-      amount: 500.00,
-      currency: "USD",
-      date: "Processing",
-      recipient: "Crypto Exchange",
-      status: "processing"
-    }
-  ];
-
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
           <h1 className="text-2xl font-bold">Wallet</h1>
-          <Button className="bg-gradient-to-r from-primary to-secondary hover:opacity-90">
+          <p className="text-muted-foreground">Manage your digital assets and payments</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline">
+            <ArrowDown className="mr-2 h-4 w-4" />
+            Deposit
+          </Button>
+          <Button variant="outline">
+            <ArrowUp className="mr-2 h-4 w-4" />
+            Withdraw
+          </Button>
+          <Button>
             <Plus className="mr-2 h-4 w-4" />
             Add Money
           </Button>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Main wallet section */}
-          <div className="md:col-span-2 space-y-6">
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Card className="glass-card border-white/10">
               <CardHeader className="pb-2">
-                <CardTitle className="font-medium">USD Wallet</CardTitle>
+                <CardTitle className="text-lg font-medium">Main Balance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col sm:flex-row justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Available Balance</p>
-                    <p className="text-3xl font-bold">$12,450.75</p>
+                <div className="flex flex-col">
+                  <div className="flex items-baseline">
+                    <span className="text-3xl font-bold">$12,450.75</span>
+                    <span className="ml-2 text-green-500 text-sm">+2.5%</span>
                   </div>
+                  <span className="text-muted-foreground text-sm">Available balance</span>
                   
-                  <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
-                    <Button className="flex-1 sm:flex-none">
-                      <Send className="mr-2 h-4 w-4" />
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="outline">
+                      <ArrowUp className="mr-2 h-3 w-3" />
                       Send
                     </Button>
-                    <Button variant="outline" className="flex-1 sm:flex-none">
-                      <Download className="mr-2 h-4 w-4" />
+                    <Button size="sm" variant="outline">
+                      <ArrowDown className="mr-2 h-3 w-3" />
                       Receive
                     </Button>
-                    <Button variant="outline" className="flex-1 sm:flex-none">
-                      <ArrowLeftRight className="mr-2 h-4 w-4" />
-                      Swap
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="glass-card border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium">Crypto Balance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col">
+                  <div className="flex items-baseline">
+                    <span className="text-3xl font-bold">$3,287.45</span>
+                    <span className="ml-2 text-red-500 text-sm">-1.2%</span>
+                  </div>
+                  <span className="text-muted-foreground text-sm">In cryptocurrencies</span>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="outline">
+                      <DollarSign className="mr-2 h-3 w-3" />
+                      Buy
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <CreditCard className="mr-2 h-3 w-3" />
+                      Sell
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
-            <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="activity">Activity</TabsTrigger>
-                <TabsTrigger value="send">Send Money</TabsTrigger>
-                <TabsTrigger value="deposit">Deposit</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="activity" className="mt-4">
-                <TransactionsList transactions={transactions} />
-              </TabsContent>
-              
-              <TabsContent value="send" className="mt-4">
-                <Card className="glass-card border-white/10">
-                  <CardHeader>
-                    <CardTitle>Send Money</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="recipient">Recipient Email or Wallet Address</Label>
-                        <Input 
-                          id="recipient" 
-                          placeholder="Email, phone, or wallet address" 
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="amount">Amount</Label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">$</span>
-                          <Input 
-                            id="amount" 
-                            type="number"
-                            placeholder="0.00" 
-                            className="pl-8"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="note">Note (Optional)</Label>
-                        <Input 
-                          id="note" 
-                          placeholder="What's this payment for?" 
-                        />
-                      </div>
-                      
-                      <Button type="submit" className="w-full">
-                        Continue
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="deposit" className="mt-4">
-                <Card className="glass-card border-white/10">
-                  <CardHeader>
-                    <CardTitle>Deposit Funds</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Button className="h-auto py-6 justify-start flex-col items-start text-left">
-                          <CreditCard className="h-10 w-10 mb-2" />
-                          <h3 className="text-lg font-medium">Bank Transfer</h3>
-                          <p className="text-sm text-muted-foreground">Deposit via ACH transfer</p>
-                        </Button>
-                        
-                        <Button variant="outline" className="h-auto py-6 justify-start flex-col items-start text-left">
-                          <Upload className="h-10 w-10 mb-2" />
-                          <h3 className="text-lg font-medium">Crypto Deposit</h3>
-                          <p className="text-sm text-muted-foreground">Deposit cryptocurrency</p>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
           </div>
           
-          {/* Side panel */}
-          <div className="space-y-6">
-            <Card className="glass-card border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="font-medium">Payment Methods</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                    <div className="h-10 w-10 rounded-md bg-blue-500/20 flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Visa ending in 4242</p>
-                      <p className="text-xs text-muted-foreground">Expires 06/2026</p>
-                    </div>
-                  </div>
-                  
-                  <Button variant="outline" className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Payment Method
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <Tabs defaultValue="transactions" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="transactions">Transactions</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
+              <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+            </TabsList>
             
-            <Card className="glass-card border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="font-medium">Connected Accounts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                    <div className="h-10 w-10 rounded-md bg-green-500/20 flex items-center justify-center">
-                      <svg className="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 7.20001H15V5.40001C15 4.07001 13.93 3 12.6 3H5.4C4.07 3 3 4.07001 3 5.40001V18.6C3 19.93 4.07 21 5.4 21H18.6C19.93 21 21 19.93 21 18.6V10.2C21 8.87001 19.93 7.20001 18 7.20001ZM6 8.40001H12V10.8H6V8.40001ZM18 18H6V15.6H18V18ZM18 13.2H6V12.6H18V13.2ZM18 10.2H15V9.60001H18V10.2Z" fill="currentColor"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-medium">Bank Account</p>
-                      <p className="text-xs text-muted-foreground">Chase ••••1234</p>
-                    </div>
+            <TabsContent value="transactions" className="mt-4">
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>Recent Transactions</CardTitle>
+                  <CardDescription>Your latest financial activities</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                            <WalletIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Deposit to Main Account</p>
+                            <p className="text-xs text-muted-foreground">Apr 3, 2025</p>
+                          </div>
+                        </div>
+                        <p className="font-medium text-green-500">+$250.00</p>
+                      </div>
+                    ))}
                   </div>
-                  
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="payments" className="mt-4">
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>Payment Methods</CardTitle>
+                  <CardDescription>Your linked payment sources</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                            <CreditCard className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Visa ending in 4242</p>
+                            <p className="text-xs text-muted-foreground">Expires 06/26</p>
+                          </div>
+                        </div>
+                        <Button size="sm" variant="outline">Default</Button>
+                      </div>
+                    </div>
+                    <Button className="w-full">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Payment Method
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="scheduled" className="mt-4">
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>Scheduled Transactions</CardTitle>
+                  <CardDescription>Upcoming and recurring payments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">You don't have any scheduled transactions.</p>
+                    <Button className="mt-4">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Schedule a Payment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        <div className="space-y-6">
+          <Card className="glass-card border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <ArrowUp className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Send Money</span>
+                </Button>
+                
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <ArrowDown className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Receive</span>
+                </Button>
+                
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <DollarSign className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Exchange</span>
+                </Button>
+                
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <CreditCard className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Pay Bills</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-card border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Spending Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm">Monthly Spending</p>
+                    <p className="text-sm font-medium">$2,450 / $5,000</p>
+                  </div>
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary w-1/2 rounded-full"></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm">Savings Goal</p>
+                    <p className="text-sm font-medium">$10,200 / $25,000</p>
+                  </div>
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 w-1/4 rounded-full"></div>
+                  </div>
+                </div>
+                
+                <div className="pt-2">
                   <Button variant="outline" className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Link Account
+                    View Full Report
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-card border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Currency Exchange</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">From</p>
+                    <div className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
+                      <span>USD</span>
+                      <span>$</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">To</p>
+                    <div className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
+                      <span>EUR</span>
+                      <span>€</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Amount</p>
+                  <div className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
+                    <span>$100.00</span>
+                    <span>€92.34</span>
+                  </div>
+                </div>
+                
+                <Button className="w-full">Exchange Now</Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 }

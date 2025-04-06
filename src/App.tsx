@@ -17,60 +17,96 @@ import Settings from "./pages/Settings";
 import Landing from "./pages/Landing";
 import MainLayout from "./components/layout/MainLayout";
 import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
 
+// Protected Route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// App Routes with BrowserRouter
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      {/* Protected Routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Dashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/wallet" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Wallet />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/cards" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Cards />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/payments" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Payments />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/investments" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Investments />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/credit" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Credit />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Settings />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={
-              <MainLayout>
-                <Dashboard />
-              </MainLayout>
-            } />
-            <Route path="/wallet" element={
-              <MainLayout>
-                <Wallet />
-              </MainLayout>
-            } />
-            <Route path="/cards" element={
-              <MainLayout>
-                <Cards />
-              </MainLayout>
-            } />
-            <Route path="/payments" element={
-              <MainLayout>
-                <Payments />
-              </MainLayout>
-            } />
-            <Route path="/investments" element={
-              <MainLayout>
-                <Investments />
-              </MainLayout>
-            } />
-            <Route path="/credit" element={
-              <MainLayout>
-                <Credit />
-              </MainLayout>
-            } />
-            <Route path="/settings" element={
-              <MainLayout>
-                <Settings />
-              </MainLayout>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

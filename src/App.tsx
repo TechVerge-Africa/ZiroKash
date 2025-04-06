@@ -16,13 +16,12 @@ import Credit from "./pages/Credit";
 import Settings from "./pages/Settings";
 import Landing from "./pages/Landing";
 import MainLayout from "./components/layout/MainLayout";
-import { AuthProvider } from "./context/AuthContext";
-import { useAuth } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
 
-// Protected Route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+// Protected Route component moved outside of main App component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   
   if (!isAuthenticated) {
@@ -30,10 +29,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   return <>{children}</>;
-};
+}
 
-// App Routes with BrowserRouter
-const AppRoutes = () => {
+// App Routes component moved outside of main App component
+function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
@@ -94,8 +93,9 @@ const AppRoutes = () => {
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
-};
+}
 
+// Main App component properly wrapped with providers
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>

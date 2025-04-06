@@ -1,410 +1,414 @@
 
-import { useState } from "react";
-import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Plus, RefreshCw, Shield, CreditCard, Smartphone, Eye, EyeOff } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { CreditCard, Plus, ShieldCheck, Check, Zap, Settings, Wifi } from "lucide-react";
+import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Cards() {
-  const [showCardNumber, setShowCardNumber] = useState(false);
-  const [isVirtualCardDialogOpen, setIsVirtualCardDialogOpen] = useState(false);
-  const { toast } = useToast();
-  
-  const toggleCardNumber = () => setShowCardNumber(!showCardNumber);
-  
-  const createVirtualCard = () => {
-    toast({
-      title: "Virtual Card Created",
-      description: "Your new virtual card is ready to use.",
-    });
-    setIsVirtualCardDialogOpen(false);
-  };
-  
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Cards</h1>
-            <p className="text-muted-foreground">Manage your physical and virtual cards</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline">
-              <CreditCard className="mr-2 h-4 w-4" />
-              Order Physical Card
-            </Button>
-            <Button onClick={() => setIsVirtualCardDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Virtual Card
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Cards</h1>
+          <p className="text-muted-foreground">Manage your payment cards</p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            {/* Card details */}
-            <div className="relative">
-              <div className="w-full p-6 rounded-xl bg-gradient-to-r from-primary to-secondary glow">
-                <div className="flex justify-between mb-6">
-                  <div className="text-white">
-                    <p className="text-sm font-light opacity-80">PayNex Debit</p>
-                    <p className="font-bold">Visa Platinum</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.2"/>
-                      <circle cx="12" cy="12" r="7" fill="white" fillOpacity="0.4"/>
-                    </svg>
-                    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 15V9H9V15H15Z" fill="white"/>
-                    </svg>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <p className="text-xs text-white/80 mb-1">Card Number</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg md:text-xl font-medium text-white tracking-wider">
-                      {showCardNumber ? "4242 4242 4242 4242" : "•••• •••• •••• 4242"}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/10"
-                      onClick={toggleCardNumber}
-                    >
-                      {showCardNumber ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-xs text-white/80 mb-1">Card Holder</p>
-                    <p className="font-medium text-white">JOHN DOE</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/80 mb-1">Expires</p>
-                    <p className="font-medium text-white">06/26</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/80 mb-1">CVV</p>
-                    <p className="font-medium text-white">{showCardNumber ? "123" : "•••"}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md rounded-full px-3 py-1 text-xs font-medium text-white">
-                <span className="flex items-center">
-                  <span className="h-2 w-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
-                  Active
-                </span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center">
-                <Lock className="h-5 w-5 mb-2" />
-                <span className="text-xs">Lock Card</span>
-              </Button>
-              
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center">
-                <RefreshCw className="h-5 w-5 mb-2" />
-                <span className="text-xs">Change PIN</span>
-              </Button>
-              
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center">
-                <Shield className="h-5 w-5 mb-2" />
-                <span className="text-xs">Card Limits</span>
-              </Button>
-              
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center">
-                <Smartphone className="h-5 w-5 mb-2" />
-                <span className="text-xs">Add to Wallet</span>
-              </Button>
-            </div>
-            
-            <Tabs defaultValue="transactions" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                <TabsTrigger value="details">Card Details</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="transactions" className="mt-4">
-                <Card className="glass-card border-white/10">
-                  <CardHeader>
-                    <CardTitle>Recent Card Transactions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                              <CreditCard className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="font-medium">Amazon.com</p>
-                              <p className="text-xs text-muted-foreground">Apr 3, 2025</p>
-                            </div>
-                          </div>
-                          <p className="font-medium">-$79.99</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="details" className="mt-4">
-                <Card className="glass-card border-white/10">
-                  <CardHeader>
-                    <CardTitle>Card Details</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Card Type</Label>
-                          <p>Virtual Debit Card</p>
-                        </div>
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Status</Label>
-                          <p>Active</p>
-                        </div>
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Issued Date</Label>
-                          <p>Mar 15, 2025</p>
-                        </div>
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Expiry Date</Label>
-                          <p>Jun 30, 2026</p>
-                        </div>
-                        <div>
-                          <Label className="text-muted-foreground text-xs">Billing Address</Label>
-                          <p>123 Main St, New York, NY 10001</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="settings" className="mt-4">
-                <Card className="glass-card border-white/10">
-                  <CardHeader>
-                    <CardTitle>Card Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Online Payments</p>
-                          <p className="text-sm text-muted-foreground">Allow online transactions</p>
-                        </div>
-                        <div className="h-6 w-12 rounded-full bg-primary flex items-center p-1">
-                          <div className="h-4 w-4 rounded-full bg-white ml-auto"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">ATM Withdrawals</p>
-                          <p className="text-sm text-muted-foreground">Allow ATM withdrawals</p>
-                        </div>
-                        <div className="h-6 w-12 rounded-full bg-primary flex items-center p-1">
-                          <div className="h-4 w-4 rounded-full bg-white ml-auto"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">International Payments</p>
-                          <p className="text-sm text-muted-foreground">Allow payments outside your country</p>
-                        </div>
-                        <div className="h-6 w-12 rounded-full bg-gray-500 flex items-center p-1">
-                          <div className="h-4 w-4 rounded-full bg-white"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Contactless Payments</p>
-                          <p className="text-sm text-muted-foreground">Allow tap and pay</p>
-                        </div>
-                        <div className="h-6 w-12 rounded-full bg-primary flex items-center p-1">
-                          <div className="h-4 w-4 rounded-full bg-white ml-auto"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-          
-          {/* Side content */}
-          <div className="space-y-6">
-            <Card className="glass-card border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Card Limits</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm">Daily Spending</p>
-                      <p className="text-sm font-medium">$1,000 / $5,000</p>
-                    </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-1/5 rounded-full"></div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm">Monthly Spending</p>
-                      <p className="text-sm font-medium">$5,250 / $20,000</p>
-                    </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-1/4 rounded-full"></div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm">ATM Withdrawals</p>
-                      <p className="text-sm font-medium">$300 / $1,000</p>
-                    </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-1/3 rounded-full"></div>
-                    </div>
-                  </div>
-                  
-                  <Button variant="outline" className="w-full">
-                    Adjust Limits
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="glass-card border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Virtual Cards</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium">Netflix</p>
-                      <p className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">Active</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Virtual card specifically for Netflix subscription
-                    </p>
-                    <p className="text-sm">
-                      <span className="text-muted-foreground">Card number:</span> •••• 8523
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 rounded-lg bg-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium">Amazon</p>
-                      <p className="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full">Limited</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Limited to $200/month for Amazon purchases
-                    </p>
-                    <p className="text-sm">
-                      <span className="text-muted-foreground">Card number:</span> •••• 7128
-                    </p>
-                  </div>
-                  
-                  <Button onClick={() => setIsVirtualCardDialogOpen(true)} className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Virtual Card
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Order New Card
+          </Button>
         </div>
       </div>
       
-      {/* Virtual Card Dialog */}
-      <Dialog open={isVirtualCardDialogOpen} onOpenChange={setIsVirtualCardDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Virtual Card</DialogTitle>
-            <DialogDescription>
-              Create a new virtual card for specific merchants or purposes
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="card-name">Card Name</Label>
-              <Input id="card-name" placeholder="e.g. Netflix, Amazon, etc." />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="card-limit">Monthly Spending Limit</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5">$</span>
-                <Input 
-                  id="card-limit" 
-                  type="number" 
-                  placeholder="0.00" 
-                  className="pl-8"
-                  defaultValue="200"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Card Settings</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="online-only" className="rounded border-white/20 bg-transparent" />
-                  <Label htmlFor="online-only" className="font-normal text-sm">Online payments only</Label>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card className="relative overflow-hidden glass-card border-white/10 bg-gradient-to-br from-indigo-500/20 to-indigo-800/30">
+              <CardContent className="p-6">
+                <div className="absolute top-3 right-3">
+                  <Wifi className="h-6 w-6 text-white/80" />
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="single-use" className="rounded border-white/20 bg-transparent" />
-                  <Label htmlFor="single-use" className="font-normal text-sm">Single use card</Label>
+                <div className="flex flex-col justify-between h-full">
+                  <div className="space-y-1 mb-10">
+                    <p className="text-xs text-white/80 uppercase tracking-widest">Debit Card</p>
+                    <p className="text-lg font-bold text-white">PayNex Premium</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="text-base font-medium text-white">**** **** **** 4242</p>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-xs text-white/80">Card Holder</p>
+                        <p className="text-sm font-medium text-white">John Doe</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/80">Expires</p>
+                        <p className="text-sm font-medium text-white">06/26</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="relative overflow-hidden glass-card border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-800/30">
+              <CardContent className="p-6">
+                <div className="absolute top-3 right-3">
+                  <Wifi className="h-6 w-6 text-white/80" />
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="intl-payments" className="rounded border-white/20 bg-transparent" />
-                  <Label htmlFor="intl-payments" className="font-normal text-sm">Allow international payments</Label>
+                <div className="flex flex-col justify-between h-full">
+                  <div className="space-y-1 mb-10">
+                    <p className="text-xs text-white/80 uppercase tracking-widest">Debit Card</p>
+                    <p className="text-lg font-bold text-white">PayNex Rewards</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="text-base font-medium text-white">**** **** **** 8731</p>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-xs text-white/80">Card Holder</p>
+                        <p className="text-sm font-medium text-white">John Doe</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/80">Expires</p>
+                        <p className="text-sm font-medium text-white">08/27</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsVirtualCardDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={createVirtualCard}>
-              Create Card
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </MainLayout>
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="details">Card Details</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="limits">Limits & Usage</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="details" className="mt-4">
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>Card Details</CardTitle>
+                  <CardDescription>Your PayNex Premium Card details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Card Number</p>
+                      <div className="flex items-center rounded-md border border-white/10 p-2.5">
+                        <span className="font-mono">**** **** **** 4242</span>
+                        <Button variant="ghost" size="sm" className="ml-auto h-auto p-1">
+                          <ShieldCheck className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Card Holder</p>
+                      <div className="flex items-center rounded-md border border-white/10 p-2.5">
+                        <span>John Doe</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Expiry Date</p>
+                      <div className="flex items-center rounded-md border border-white/10 p-2.5">
+                        <span>06/26</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">CVV</p>
+                      <div className="flex items-center rounded-md border border-white/10 p-2.5">
+                        <span className="font-mono">***</span>
+                        <Button variant="ghost" size="sm" className="ml-auto h-auto p-1">
+                          <ShieldCheck className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-white/10 pt-4">
+                    <p className="text-sm text-muted-foreground mb-2">Card Status</p>
+                    <div className="flex items-center">
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
+                      <span className="text-sm font-medium">Active</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="security" className="mt-4">
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>Card Security</CardTitle>
+                  <CardDescription>Manage your card's security settings</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center">
+                          <ShieldCheck className="h-4 w-4 mr-2 text-green-500" />
+                          <p className="font-medium">Freeze Card</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Temporarily disable your card
+                        </p>
+                      </div>
+                      <Button variant="outline">Freeze</Button>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center">
+                          <Check className="h-4 w-4 mr-2 text-green-500" />
+                          <p className="font-medium">Online Transactions</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Allow online and e-commerce payments
+                        </p>
+                      </div>
+                      <Button variant="outline">Enabled</Button>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center">
+                          <Check className="h-4 w-4 mr-2 text-green-500" />
+                          <p className="font-medium">International Transactions</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Allow payments outside your country
+                        </p>
+                      </div>
+                      <Button variant="outline">Enabled</Button>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center">
+                          <Check className="h-4 w-4 mr-2 text-green-500" />
+                          <p className="font-medium">Contactless Payments</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Allow tap-to-pay functionality
+                        </p>
+                      </div>
+                      <Button variant="outline">Enabled</Button>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-white/10 pt-4">
+                    <Button className="w-full">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Advanced Security Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="limits" className="mt-4">
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>Card Limits</CardTitle>
+                  <CardDescription>Manage your spending limits</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm">Daily ATM Withdrawal</p>
+                        <p className="text-sm font-medium">$500 / $1,000</p>
+                      </div>
+                      <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-1/2 rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm">Daily Purchase Limit</p>
+                        <p className="text-sm font-medium">$1,250 / $5,000</p>
+                      </div>
+                      <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-1/4 rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm">Online Transaction Limit</p>
+                        <p className="text-sm font-medium">$1,000 / $3,000</p>
+                      </div>
+                      <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-1/3 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-white/10 pt-4">
+                    <Button className="w-full">
+                      <Zap className="mr-2 h-4 w-4" />
+                      Request Limit Increase
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+          
+          <Card className="glass-card border-white/10">
+            <CardHeader>
+              <CardTitle>Recent Card Transactions</CardTitle>
+              <CardDescription>Your recent card activity</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { title: 'Amazon.com', date: 'Apr 5, 2025', amount: '$54.32', card: '4242' },
+                { title: 'Uber', date: 'Apr 3, 2025', amount: '$22.50', card: '4242' },
+                { title: 'Starbucks', date: 'Apr 2, 2025', amount: '$6.75', card: '8731' },
+                { title: 'Netflix', date: 'Apr 1, 2025', amount: '$14.99', card: '4242' },
+                { title: 'Grocery Store', date: 'Mar 30, 2025', amount: '$87.65', card: '8731' }
+              ].map((transaction, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                      <CreditCard className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{transaction.title}</p>
+                      <p className="text-xs text-muted-foreground">{transaction.date} • Card ending in {transaction.card}</p>
+                    </div>
+                  </div>
+                  <p className="font-medium">{transaction.amount}</p>
+                </div>
+              ))}
+              
+              <Button variant="outline" className="w-full">
+                View All Transactions
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="space-y-6">
+          <Card className="glass-card border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <ShieldCheck className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Freeze Card</span>
+                </Button>
+                
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <Settings className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Pin Settings</span>
+                </Button>
+                
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <Zap className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Increase Limit</span>
+                </Button>
+                
+                <Button className="h-auto py-4 flex flex-col items-center" variant="outline">
+                  <Plus className="h-5 w-5 mb-2" />
+                  <span className="text-xs">Add Card</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-card border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Card Benefits</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 rounded-lg border border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Purchase Protection</p>
+                    <p className="text-xs text-muted-foreground">Covered up to $1,000 per claim</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 rounded-lg border border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Travel Insurance</p>
+                    <p className="text-xs text-muted-foreground">Coverage for trips paid with your card</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 rounded-lg border border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                    <Zap className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Cashback Rewards</p>
+                    <p className="text-xs text-muted-foreground">Earn 2% on all purchases</p>
+                  </div>
+                </div>
+              </div>
+              
+              <Button variant="outline" className="w-full">
+                View All Benefits
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card className="glass-card border-white/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Card Management</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Replace Card</p>
+                <Button size="sm" variant="outline">Replace</Button>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Report Lost/Stolen</p>
+                <Button size="sm" variant="outline">Report</Button>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <p className="text-sm">View PIN</p>
+                <Button size="sm" variant="outline">View</Button>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <p className="text-sm">Change Card Design</p>
+                <Button size="sm" variant="outline">Change</Button>
+              </div>
+              
+              <div className="border-t border-white/10 pt-4">
+                <Button variant="destructive" className="w-full">
+                  Cancel Card
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }

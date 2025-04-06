@@ -12,7 +12,8 @@ import {
   ShieldCheck, 
   Settings, 
   Menu, 
-  X 
+  X,
+  DollarSign 
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -24,12 +25,12 @@ type NavItem = {
 };
 
 const mainNavItems: NavItem[] = [
-  { name: "Dashboard", href: "/", icon: <Home size={20} /> },
+  { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
   { name: "Wallet", href: "/wallet", icon: <Wallet size={20} /> },
   { name: "Cards", href: "/cards", icon: <CreditCard size={20} /> },
   { name: "Payments", href: "/payments", icon: <Send size={20} /> },
   { name: "Investments", href: "/investments", icon: <LineChart size={20} /> },
-  { name: "Global Markets", href: "/markets", icon: <Globe size={20} /> },
+  { name: "Credit", href: "/credit", icon: <DollarSign size={20} /> },
 ];
 
 const secondaryNavItems: NavItem[] = [

@@ -2,14 +2,32 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut } from "lucide-react";
+import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, CircleHalf } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTheme } from "@/hooks/use-theme";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useEffect, useState } from "react";
 
 export default function Settings() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  // We'll hold the initial theme to detect changes for visual feedback
+  const [initialTheme, setInitialTheme] = useState(theme);
+  const [themeChanged, setThemeChanged] = useState(false);
+
+  useEffect(() => {
+    setInitialTheme(theme);
+  }, []);
+
+  useEffect(() => {
+    // Check if the theme has changed from initial state
+    setThemeChanged(initialTheme !== theme);
+  }, [theme, initialTheme]);
 
   return (
     <div className="space-y-6">
@@ -512,22 +530,28 @@ export default function Settings() {
             <CardContent className="space-y-6">
               <div>
                 <h3 className="text-sm font-medium mb-3">Theme</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="border border-white/10 rounded-lg p-4 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors">
-                    <Moon className="h-6 w-6" />
-                    <span className="text-sm font-medium">Dark</span>
-                  </div>
-                  <div className="border border-white/10 rounded-lg p-4 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors">
-                    <Sun className="h-6 w-6" />
-                    <span className="text-sm font-medium">Light</span>
-                  </div>
-                  <div className="border border-primary/50 rounded-lg p-4 flex flex-col items-center gap-3 cursor-pointer bg-white/5">
-                    <div className="flex">
-                      <Moon className="h-6 w-6" />
-                      <Sun className="h-6 w-6" />
-                    </div>
-                    <span className="text-sm font-medium">System</span>
-                  </div>
+                
+                <div className="flex flex-col gap-4">
+                  <ToggleGroup type="single" value={theme} onValueChange={(value) => value && setTheme(value as "light" | "dark" | "system")} className="justify-start">
+                    <ToggleGroupItem value="light" className="flex gap-2 w-full sm:w-auto">
+                      <Sun className="h-5 w-5" />
+                      <span>Light</span>
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="dark" className="flex gap-2 w-full sm:w-auto">
+                      <Moon className="h-5 w-5" />
+                      <span>Dark</span>
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="system" className="flex gap-2 w-full sm:w-auto">
+                      <CircleHalf className="h-5 w-5" />
+                      <span>System</span>
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+
+                  {themeChanged && (
+                    <p className="text-sm text-secondary animate-pulse">
+                      Theme updated to {theme.charAt(0).toUpperCase() + theme.slice(1)} mode
+                    </p>
+                  )}
                 </div>
               </div>
               

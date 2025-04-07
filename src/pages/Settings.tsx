@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, CircleHalf } from "lucide-react";
+import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, MonitorSmartphone } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -542,7 +541,7 @@ export default function Settings() {
                       <span>Dark</span>
                     </ToggleGroupItem>
                     <ToggleGroupItem value="system" className="flex gap-2 w-full sm:w-auto">
-                      <CircleHalf className="h-5 w-5" />
+                      <MonitorSmartphone className="h-5 w-5" />
                       <span>System</span>
                     </ToggleGroupItem>
                   </ToggleGroup>

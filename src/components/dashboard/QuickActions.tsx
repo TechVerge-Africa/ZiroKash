@@ -1,11 +1,14 @@
 
-import { Send, CreditCard, Wallet, Globe, Coins } from "lucide-react";
+import { Send, CreditCard, Wallet, Globe, Coins, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { FormDialog } from "@/components/modals/FormDialogs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function QuickActions() {
+  const isMobile = useIsMobile();
+  
   const quickLinks = [
     { 
       icon: <Send size={20} />, 
@@ -42,6 +45,17 @@ export default function QuickActions() {
       hasDialog: false
     },
     { 
+      icon: <PiggyBank size={20} />, 
+      label: "Save", 
+      link: null,
+      hasDialog: true,
+      dialogProps: {
+        title: "Start Saving",
+        description: "Create a new savings plan",
+        formType: "deposit"
+      }
+    },
+    { 
       icon: <Coins size={20} />, 
       label: "Invest", 
       link: null,
@@ -60,7 +74,7 @@ export default function QuickActions() {
         <CardTitle className="text-md font-medium">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between">
+        <div className={`grid ${isMobile ? 'grid-cols-3' : 'flex justify-between'} gap-2`}>
           {quickLinks.map((action, index) => {
             const buttonContent = (
               <div className="flex flex-col items-center gap-2 h-auto p-2">
@@ -71,11 +85,21 @@ export default function QuickActions() {
               </div>
             );
 
+            const actionButton = (
+              <Button 
+                key={index}
+                variant="ghost"
+                className="flex flex-col items-center gap-2 h-auto p-2"
+              >
+                {buttonContent}
+              </Button>
+            );
+
             if (action.hasDialog && action.dialogProps) {
               return (
                 <FormDialog
                   key={index}
-                  trigger={<Button variant="ghost">{buttonContent}</Button>}
+                  trigger={actionButton}
                   title={action.dialogProps.title}
                   description={action.dialogProps.description}
                   formType={action.dialogProps.formType as any}

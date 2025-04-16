@@ -4,6 +4,7 @@ import BalanceCard from "@/components/dashboard/BalanceCard";
 import QuickActions from "@/components/dashboard/QuickActions";
 import TransactionsList, { Transaction } from "@/components/dashboard/TransactionsList";
 import CryptoPrices from "@/components/dashboard/CryptoPrices";
+import SavingsCard from "@/components/dashboard/SavingsCard";
 import { useAuth } from "@/context/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -74,7 +75,12 @@ export default function Dashboard() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <BalanceCard balance={12450.75} currency="USD" />
-          <div className={isMobile ? "order-1" : ""}>
+          <SavingsCard 
+            totalSavings={3250.50} 
+            targetAmount={10000} 
+            savingsName="Emergency Fund" 
+          />
+          <div className={isMobile ? "order-1 col-span-full" : "col-span-full"}>
             <TransactionsList transactions={transactions} />
           </div>
         </div>

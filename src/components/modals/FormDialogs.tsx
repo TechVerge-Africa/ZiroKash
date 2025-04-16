@@ -24,12 +24,13 @@ import { PaymentForm } from "@/components/forms/PaymentForm";
 import { CardForm } from "@/components/forms/CardForm";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
 import { CreditApplicationForm } from "@/components/forms/CreditApplicationForm";
+import { SavingsPlanForm } from "@/components/forms/SavingsPlanForm";
 
 interface FormDialogProps {
   trigger: React.ReactNode;
   title: string;
   description: string;
-  formType: "deposit" | "withdraw" | "card" | "investment" | "credit";
+  formType: "deposit" | "withdraw" | "card" | "investment" | "credit" | "savings";
 }
 
 export function FormDialog({
@@ -55,6 +56,7 @@ export function FormDialog({
           {formType === "card" && <CardForm onClose={() => setOpen(false)} />}
           {formType === "investment" && <InvestmentForm onClose={() => setOpen(false)} />}
           {formType === "credit" && <CreditApplicationForm onClose={() => setOpen(false)} />}
+          {formType === "savings" && <SavingsPlanForm onClose={() => setOpen(false)} />}
         </DialogContent>
       </Dialog>
     );
@@ -74,6 +76,7 @@ export function FormDialog({
           {formType === "card" && <CardForm onClose={() => setOpen(false)} />}
           {formType === "investment" && <InvestmentForm onClose={() => setOpen(false)} />}
           {formType === "credit" && <CreditApplicationForm onClose={() => setOpen(false)} />}
+          {formType === "savings" && <SavingsPlanForm onClose={() => setOpen(false)} />}
         </div>
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>

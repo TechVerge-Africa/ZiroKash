@@ -100,7 +100,7 @@ function AppRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <ThemeProvider defaultTheme="system">
+      <ThemeProvider defaultTheme="dark">
         <AuthProvider>
           <TooltipProvider>
             <Toaster />

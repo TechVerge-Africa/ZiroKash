@@ -12,14 +12,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen bg-background text-foreground grid-pattern">
+    <div className="min-h-screen bg-background text-foreground grid-pattern scrollbar-none">
       <Sidebar />
       <div className={cn(
         "flex flex-col min-h-screen",
         isMobile ? "ml-0" : "ml-64"
       )}>
         <Header />
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-auto scrollbar-none">
           {children}
         </main>
       </div>

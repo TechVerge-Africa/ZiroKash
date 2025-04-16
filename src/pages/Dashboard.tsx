@@ -5,9 +5,11 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import TransactionsList, { Transaction } from "@/components/dashboard/TransactionsList";
 import CryptoPrices from "@/components/dashboard/CryptoPrices";
 import { useAuth } from "@/context/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   // Mock transactions data
   const transactions: Transaction[] = useMemo(() => [
@@ -64,7 +66,7 @@ export default function Dashboard() {
   ], []);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-up-delayed">
       <div className="md:col-span-2 space-y-6">
         <h1 className="text-2xl font-bold">Welcome, {user?.name || 'User'} 👋</h1>
         
@@ -72,7 +74,9 @@ export default function Dashboard() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <BalanceCard balance={12450.75} currency="USD" />
-          <TransactionsList transactions={transactions} />
+          <div className={isMobile ? "order-1" : ""}>
+            <TransactionsList transactions={transactions} />
+          </div>
         </div>
       </div>
       

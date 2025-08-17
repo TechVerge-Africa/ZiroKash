@@ -14,7 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_address?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      savings_plans: {
+        Row: {
+          created_at: string
+          current_amount: number
+          id: string
+          monthly_contribution: number
+          plan_name: string
+          status: string
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_amount?: number
+          id?: string
+          monthly_contribution: number
+          plan_name: string
+          status?: string
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_amount?: number
+          id?: string
+          monthly_contribution?: number
+          plan_name?: string
+          status?: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          blockchain_hash: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          from_wallet_id: string | null
+          id: string
+          recipient_address: string | null
+          sender_address: string | null
+          status: string
+          to_wallet_id: string | null
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          blockchain_hash?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          from_wallet_id?: string | null
+          id?: string
+          recipient_address?: string | null
+          sender_address?: string | null
+          status?: string
+          to_wallet_id?: string | null
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          blockchain_hash?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          from_wallet_id?: string | null
+          id?: string
+          recipient_address?: string | null
+          sender_address?: string | null
+          status?: string
+          to_wallet_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_from_wallet_id_fkey"
+            columns: ["from_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_to_wallet_id_fkey"
+            columns: ["to_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          balance: number
+          blockchain_address: string | null
+          created_at: string
+          currency: string
+          id: string
+          updated_at: string
+          user_id: string
+          wallet_type: string
+        }
+        Insert: {
+          balance?: number
+          blockchain_address?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          wallet_type: string
+        }
+        Update: {
+          balance?: number
+          blockchain_address?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          wallet_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

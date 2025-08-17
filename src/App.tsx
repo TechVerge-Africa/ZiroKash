@@ -8,37 +8,40 @@ import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
 import Cards from "./pages/Cards";
 import Payments from "./pages/Payments";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Investments from "./pages/Investments";
 import Credit from "./pages/Credit";
 import Settings from "./pages/Settings";
 import Landing from "./pages/Landing";
 import MainLayout from "./components/layout/MainLayout";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/use-theme";
 
 const queryClient = new QueryClient();
 
-// Protected Route component moved outside of main App component
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+// Root redirect component
+function RootRedirect() {
+  const { user, loading } = useAuth();
   
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
   
-  return <>{children}</>;
+  return user ? <Navigate to="/dashboard" replace /> : <Landing />;
 }
 
 // App Routes component moved outside of main App component
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/" element={<RootRedirect />} />
+      <Route path="/auth" element={<Auth />} />
       
       {/* Protected Routes */}
       <Route path="/dashboard" element={
@@ -101,13 +104,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <ThemeProvider defaultTheme="dark">
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppRoutes />
-          </TooltipProvider>
-        </AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </TooltipProvider>
       </ThemeProvider>
     </BrowserRouter>
   </QueryClientProvider>

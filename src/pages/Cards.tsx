@@ -3,8 +3,20 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, Plus, ShieldCheck, Check, Zap, Settings, Wifi } from "lucide-react";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import { useCredit } from "@/hooks/useCredit";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function Cards() {
+  const { creditCards, loading } = useCredit();
+  const { transactions } = useWallet();
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading...</div>;
+  }
+
+  const cardTransactions = transactions.filter(t => 
+    t.transaction_type === 'send' || t.transaction_type === 'receive'
+  ).slice(0, 5);
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -25,63 +37,49 @@ export default function Cards() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="relative overflow-hidden glass-card border-white/10 bg-gradient-to-br from-indigo-500/20 to-indigo-800/30">
-              <CardContent className="p-6">
-                <div className="absolute top-3 right-3">
-                  <Wifi className="h-6 w-6 text-white/80" />
-                </div>
-                
-                <div className="flex flex-col justify-between h-full">
-                  <div className="space-y-1 mb-10">
-                    <p className="text-xs text-white/80 uppercase tracking-widest">Debit Card</p>
-                    <p className="text-lg font-bold text-white">PayNex Premium</p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <p className="text-base font-medium text-white">**** **** **** 4242</p>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-xs text-white/80">Card Holder</p>
-                        <p className="text-sm font-medium text-white">John Doe</p>
+            {creditCards.length > 0 ? creditCards.slice(0, 2).map((card, index) => {
+              const gradients = [
+                'from-indigo-500/20 to-indigo-800/30',
+                'from-emerald-500/20 to-emerald-800/30',
+                'from-purple-500/20 to-purple-800/30',
+                'from-amber-500/20 to-amber-800/30'
+              ];
+              
+              return (
+                <Card key={card.id} className={`relative overflow-hidden glass-card border-white/10 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
+                  <CardContent className="p-6">
+                    <div className="absolute top-3 right-3">
+                      <Wifi className="h-6 w-6 text-white/80" />
+                    </div>
+                    
+                    <div className="flex flex-col justify-between h-full">
+                      <div className="space-y-1 mb-10">
+                        <p className="text-xs text-white/80 uppercase tracking-widest">{card.card_type} Card</p>
+                        <p className="text-lg font-bold text-white">{card.card_name}</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-white/80">Expires</p>
-                        <p className="text-sm font-medium text-white">06/26</p>
+                      
+                      <div className="space-y-3">
+                        <p className="text-base font-medium text-white">**** **** **** {card.card_number.slice(-4)}</p>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-xs text-white/80">Balance</p>
+                            <p className="text-sm font-medium text-white">${card.current_balance.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/80">Limit</p>
+                            <p className="text-sm font-medium text-white">${card.credit_limit.toFixed(2)}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="relative overflow-hidden glass-card border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-800/30">
-              <CardContent className="p-6">
-                <div className="absolute top-3 right-3">
-                  <Wifi className="h-6 w-6 text-white/80" />
-                </div>
-                
-                <div className="flex flex-col justify-between h-full">
-                  <div className="space-y-1 mb-10">
-                    <p className="text-xs text-white/80 uppercase tracking-widest">Debit Card</p>
-                    <p className="text-lg font-bold text-white">PayNex Rewards</p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <p className="text-base font-medium text-white">**** **** **** 8731</p>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-xs text-white/80">Card Holder</p>
-                        <p className="text-sm font-medium text-white">John Doe</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-white/80">Expires</p>
-                        <p className="text-sm font-medium text-white">08/27</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              );
+            }) : (
+              <div className="col-span-2 text-center py-8">
+                <p className="text-muted-foreground">No cards found. Add your first card to get started.</p>
+              </div>
+            )}
           </div>
           
           <Tabs defaultValue="details" className="w-full">
@@ -272,29 +270,27 @@ export default function Cards() {
               <CardDescription>Your recent card activity</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                { title: 'Amazon.com', date: 'Apr 5, 2025', amount: '$54.32', card: '4242' },
-                { title: 'Uber', date: 'Apr 3, 2025', amount: '$22.50', card: '4242' },
-                { title: 'Starbucks', date: 'Apr 2, 2025', amount: '$6.75', card: '8731' },
-                { title: 'Netflix', date: 'Apr 1, 2025', amount: '$14.99', card: '4242' },
-                { title: 'Grocery Store', date: 'Mar 30, 2025', amount: '$87.65', card: '8731' }
-              ].map((transaction, i) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
+              {cardTransactions.length > 0 ? cardTransactions.map((transaction) => (
+                <div key={transaction.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
                       <CreditCard className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium">{transaction.title}</p>
-                      <p className="text-xs text-muted-foreground">{transaction.date} • Card ending in {transaction.card}</p>
+                      <p className="font-medium">{transaction.description || transaction.transaction_type}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(transaction.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <p className="font-medium">{transaction.amount}</p>
+                  <p className="font-medium">${transaction.amount.toFixed(2)}</p>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No recent transactions</p>
+                </div>
+              )}
               
-              <Button variant="outline" className="w-full">
-                View All Transactions
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/payments">View All Transactions</Link>
               </Button>
             </CardContent>
           </Card>

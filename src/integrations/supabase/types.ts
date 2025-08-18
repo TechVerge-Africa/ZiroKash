@@ -14,6 +14,153 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_cards: {
+        Row: {
+          card_name: string
+          card_number: string
+          card_type: string
+          created_at: string
+          credit_limit: number
+          current_balance: number
+          due_date: string | null
+          id: string
+          is_active: boolean
+          is_frozen: boolean
+          minimum_payment: number
+          security_settings: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_name: string
+          card_number: string
+          card_type?: string
+          created_at?: string
+          credit_limit?: number
+          current_balance?: number
+          due_date?: string | null
+          id?: string
+          is_active?: boolean
+          is_frozen?: boolean
+          minimum_payment?: number
+          security_settings?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_name?: string
+          card_number?: string
+          card_type?: string
+          created_at?: string
+          credit_limit?: number
+          current_balance?: number
+          due_date?: string | null
+          id?: string
+          is_active?: boolean
+          is_frozen?: boolean
+          minimum_payment?: number
+          security_settings?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crypto_portfolio: {
+        Row: {
+          balance: number
+          created_at: string
+          current_price: number
+          id: string
+          name: string
+          profit_loss: number
+          profit_loss_percentage: number
+          purchase_price: number
+          symbol: string
+          total_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          current_price?: number
+          id?: string
+          name: string
+          profit_loss?: number
+          profit_loss_percentage?: number
+          purchase_price?: number
+          symbol: string
+          total_value?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          current_price?: number
+          id?: string
+          name?: string
+          profit_loss?: number
+          profit_loss_percentage?: number
+          purchase_price?: number
+          symbol?: string
+          total_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          asset_name: string
+          asset_type: string
+          created_at: string
+          current_price: number
+          current_value: number
+          id: string
+          profit_loss: number
+          profit_loss_percentage: number
+          purchase_price: number
+          shares_owned: number
+          symbol: string | null
+          total_invested: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_name: string
+          asset_type: string
+          created_at?: string
+          current_price?: number
+          current_value?: number
+          id?: string
+          profit_loss?: number
+          profit_loss_percentage?: number
+          purchase_price?: number
+          shares_owned?: number
+          symbol?: string | null
+          total_invested?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_name?: string
+          asset_type?: string
+          created_at?: string
+          current_price?: number
+          current_value?: number
+          id?: string
+          profit_loss?: number
+          profit_loss_percentage?: number
+          purchase_price?: number
+          shares_owned?: number
+          symbol?: string | null
+          total_invested?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

@@ -5,8 +5,21 @@ import { AreaChart, BarChart, LineChart, PieChart, Plus, TrendingUp, Wallet, Dol
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import { useInvestments } from "@/hooks/useInvestments";
 
 export default function Investments() {
+  const { investments, loading, getTotalInvested, getTotalCurrentValue, getTotalProfitLoss, getPortfolioPerformance, getAssetsByType } = useInvestments();
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading...</div>;
+  }
+
+  const totalInvested = getTotalInvested();
+  const totalCurrentValue = getTotalCurrentValue();
+  const totalProfitLoss = getTotalProfitLoss();
+  const portfolioPerformance = getPortfolioPerformance();
+  const assetsByType = getAssetsByType();
+  const assetTypes = Object.keys(assetsByType).length;
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -46,9 +59,9 @@ export default function Investments() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">$18,735.42</span>
+                    <span className="text-3xl font-bold">${totalCurrentValue.toFixed(2)}</span>
                   </div>
-                  <span className="text-muted-foreground text-sm">Initial investment: $15,000</span>
+                  <span className="text-muted-foreground text-sm">Initial investment: ${totalInvested.toFixed(2)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -72,9 +85,13 @@ export default function Investments() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold text-green-500">+$3,735.42</span>
+                    <span className={`text-3xl font-bold ${totalProfitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {totalProfitLoss >= 0 ? '+' : ''}${totalProfitLoss.toFixed(2)}
+                    </span>
                   </div>
-                  <span className="text-green-500 text-sm">+24.9% overall</span>
+                  <span className={`text-sm ${portfolioPerformance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {portfolioPerformance >= 0 ? '+' : ''}{portfolioPerformance.toFixed(1)}% overall
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -98,10 +115,10 @@ export default function Investments() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">5</span>
+                    <span className="text-3xl font-bold">{assetTypes}</span>
                     <span className="ml-2 text-muted-foreground text-sm">asset classes</span>
                   </div>
-                  <span className="text-muted-foreground text-sm">Well diversified</span>
+                  <span className="text-muted-foreground text-sm">{assetTypes >= 4 ? 'Well diversified' : assetTypes >= 2 ? 'Moderately diversified' : 'Limited diversity'}</span>
                 </div>
               </CardContent>
             </Card>
@@ -150,34 +167,38 @@ export default function Investments() {
                   <CardDescription>A breakdown of your investment portfolio</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {[
-                    { name: 'Stocks', allocation: 45, value: '$8,430.94', return: '+12.5%', color: 'bg-blue-500' },
-                    { name: 'Bonds', allocation: 20, value: '$3,747.08', return: '+4.2%', color: 'bg-green-500' },
-                    { name: 'Crypto', allocation: 15, value: '$2,810.31', return: '+35.7%', color: 'bg-purple-500' },
-                    { name: 'Real Estate', allocation: 12, value: '$2,248.25', return: '+8.3%', color: 'bg-amber-500' },
-                    { name: 'Commodities', allocation: 8, value: '$1,498.83', return: '-3.2%', color: 'bg-red-500' }
-                  ].map((asset, i) => (
-                    <div key={i} className="p-3 rounded-lg hover:bg-white/5 transition-colors">
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className={`h-8 w-8 rounded-full ${asset.color} flex items-center justify-center text-white`}>
-                            {asset.name[0]}
+                  {investments.length > 0 ? investments.map((investment) => {
+                    const allocation = totalCurrentValue > 0 ? (investment.current_value / totalCurrentValue) * 100 : 0;
+                    const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-amber-500', 'bg-red-500', 'bg-indigo-500'];
+                    const colorIndex = investment.asset_type.length % colors.length;
+                    
+                    return (
+                      <div key={investment.id} className="p-3 rounded-lg hover:bg-white/5 transition-colors">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`h-8 w-8 rounded-full ${colors[colorIndex]} flex items-center justify-center text-white`}>
+                              {investment.asset_name[0]}
+                            </div>
+                            <div>
+                              <p className="font-medium">{investment.asset_name}</p>
+                              <p className="text-xs text-muted-foreground">{allocation.toFixed(1)}% of portfolio</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">{asset.name}</p>
-                            <p className="text-xs text-muted-foreground">{asset.allocation}% of portfolio</p>
+                          <div className="text-right">
+                            <p className="font-medium">${investment.current_value.toFixed(2)}</p>
+                            <p className={`text-xs ${investment.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {investment.profit_loss >= 0 ? '+' : ''}{investment.profit_loss_percentage.toFixed(1)}%
+                            </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">{asset.value}</p>
-                          <p className={`text-xs ${asset.return.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                            {asset.return}
-                          </p>
-                        </div>
+                        <Progress value={allocation} className="h-1.5" />
                       </div>
-                      <Progress value={asset.allocation} className={`h-1.5 ${asset.color}`} />
+                    );
+                  }) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No investments found. Start building your portfolio today.</p>
                     </div>
-                  ))}
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

@@ -1,70 +1,61 @@
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import BalanceCard from "@/components/dashboard/BalanceCard";
 import QuickActions from "@/components/dashboard/QuickActions";
 import TransactionsList, { Transaction } from "@/components/dashboard/TransactionsList";
 import CryptoPrices from "@/components/dashboard/CryptoPrices";
 import SavingsCard from "@/components/dashboard/SavingsCard";
 import { useAuth } from "@/context/AuthContext";
+import { useWallet } from "@/hooks/useWallet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { wallets, transactions: walletTransactions, loading, getTotalBalance } = useWallet();
   
-  // Mock transactions data
-  const transactions: Transaction[] = useMemo(() => [
-    {
-      id: "txn1",
-      type: "incoming",
-      title: "Received Payment",
-      amount: 250.00,
-      currency: "USD",
-      date: "Today, 10:32 AM",
-      sender: "John Smith",
-      status: "completed"
-    },
-    {
-      id: "txn2",
-      type: "outgoing",
-      title: "Rent Payment",
-      amount: 800.00,
-      currency: "USD",
-      date: "Yesterday, 3:15 PM",
-      recipient: "Landlord LLC",
-      status: "completed"
-    },
-    {
-      id: "txn3",
-      type: "incoming",
-      title: "Salary Deposit",
-      amount: 3200.00,
-      currency: "USD",
-      date: "Mar 28, 9:00 AM",
-      sender: "TechCorp Inc.",
-      status: "completed"
-    },
-    {
-      id: "txn4",
-      type: "outgoing",
-      title: "Grocery Shopping",
-      amount: 75.50,
-      currency: "USD",
-      date: "Mar 27, 6:22 PM",
-      recipient: "Whole Foods",
-      status: "completed"
-    },
-    {
-      id: "txn5",
-      type: "pending",
-      title: "BTC Purchase",
-      amount: 500.00,
-      currency: "USD",
-      date: "Processing",
-      recipient: "Crypto Exchange",
-      status: "processing"
-    }
-  ], []);
+  // Convert wallet transactions to dashboard format
+  const transactions: Transaction[] = useMemo(() => {
+    return walletTransactions.map(tx => ({
+      id: tx.id,
+      type: tx.transaction_type === 'receive' || tx.transaction_type === 'deposit' ? 'incoming' : 
+            tx.transaction_type === 'send' || tx.transaction_type === 'withdraw' ? 'outgoing' : 'pending',
+      title: tx.description || `${tx.transaction_type.charAt(0).toUpperCase() + tx.transaction_type.slice(1)} Transaction`,
+      amount: tx.amount,
+      currency: tx.currency,
+      date: new Date(tx.created_at).toLocaleDateString(),
+      sender: tx.sender_address,
+      recipient: tx.recipient_address,
+      status: tx.status === 'pending' ? 'processing' : tx.status === 'failed' ? 'failed' : 'completed'
+    }));
+  }, [walletTransactions]);
+
+  // Set up real-time subscription for transactions
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh data when transactions change
+          window.location.reload();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-up-delayed">
@@ -74,9 +65,9 @@ export default function Dashboard() {
         <QuickActions />
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <BalanceCard balance={12450.75} currency="USD" />
+          <BalanceCard balance={getTotalBalance()} currency="USD" />
           <SavingsCard 
-            totalSavings={3250.50} 
+            totalSavings={wallets.find(w => w.wallet_type === 'savings')?.balance || 0} 
             targetAmount={10000} 
             savingsName="Emergency Fund" 
           />

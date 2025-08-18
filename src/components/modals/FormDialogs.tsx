@@ -25,6 +25,7 @@ import { CardForm } from "@/components/forms/CardForm";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
 import { CreditApplicationForm } from "@/components/forms/CreditApplicationForm";
 import { SavingsPlanForm } from "@/components/forms/SavingsPlanForm";
+import { PaymentMethodForm } from "@/components/wallet/PaymentMethodForm";
 
 interface FormDialogProps {
   trigger: React.ReactNode;
@@ -51,8 +52,8 @@ export function FormDialog({
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
-          {formType === "deposit" && <PaymentForm type="deposit" onClose={() => setOpen(false)} />}
-          {formType === "withdraw" && <PaymentForm type="withdraw" onClose={() => setOpen(false)} />}
+          {formType === "deposit" && <PaymentMethodForm type="deposit" onSuccess={() => setOpen(false)} />}
+          {formType === "withdraw" && <PaymentMethodForm type="withdraw" onSuccess={() => setOpen(false)} />}
           {formType === "card" && <CardForm onClose={() => setOpen(false)} />}
           {formType === "investment" && <InvestmentForm onClose={() => setOpen(false)} />}
           {formType === "credit" && <CreditApplicationForm onClose={() => setOpen(false)} />}
@@ -71,8 +72,8 @@ export function FormDialog({
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
         <div className="px-4">
-          {formType === "deposit" && <PaymentForm type="deposit" onClose={() => setOpen(false)} />}
-          {formType === "withdraw" && <PaymentForm type="withdraw" onClose={() => setOpen(false)} />}
+          {formType === "deposit" && <PaymentMethodForm type="deposit" onSuccess={() => setOpen(false)} />}
+          {formType === "withdraw" && <PaymentMethodForm type="withdraw" onSuccess={() => setOpen(false)} />}
           {formType === "card" && <CardForm onClose={() => setOpen(false)} />}
           {formType === "investment" && <InvestmentForm onClose={() => setOpen(false)} />}
           {formType === "credit" && <CreditApplicationForm onClose={() => setOpen(false)} />}

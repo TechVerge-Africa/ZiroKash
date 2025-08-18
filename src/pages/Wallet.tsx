@@ -4,8 +4,13 @@ import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, CreditCard, DollarSign, Plus, Wallet as WalletIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useWallet } from "@/hooks/useWallet";
+import { FormDialog } from "@/components/modals/FormDialogs";
 
 export default function Wallet() {
+  const { wallets, transactions, loading, getTotalBalance, getWalletByType } = useWallet();
+  const mainWallet = getWalletByType('main');
+  const cryptoWallet = getWalletByType('investment');
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -14,24 +19,39 @@ export default function Wallet() {
           <p className="text-muted-foreground">Manage your digital assets and payments</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/payments">
-              <ArrowDown className="mr-2 h-4 w-4" />
-              Deposit
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/payments">
-              <ArrowUp className="mr-2 h-4 w-4" />
-              Withdraw
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/payments">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Money
-            </Link>
-          </Button>
+          <FormDialog
+            trigger={
+              <Button variant="outline">
+                <ArrowDown className="mr-2 h-4 w-4" />
+                Deposit
+              </Button>
+            }
+            title="Deposit Funds"
+            description="Add money to your wallet"
+            formType="deposit"
+          />
+          <FormDialog
+            trigger={
+              <Button variant="outline">
+                <ArrowUp className="mr-2 h-4 w-4" />
+                Withdraw
+              </Button>
+            }
+            title="Withdraw Funds"
+            description="Withdraw money from your wallet"
+            formType="withdraw"
+          />
+          <FormDialog
+            trigger={
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Money
+              </Button>
+            }
+            title="Add Money"
+            description="Quick deposit to your wallet"
+            formType="deposit"
+          />
         </div>
       </div>
       
@@ -45,7 +65,7 @@ export default function Wallet() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">$12,450.75</span>
+                    <span className="text-3xl font-bold">${mainWallet?.balance.toLocaleString() || '0.00'}</span>
                     <span className="ml-2 text-green-500 text-sm">+2.5%</span>
                   </div>
                   <span className="text-muted-foreground text-sm">Available balance</span>
@@ -75,7 +95,7 @@ export default function Wallet() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">$3,287.45</span>
+                    <span className="text-3xl font-bold">${cryptoWallet?.balance.toLocaleString() || '0.00'}</span>
                     <span className="ml-2 text-red-500 text-sm">-1.2%</span>
                   </div>
                   <span className="text-muted-foreground text-sm">In cryptocurrencies</span>
@@ -114,20 +134,28 @@ export default function Wallet() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                            <WalletIcon className="h-5 w-5" />
+                    {loading ? (
+                      <p className="text-center text-muted-foreground">Loading transactions...</p>
+                    ) : transactions.length === 0 ? (
+                      <p className="text-center text-muted-foreground">No transactions yet</p>
+                    ) : (
+                      transactions.slice(0, 5).map((tx) => (
+                        <div key={tx.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                              <WalletIcon className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{tx.description || `${tx.transaction_type} Transaction`}</p>
+                              <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">Deposit to Main Account</p>
-                            <p className="text-xs text-muted-foreground">Apr 3, 2025</p>
-                          </div>
+                          <p className={`font-medium ${tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? 'text-green-500' : 'text-red-500'}`}>
+                            {tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? '+' : '-'}${tx.amount}
+                          </p>
                         </div>
-                        <p className="font-medium text-green-500">+$250.00</p>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>

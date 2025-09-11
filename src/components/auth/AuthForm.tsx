@@ -76,12 +76,12 @@ export function AuthForm() {
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
-            P
+            Z
           </div>
-          <span className="text-2xl font-bold gradient-text">PayNex</span>
+          <span className="text-2xl font-bold gradient-text">ZiroKash</span>
         </div>
-        <CardTitle>Welcome to PayNex</CardTitle>
-        <CardDescription>Blockchain-powered finance for everyone</CardDescription>
+        <CardTitle>Welcome to ZiroKash</CardTitle>
+        <CardDescription>Modern African fintech for everyone</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="signin" className="w-full">

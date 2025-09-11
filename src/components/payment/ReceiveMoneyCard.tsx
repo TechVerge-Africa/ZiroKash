@@ -12,7 +12,7 @@ export function ReceiveMoneyCard() {
   const [requestAmount, setRequestAmount] = useState("");
   
   // Generate a mock wallet address for demo purposes
-  const walletAddress = user ? `paynex_${user.id.slice(0, 8)}...${user.id.slice(-8)}` : "";
+  const walletAddress = user ? `zirokash_${user.id.slice(0, 8)}...${user.id.slice(-8)}` : "";
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -25,8 +25,8 @@ export function ReceiveMoneyCard() {
   const shareAddress = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'PayNex Wallet Address',
-        text: `Send money to my PayNex wallet: ${walletAddress}`,
+        title: 'ZiroKash Wallet Address',
+        text: `Send money to my ZiroKash wallet: ${walletAddress}`,
       });
     } else {
       copyToClipboard(walletAddress);

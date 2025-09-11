@@ -93,7 +93,7 @@ export default function Cards() {
               <Card className="glass-card border-white/10">
                 <CardHeader>
                   <CardTitle>Card Details</CardTitle>
-                  <CardDescription>Your PayNex Premium Card details</CardDescription>
+                  <CardDescription>Your ZiroKash Premium Card details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

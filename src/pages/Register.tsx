@@ -9,18 +9,18 @@ export default function Register() {
         <Link to="/" className="inline-block">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
-              P
+              Z
             </div>
-            <span className="text-2xl font-bold gradient-text">PayNex</span>
+            <span className="text-2xl font-bold gradient-text">ZiroKash</span>
           </div>
         </Link>
-        <h1 className="text-xl font-medium text-foreground">Create your secure blockchain account</h1>
+        <h1 className="text-xl font-medium text-foreground">Create your secure ZiroKash account</h1>
       </div>
       
       <RegisterForm />
       
       <div className="mt-8 text-center text-sm text-muted-foreground">
-        <p>© 2025 PayNex. All rights reserved.</p>
+        <p>© 2025 ZiroKash. All rights reserved.</p>
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ export default function LoginForm() {
     
     toast({
       title: "Login successful",
-      description: "Welcome to PayNex dashboard!",
+      description: "Welcome to ZiroKash dashboard!",
     });
   }
 
@@ -52,7 +52,7 @@ export default function LoginForm() {
     <div className="w-full max-w-md mx-auto space-y-6 p-6 rounded-xl glass-card">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold gradient-text">Welcome Back</h1>
-        <p className="text-muted-foreground text-sm">Sign in to your PayNex account</p>
+        <p className="text-muted-foreground text-sm">Sign in to your ZiroKash account</p>
       </div>
       
       <Form {...form}>

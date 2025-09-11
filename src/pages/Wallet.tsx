@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, CreditCard, DollarSign, Plus, Wallet as WalletIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
-import { FormDialog } from "@/components/modals/FormDialogs";
 
 export default function Wallet() {
   const { wallets, transactions, loading, getTotalBalance, getWalletByType } = useWallet();
@@ -19,39 +18,18 @@ export default function Wallet() {
           <p className="text-muted-foreground">Manage your digital assets and payments</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <FormDialog
-            trigger={
-              <Button variant="outline">
-                <ArrowDown className="mr-2 h-4 w-4" />
-                Deposit
-              </Button>
-            }
-            title="Deposit Funds"
-            description="Add money to your wallet"
-            formType="deposit"
-          />
-          <FormDialog
-            trigger={
-              <Button variant="outline">
-                <ArrowUp className="mr-2 h-4 w-4" />
-                Withdraw
-              </Button>
-            }
-            title="Withdraw Funds"
-            description="Withdraw money from your wallet"
-            formType="withdraw"
-          />
-          <FormDialog
-            trigger={
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Money
-              </Button>
-            }
-            title="Add Money"
-            description="Quick deposit to your wallet"
-            formType="deposit"
-          />
+          <Button variant="outline">
+            <ArrowDown className="mr-2 h-4 w-4" />
+            Deposit
+          </Button>
+          <Button variant="outline">
+            <ArrowUp className="mr-2 h-4 w-4" />
+            Withdraw
+          </Button>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Money
+          </Button>
         </div>
       </div>
       

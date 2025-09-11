@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     toast({
       title: "Registration successful",
-      description: `Welcome to PayNex, ${name}!`,
+      description: `Welcome to ZiroKash, ${name}!`,
     });
     
     navigate('/dashboard');

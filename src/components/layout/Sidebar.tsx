@@ -7,12 +7,20 @@ import {
   Send, 
   LineChart, 
   Wallet, 
-  Globe, 
+  Shield, 
   ShieldCheck, 
   Settings, 
   Menu, 
   X,
-  DollarSign 
+  DollarSign,
+  Gift,
+  User,
+  HelpCircle,
+  Info,
+  Building,
+  Phone,
+  Car,
+  CheckCircle
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -26,15 +34,28 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
   { name: "Wallet", href: "/wallet", icon: <Wallet size={20} /> },
-  { name: "Cards", href: "/cards", icon: <CreditCard size={20} /> },
   { name: "Payments", href: "/payments", icon: <Send size={20} /> },
+  { name: "Cards", href: "/cards", icon: <CreditCard size={20} /> },
   { name: "Investments", href: "/investments", icon: <LineChart size={20} /> },
   { name: "Credit", href: "/credit", icon: <DollarSign size={20} /> },
 ];
 
-const secondaryNavItems: NavItem[] = [
+const additionalNavItems: NavItem[] = [
+  { name: "Insurance", href: "/insurance", icon: <Shield size={20} /> },
+  { name: "Merchant", href: "/merchant", icon: <Building size={20} /> },
+  { name: "Rewards", href: "/rewards", icon: <Gift size={20} /> },
+  { name: "Offline/USSD", href: "/offline", icon: <Phone size={20} /> },
+];
+
+const accountNavItems: NavItem[] = [
+  { name: "Profile", href: "/profile", icon: <User size={20} /> },
   { name: "Security", href: "/security", icon: <ShieldCheck size={20} /> },
   { name: "Settings", href: "/settings", icon: <Settings size={20} /> },
+];
+
+const supportNavItems: NavItem[] = [
+  { name: "Support", href: "/support", icon: <HelpCircle size={20} /> },
+  { name: "About", href: "/about", icon: <Info size={20} /> },
 ];
 
 export default function Sidebar() {
@@ -72,9 +93,9 @@ export default function Sidebar() {
       <div className="flex items-center gap-2 px-3 py-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-            P
+            Z
           </div>
-          <span className="text-xl font-bold gradient-text">PayNex</span>
+          <span className="text-xl font-bold gradient-text">ZiroKash</span>
         </Link>
         {isMobile && (
           <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
@@ -88,9 +109,24 @@ export default function Sidebar() {
             <NavLink key={item.name} item={item} />
           ))}
         </div>
+        
+        <div className="mt-6 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground px-3 mb-2">SERVICES</p>
+          {additionalNavItems.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
+        </div>
+        
         <div className="mt-6 space-y-1">
           <p className="text-xs font-medium text-muted-foreground px-3 mb-2">ACCOUNT</p>
-          {secondaryNavItems.map((item) => (
+          {accountNavItems.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
+        </div>
+        
+        <div className="mt-6 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground px-3 mb-2">HELP</p>
+          {supportNavItems.map((item) => (
             <NavLink key={item.name} item={item} />
           ))}
         </div>

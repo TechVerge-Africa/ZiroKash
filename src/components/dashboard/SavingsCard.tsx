@@ -2,7 +2,7 @@
 import { PiggyBank, Plus, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FormDialog } from "@/components/modals/FormDialogs";
+import { Link } from "react-router-dom";
 
 interface SavingsCardProps {
   totalSavings: number;
@@ -39,17 +39,12 @@ export default function SavingsCard({ totalSavings, targetAmount, savingsName }:
           </div>
           
           <div className="flex gap-2 mt-4">
-            <FormDialog
-              trigger={
-                <Button className="flex-1">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Funds
-                </Button>
-              }
-              title="Add to Savings"
-              description="Contribute to your savings goal"
-              formType="deposit"
-            />
+            <Button className="flex-1" asChild>
+              <Link to="/wallet">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Funds
+              </Link>
+            </Button>
             
             <Button variant="outline" className="flex-1">
               <TrendingUp className="mr-2 h-4 w-4" />

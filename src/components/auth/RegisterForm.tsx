@@ -64,7 +64,7 @@ export default function RegisterForm() {
     <div className="w-full max-w-md mx-auto space-y-6 p-6 rounded-xl glass-card">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold gradient-text">Create Your Account</h1>
-        <p className="text-muted-foreground text-sm">Join PayNex and experience the future of finance</p>
+        <p className="text-muted-foreground text-sm">Join ZiroKash and experience modern African fintech</p>
       </div>
       
       <Form {...form}>

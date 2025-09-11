@@ -9,8 +9,8 @@ const Index = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
       <div className="w-full max-w-5xl space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">PayNex</h1>
-          <p className="mt-4 text-lg text-gray-300">Your modern financial platform</p>
+          <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">ZiroKash</h1>
+          <p className="mt-4 text-lg text-gray-300">Your modern African financial platform</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

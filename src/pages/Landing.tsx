@@ -45,9 +45,9 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
-              P
+              Z
             </div>
-            <span className="text-2xl font-bold gradient-text">PayNex</span>
+            <span className="text-2xl font-bold gradient-text">ZiroKash</span>
           </div>
           
           <nav className="hidden md:flex items-center gap-8">
@@ -84,10 +84,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-hero-title">
-              Blockchain-Powered Finance for Everyone
+              African Fintech Revolution for Everyone
             </h1>
             <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto animate-hero-subtitle">
-              Experience seamless cross-border payments, decentralized credit, and global investments with PayNex's next-generation financial platform.
+              Experience seamless mobile money, instant payments, and digital banking with ZiroKash's modern financial platform designed for Africa.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up-delayed">
               <Link to="/register">
@@ -117,7 +117,7 @@ export default function Landing() {
                 </div>
                 <img 
                   src="/images/hero.png" 
-                  alt="PayNex Dashboard" 
+                  alt="ZiroKash Dashboard" 
                   className="w-full max-w-4xl mx-auto rounded-lg shadow-2xl border border-white/10 glow animate-float"
                 />
               </div>
@@ -144,7 +144,7 @@ export default function Landing() {
               Revolutionary Financial Features
             </h2>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              PayNex combines the security of blockchain with the convenience of traditional banking to create a seamless financial experience.
+              ZiroKash combines the convenience of mobile money with modern digital banking to create a seamless African financial experience.
             </p>
           </div>
           
@@ -154,9 +154,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <Globe className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Global Payments</h3>
+              <h3 className="text-xl font-bold mb-2">Mobile Money</h3>
               <p className="text-foreground/70">
-                Send money across borders instantly with minimal fees using our blockchain-powered payment network.
+                Send money across Africa instantly with minimal fees using our mobile money network integration.
               </p>
             </div>
             
@@ -165,9 +165,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <CreditCard className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Smart Contract Cards</h3>
+              <h3 className="text-xl font-bold mb-2">Virtual Cards</h3>
               <p className="text-foreground/70">
-                Access virtual and physical cards powered by smart contracts for secure and transparent spending.
+                Access virtual and physical cards for secure online and offline spending with instant controls.
               </p>
             </div>
             
@@ -176,9 +176,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <Zap className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Decentralized Credit</h3>
+              <h3 className="text-xl font-bold mb-2">Digital Credit</h3>
               <p className="text-foreground/70">
-                Build your credit score on the blockchain and access loans with transparent terms enforced by smart contracts.
+                Build your credit score digitally and access microloans with transparent terms and instant approvals.
               </p>
             </div>
           </div>
@@ -191,10 +191,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 parallax-element">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              Why Choose PayNex
+              Why Choose ZiroKash
             </h2>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              Experience the future of finance with benefits that traditional banks simply can't offer.
+              Experience the future of African finance with benefits that traditional banks simply can't offer.
             </p>
           </div>
           
@@ -220,9 +220,9 @@ export default function Landing() {
                 </div>
                 <div>
                   <h3 className="text-lg font-medium mb-1">Instant Settlements</h3>
-                  <p className="text-foreground/70">
-                    No more waiting days for transactions to clear. PayNex settlements happen in seconds, not days.
-                  </p>
+                    <p className="text-foreground/70">
+                      No more waiting days for transactions to clear. ZiroKash settlements happen in seconds, not days.
+                    </p>
                 </div>
               </div>
               
@@ -233,9 +233,9 @@ export default function Landing() {
                 </div>
                 <div>
                   <h3 className="text-lg font-medium mb-1">Full Transparency</h3>
-                  <p className="text-foreground/70">
-                    Every transaction is recorded on the blockchain, providing unmatched transparency and accountability.
-                  </p>
+                    <p className="text-foreground/70">
+                      Every transaction is recorded digitally, providing full transparency and real-time tracking.
+                    </p>
                 </div>
               </div>
             </div>
@@ -250,10 +250,10 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="parallax-element slide-up">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 gradient-text">
-                Bank-Level Security with Blockchain Transparency
+                Bank-Level Security with Digital Innovation
               </h2>
               <p className="text-lg text-foreground/70 mb-8">
-                PayNex combines cutting-edge security practices with the inherent security benefits of blockchain technology to keep your assets safe.
+                ZiroKash combines cutting-edge security practices with modern digital banking to keep your assets safe.
               </p>
               
               <div className="space-y-4">
@@ -282,7 +282,7 @@ export default function Landing() {
                   <div>
                     <h3 className="font-medium">Smart Contract Auditing</h3>
                     <p className="text-sm text-foreground/70">
-                      All smart contracts are audited by independent security firms to ensure safety.
+                      All systems are regularly audited by independent security firms to ensure maximum safety.
                     </p>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function Landing() {
                     Your Security is Our Priority
                   </h3>
                   <p className="text-center text-foreground/70">
-                    PayNex employs a dedicated security team and regular security audits to maintain the highest levels of protection.
+                    ZiroKash employs a dedicated security team and regular security audits to maintain the highest levels of protection.
                   </p>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function Landing() {
               Ready to Experience the Future of Finance?
             </h2>
             <p className="text-lg text-foreground/70 mb-8 max-w-2xl mx-auto parallax-element zoom-in delay-100">
-              Join thousands of users who have already made the switch to PayNex's blockchain-powered financial platform.
+              Join thousands of users who have already made the switch to ZiroKash's modern financial platform.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 parallax-element zoom-in delay-200">
               <Link to="/register">
@@ -335,9 +335,9 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
-                P
+                Z
               </div>
-              <span className="text-2xl font-bold gradient-text">PayNex</span>
+              <span className="text-2xl font-bold gradient-text">ZiroKash</span>
             </div>
             
             <div className="flex gap-8">
@@ -354,8 +354,8 @@ export default function Landing() {
           </div>
           
           <div className="text-center text-sm text-foreground/50">
-            <p>© 2025 PayNex. All rights reserved.</p>
-            <p className="mt-1">PayNex is a financial technology platform, not a bank.</p>
+            <p>© 2025 ZiroKash. All rights reserved.</p>
+            <p className="mt-1">ZiroKash is a financial technology platform, not a bank.</p>
           </div>
         </div>
       </footer>

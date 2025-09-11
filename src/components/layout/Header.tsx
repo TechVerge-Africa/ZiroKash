@@ -31,9 +31,9 @@ export default function Header() {
         {isMobile && (
           <Link to="/dashboard" className="flex items-center mr-4">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-              P
+              Z
             </div>
-            <span className="text-xl font-bold gradient-text ml-2">PayNex</span>
+            <span className="text-xl font-bold gradient-text ml-2">ZiroKash</span>
           </Link>
         )}
         

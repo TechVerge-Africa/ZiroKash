@@ -524,7 +524,7 @@ export default function Settings() {
           <Card className="glass-card border-white/10">
             <CardHeader>
               <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize how PayNex looks for you</CardDescription>
+              <CardDescription>Customize how ZiroKash looks for you</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>

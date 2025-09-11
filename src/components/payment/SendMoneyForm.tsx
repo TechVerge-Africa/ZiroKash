@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Loader2, QrCode } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Send, Loader2, QrCode, Phone, Mail } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { toast } from "@/hooks/use-toast";
 
@@ -15,7 +16,7 @@ const sendMoneySchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: "Amount must be a positive number",
   }),
-  recipientAddress: z.string().min(1, "Recipient address is required"),
+  recipient: z.string().min(1, "Recipient is required"),
   fromWallet: z.string().min(1, "Please select a wallet"),
   description: z.string().optional(),
 });
@@ -23,12 +24,13 @@ const sendMoneySchema = z.object({
 export function SendMoneyForm() {
   const { wallets, createTransaction, updateWalletBalance, getWalletByType } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
+  const [sendMethod, setSendMethod] = useState<"address" | "phone" | "email" | "qr">("address");
 
   const form = useForm<z.infer<typeof sendMoneySchema>>({
     resolver: zodResolver(sendMoneySchema),
     defaultValues: {
       amount: "",
-      recipientAddress: "",
+      recipient: "",
       fromWallet: "main",
       description: "",
     },
@@ -52,16 +54,20 @@ export function SendMoneyForm() {
       await createTransaction(
         'send',
         amount,
-        values.recipientAddress,
+        values.recipient,
         values.description
       );
 
       // Update wallet balance
       await updateWalletBalance(values.fromWallet, wallet.balance - amount);
 
+      const recipientLabel = sendMethod === "phone" ? "phone number" : 
+                           sendMethod === "email" ? "email" : 
+                           sendMethod === "qr" ? "QR code" : "address";
+
       toast({
         title: "Payment Sent Successfully",
-        description: `$${amount} has been sent to ${values.recipientAddress}`,
+        description: `$${amount} has been sent to ${recipientLabel}: ${values.recipient}`,
       });
 
       form.reset();
@@ -84,7 +90,7 @@ export function SendMoneyForm() {
           Send Money
         </CardTitle>
         <CardDescription>
-          Send cryptocurrency or digital assets instantly
+          Send money to anyone using multiple methods
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -116,27 +122,95 @@ export function SendMoneyForm() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="recipientAddress"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Recipient Address</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="Enter wallet address or email" 
-                        {...field} 
-                      />
-                      <Button type="button" size="icon" variant="outline">
-                        <QrCode className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <FormLabel>Send To</FormLabel>
+              <Tabs value={sendMethod} onValueChange={(value) => setSendMethod(value as any)}>
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="address" className="flex items-center gap-1">
+                    <Send className="h-3 w-3" />
+                    Address
+                  </TabsTrigger>
+                  <TabsTrigger value="phone" className="flex items-center gap-1">
+                    <Phone className="h-3 w-3" />
+                    Phone
+                  </TabsTrigger>
+                  <TabsTrigger value="email" className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" />
+                    Email
+                  </TabsTrigger>
+                  <TabsTrigger value="qr" className="flex items-center gap-1">
+                    <QrCode className="h-3 w-3" />
+                    QR
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="address" className="mt-2">
+                  <FormField
+                    control={form.control}
+                    name="recipient"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Enter wallet address" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="phone" className="mt-2">
+                  <FormField
+                    control={form.control}
+                    name="recipient"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Enter phone number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="email" className="mt-2">
+                  <FormField
+                    control={form.control}
+                    name="recipient"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Enter email address" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="qr" className="mt-2">
+                  <div className="text-center p-4 border-2 border-dashed border-muted-foreground rounded-lg">
+                    <QrCode className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">Tap to scan QR code</p>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => {
+                        toast({
+                          title: "QR Scanner",
+                          description: "QR code scanner would open here",
+                        });
+                      }}
+                    >
+                      Open Scanner
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
 
             <FormField
               control={form.control}

@@ -126,20 +126,21 @@ export default function OfflineUSSD() {
         <CardContent>
           <div className="space-y-4">
             {ussdCodes.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <code className="px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm">
+              <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors space-y-2 sm:space-y-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+                    <code className="px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded font-mono text-xs sm:text-sm break-all">
                       {item.code}
                     </code>
-                    <span className="font-semibold">{item.function}</span>
+                    <span className="font-semibold text-sm sm:text-base">{item.function}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{item.description}</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => copyToClipboard(item.code)}
+                  className="self-end sm:self-center"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -163,14 +164,14 @@ export default function OfflineUSSD() {
         <CardContent>
           <div className="space-y-4">
             {smsCommands.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <Badge variant="outline">{item.keyword}</Badge>
-                    <span className="font-semibold">{item.function}</span>
+              <div key={index} className="flex flex-col sm:flex-row sm:items-start justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors space-y-2 sm:space-y-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+                    <Badge variant="outline" className="w-fit">{item.keyword}</Badge>
+                    <span className="font-semibold text-sm sm:text-base">{item.function}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-1">{item.description}</p>
-                  <code className="text-xs bg-muted px-2 py-1 rounded">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">{item.description}</p>
+                  <code className="text-xs bg-muted px-2 py-1 rounded break-all block">
                     {item.format}
                   </code>
                 </div>
@@ -178,6 +179,7 @@ export default function OfflineUSSD() {
                   variant="ghost"
                   size="sm"
                   onClick={() => copyToClipboard(item.format)}
+                  className="self-end sm:self-start mt-2 sm:mt-0"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -235,20 +237,20 @@ export default function OfflineUSSD() {
           <p className="text-muted-foreground">
             If you're having trouble with offline services, try these options:
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold mb-2">Customer Support</h3>
-              <p className="text-sm text-muted-foreground mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-3 sm:p-4 border rounded-lg">
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">Customer Support</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 Call our 24/7 customer support line
               </p>
-              <code className="text-primary">+234 800 ZIROKASH</code>
+              <code className="text-primary text-xs sm:text-sm break-all">+234 800 ZIROKASH</code>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold mb-2">Help via SMS</h3>
-              <p className="text-sm text-muted-foreground mb-2">
+            <div className="p-3 sm:p-4 border rounded-lg">
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">Help via SMS</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 Send 'HELP' for assistance
               </p>
-              <code className="text-primary">Send 'HELP' to 1234</code>
+              <code className="text-primary text-xs sm:text-sm break-all">Send 'HELP' to 1234</code>
             </div>
           </div>
         </CardContent>

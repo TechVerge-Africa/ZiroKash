@@ -189,9 +189,9 @@ export default function Rewards() {
 
       <Tabs defaultValue="rewards" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="rewards">Rewards Store</TabsTrigger>
-          <TabsTrigger value="referral">Referral Program</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          <TabsTrigger value="rewards" className="text-xs sm:text-sm">Rewards Store</TabsTrigger>
+          <TabsTrigger value="referral" className="text-xs sm:text-sm">Referral Program</TabsTrigger>
+          <TabsTrigger value="leaderboard" className="text-xs sm:text-sm">Leaderboard</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rewards">

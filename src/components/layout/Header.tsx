@@ -25,15 +25,15 @@ export default function Header() {
   };
   
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/95 px-2 sm:px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Left side - Logo (visible on mobile) and Search (hidden on mobile) */}
-      <div className="flex-1 mr-4 flex items-center">
+      <div className="flex-1 flex items-center min-w-0">
         {isMobile && (
-          <Link to="/dashboard" className="flex items-center mr-4">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+          <Link to="/dashboard" className="flex items-center min-w-0 mr-2 sm:mr-4">
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm sm:text-base">
               Z
             </div>
-            <span className="text-xl font-bold gradient-text ml-2">ZiroKash</span>
+            <span className="text-lg sm:text-xl font-bold gradient-text ml-1 sm:ml-2 truncate">ZiroKash</span>
           </Link>
         )}
         
@@ -49,17 +49,17 @@ export default function Header() {
       </div>
       
       {/* Right side - User menu */}
-      <div className="flex items-center gap-2 ml-auto">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell size={18} />
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive"></span>
+      <div className="flex items-center gap-1 sm:gap-2 ml-auto flex-shrink-0">
+        <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
+          <Bell size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <span className="absolute top-1 right-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-destructive"></span>
         </Button>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 pl-2 pr-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-secondary">{getUserInitials()}</AvatarFallback>
+            <Button variant="ghost" className="gap-1 sm:gap-2 pl-1 pr-2 sm:pl-2 sm:pr-3 h-8 sm:h-10">
+              <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
+                <AvatarFallback className="bg-secondary text-xs sm:text-sm">{getUserInitials()}</AvatarFallback>
               </Avatar>
               {!isMobile && (
                 <>

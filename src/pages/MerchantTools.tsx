@@ -135,11 +135,11 @@ export default function MerchantTools() {
       </div>
 
       <Tabs defaultValue="payments" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="qr-generator">QR Generator</TabsTrigger>
-          <TabsTrigger value="settlements">Settlements</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsTrigger value="payments" className="text-xs sm:text-sm">Payments</TabsTrigger>
+          <TabsTrigger value="qr-generator" className="text-xs sm:text-sm">QR Generator</TabsTrigger>
+          <TabsTrigger value="settlements" className="text-xs sm:text-sm">Settlements</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="payments">

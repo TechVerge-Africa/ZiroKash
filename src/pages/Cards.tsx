@@ -1,22 +1,67 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Plus, ShieldCheck, Check, Zap, Settings, Wifi } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CreditCard, Plus, ShieldCheck, Check, Zap, Settings, Wifi, Lock, Unlock, Eye, EyeOff } from "lucide-react";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { useCredit } from "@/hooks/useCredit";
 import { useWallet } from "@/hooks/useWallet";
+import CreditCardComponent from "@/components/cards/CreditCardComponent";
+import { toast } from "@/hooks/use-toast";
 
 export default function Cards() {
-  const { creditCards, loading } = useCredit();
+  const { creditCards, loading, updateCreditCard } = useCredit();
   const { transactions } = useWallet();
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   const cardTransactions = transactions.filter(t => 
     t.transaction_type === 'send' || t.transaction_type === 'receive'
   ).slice(0, 5);
+
+  const handleFreezeCard = async (cardId: string) => {
+    try {
+      await updateCreditCard(cardId, { is_frozen: true });
+      toast({
+        title: "Card frozen successfully",
+        description: "Your card has been frozen for security.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to freeze card. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnfreezeCard = async (cardId: string) => {
+    try {
+      await updateCreditCard(cardId, { is_frozen: false });
+      toast({
+        title: "Card unfrozen successfully",
+        description: "Your card is now active and ready to use.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: "Failed to unfreeze card. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewDetails = (cardId: string) => {
+    setSelectedCard(cardId);
+  };
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -34,50 +79,36 @@ export default function Cards() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {creditCards.length > 0 ? creditCards.slice(0, 2).map((card, index) => {
-              const gradients = [
-                'from-indigo-500/20 to-indigo-800/30',
-                'from-emerald-500/20 to-emerald-800/30',
-                'from-purple-500/20 to-purple-800/30',
-                'from-amber-500/20 to-amber-800/30'
-              ];
-              
-              return (
-                <Card key={card.id} className={`relative overflow-hidden glass-card border-white/10 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
-                  <CardContent className="p-6">
-                    <div className="absolute top-3 right-3">
-                      <Wifi className="h-6 w-6 text-white/80" />
-                    </div>
-                    
-                    <div className="flex flex-col justify-between h-full">
-                      <div className="space-y-1 mb-10">
-                        <p className="text-xs text-white/80 uppercase tracking-widest">{card.card_type} Card</p>
-                        <p className="text-lg font-bold text-white">{card.card_name}</p>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <p className="text-base font-medium text-white">**** **** **** {card.card_number.slice(-4)}</p>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-xs text-white/80">Balance</p>
-                            <p className="text-sm font-medium text-white">${card.current_balance.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/80">Limit</p>
-                            <p className="text-sm font-medium text-white">${card.credit_limit.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            }) : (
-              <div className="col-span-2 text-center py-8">
-                <p className="text-muted-foreground">No cards found. Add your first card to get started.</p>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2 space-y-6">
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {creditCards.length > 0 ? creditCards.map((card) => (
+              <CreditCardComponent
+                key={card.id}
+                id={card.id}
+                cardName={card.card_name}
+                cardNumber={card.card_number}
+                cardType={card.card_type}
+                balance={card.current_balance}
+                creditLimit={card.credit_limit}
+                isFrozen={card.is_frozen}
+                isActive={card.is_active}
+                onFreeze={handleFreezeCard}
+                onUnfreeze={handleUnfreezeCard}
+                onViewDetails={handleViewDetails}
+              />
+            )) : (
+              <div className="col-span-2 text-center py-16">
+                <CreditCard className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No cards yet</h3>
+                <p className="text-muted-foreground mb-6">Order your first ZiroKash card to get started</p>
+                <Button asChild>
+                  <Link to="/cards">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Order Your First Card
+                  </Link>
+                </Button>
               </div>
             )}
           </div>

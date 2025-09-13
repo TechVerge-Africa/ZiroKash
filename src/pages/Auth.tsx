@@ -22,8 +22,18 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen grid-pattern flex items-center justify-center p-4">
+    <div className="min-h-screen grid-pattern flex flex-col items-center justify-center p-4">
       <AuthForm />
+      
+      <div className="mt-8 text-center text-sm text-muted-foreground max-w-md">
+        <p>© 2025 ZiroKash. All rights reserved.</p>
+        <p className="mt-2">
+          By signing up, you agree to our{" "}
+          <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>{" "}
+          and{" "}
+          <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
+        </p>
+      </div>
     </div>
   );
 }

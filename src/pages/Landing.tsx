@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap, Smartphone, DollarSign, Send, TrendingUp } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
 export default function Landing() {
@@ -63,14 +63,14 @@ export default function Landing() {
           </nav>
           
           <div className="flex items-center gap-4">
-            <Link to="/login">
+            <Link to="/auth">
               <Button variant="ghost" size="sm" className="hover-scale">
-                Login
+                Sign In
               </Button>
             </Link>
-            <Link to="/register">
+            <Link to="/auth">
               <Button size="sm" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover-scale">
-                Sign Up
+                Get Started
               </Button>
             </Link>
           </div>
@@ -84,20 +84,40 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-hero-title">
-              African Fintech Revolution for Everyone
+              Your All-in-One Digital Wallet
             </h1>
             <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto animate-hero-subtitle">
-              Experience seamless mobile money, instant payments, and digital banking with ZiroKash's modern financial platform designed for Africa.
+              Send money, pay bills, invest, and manage your finances - all in one powerful app built for modern Africa.
             </p>
+            
+            {/* Key Features Preview */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-2xl mx-auto">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
+                <Smartphone className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm font-medium">Mobile Money</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
+                <CreditCard className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm font-medium">Virtual Cards</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
+                <DollarSign className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm font-medium">Bill Payments</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
+                <TrendingUp className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm font-medium">Investments</span>
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up-delayed">
-              <Link to="/register">
+              <Link to="/auth">
                 <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 pulse-subtle">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                  Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/auth">
                 <Button variant="outline" size="lg" className="animate-pulse-subtle">
-                  Login to Dashboard
+                  Sign In
                 </Button>
               </Link>
             </div>
@@ -152,33 +172,110 @@ export default function Landing() {
             {/* Feature 1 */}
             <div className="p-6 rounded-xl glass-card transform-card parallax-element">
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Globe className="h-6 w-6 text-white" />
+                <Send className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Mobile Money</h3>
+              <h3 className="text-xl font-bold mb-2">Send & Receive Money</h3>
               <p className="text-foreground/70">
-                Send money across Africa instantly with minimal fees using our mobile money network integration.
+                Transfer money instantly to anyone via phone number, email, or QR code with minimal fees.
               </p>
             </div>
             
             {/* Feature 2 */}
             <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-100">
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <CreditCard className="h-6 w-6 text-white" />
+                <DollarSign className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Virtual Cards</h3>
+              <h3 className="text-xl font-bold mb-2">Pay Bills & Airtime</h3>
               <p className="text-foreground/70">
-                Access virtual and physical cards for secure online and offline spending with instant controls.
+                Pay for utilities, buy airtime, and handle all your bills directly from your wallet.
               </p>
             </div>
             
             {/* Feature 3 */}
             <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-200">
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Zap className="h-6 w-6 text-white" />
+                <CreditCard className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Digital Credit</h3>
+              <h3 className="text-xl font-bold mb-2">Virtual & Physical Cards</h3>
               <p className="text-foreground/70">
-                Build your credit score digitally and access microloans with transparent terms and instant approvals.
+                Get instant virtual cards for online shopping and order physical cards for everyday use.
+              </p>
+            </div>
+            
+            {/* Feature 4 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-300">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Invest & Save</h3>
+              <p className="text-foreground/70">
+                Grow your money with savings plans, investments, and build your credit score digitally.
+              </p>
+            </div>
+            
+            {/* Feature 5 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-400">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <Globe className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Merchant Payments</h3>
+              <p className="text-foreground/70">
+                Accept payments from customers with QR codes, payment links, and POS integration.
+              </p>
+            </div>
+            
+            {/* Feature 6 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-500">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <Smartphone className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">USSD & Offline</h3>
+              <p className="text-foreground/70">
+                Access your wallet even without internet using USSD codes and offline payment methods.
+              </p>
+            </div>
+            
+            {/* Feature 3 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-200">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <CreditCard className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Virtual & Physical Cards</h3>
+              <p className="text-foreground/70">
+                Get instant virtual cards for online shopping and order physical cards for everyday use.
+              </p>
+            </div>
+            
+            {/* Feature 4 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-300">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Invest & Save</h3>
+              <p className="text-foreground/70">
+                Grow your money with savings plans, investments, and build your credit score digitally.
+              </p>
+            </div>
+            
+            {/* Feature 5 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-400">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <Globe className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Merchant Payments</h3>
+              <p className="text-foreground/70">
+                Accept payments from customers with QR codes, payment links, and POS integration.
+              </p>
+            </div>
+            
+            {/* Feature 6 */}
+            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-500">
+              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
+                <Smartphone className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">USSD & Offline</h3>
+              <p className="text-foreground/70">
+                Access your wallet even without internet using USSD codes and offline payment methods.
               </p>
             </div>
           </div>
@@ -319,7 +416,7 @@ export default function Landing() {
               Join thousands of users who have already made the switch to ZiroKash's modern financial platform.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 parallax-element zoom-in delay-200">
-              <Link to="/register">
+              <Link to="/auth">
                 <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 pulse-subtle">
                   Create Your Free Account <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

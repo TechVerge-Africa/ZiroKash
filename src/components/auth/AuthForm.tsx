@@ -72,17 +72,22 @@ export function AuthForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
+    <div className="w-full max-w-md mx-auto">
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
             Z
           </div>
-          <span className="text-2xl font-bold gradient-text">ZiroKash</span>
+          <span className="text-3xl font-bold gradient-text">ZiroKash</span>
         </div>
-        <CardTitle>Welcome to ZiroKash</CardTitle>
-        <CardDescription>Modern African fintech for everyone</CardDescription>
-      </CardHeader>
+        <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
+        <p className="text-muted-foreground">Sign in to your account or create a new one</p>
+      </div>
+      
+      <Card className="backdrop-blur-sm bg-card/80 border-white/10">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-center text-lg">Access Your Wallet</CardTitle>
+        </CardHeader>
       <CardContent>
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -190,7 +195,8 @@ export function AuthForm() {
             </Form>
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

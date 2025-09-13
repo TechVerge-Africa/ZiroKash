@@ -10,18 +10,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 
 export default function Header() {
   const isMobile = useIsMobile();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
+  
+  const fullName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name;
+  const firstName = fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
   
   // Function to get user initials
   const getUserInitials = () => {
-    if (!user) return "?";
-    const name = user.name || user.email || "";
-    return name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2);
+    const nameForInitials = fullName || user?.email || '';
+    return nameForInitials
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part[0]?.toUpperCase())
+      .join('') || 'U';
   };
   
   return (
@@ -64,7 +72,7 @@ export default function Header() {
               {!isMobile && (
                 <>
                   <div className="flex flex-col items-start text-xs">
-                    <span className="font-medium">{user?.name || "User"}</span>
+                    <span className="font-medium">{firstName}</span>
                     <span className="text-muted-foreground">Premium</span>
                   </div>
                   <ChevronDown size={14} className="text-muted-foreground" />
@@ -87,7 +95,7 @@ export default function Header() {
               <span>Notifications</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem onClick={() => signOut()}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>

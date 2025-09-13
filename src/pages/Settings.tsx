@@ -5,14 +5,14 @@ import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, Monitor
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "@/hooks/use-theme";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useEffect, useState } from "react";
 
 export default function Settings() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
 
   // We'll hold the initial theme to detect changes for visual feedback
@@ -73,7 +73,7 @@ export default function Settings() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="fullName">Full Name</Label>
-                      <Input id="fullName" placeholder="Your name" defaultValue={user?.name || ""} />
+                      <Input id="fullName" placeholder="Your name" defaultValue={(user?.user_metadata as any)?.full_name || ""} />
                     </div>
                     <div>
                       <Label htmlFor="email">Email</Label>
@@ -124,7 +124,7 @@ export default function Settings() {
                 <CardContent className="space-y-4 text-center">
                   <div className="flex justify-center">
                     <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold">
-                      {user?.name?.[0]?.toUpperCase() || "U"}
+                      {(user?.user_metadata as any)?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
                     </div>
                   </div>
                   
@@ -155,7 +155,7 @@ export default function Settings() {
                     </div>
                   </div>
                   
-                  <Button variant="destructive" className="w-full" onClick={logout}>
+                  <Button variant="destructive" className="w-full" onClick={() => signOut()}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </Button>

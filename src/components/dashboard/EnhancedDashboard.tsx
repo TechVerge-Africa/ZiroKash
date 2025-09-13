@@ -20,7 +20,7 @@ import {
   Download,
   Banknote
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useWallet } from "@/hooks/useWallet";
 import { useCredit } from "@/hooks/useCredit";
 import { cn } from "@/lib/utils";
@@ -115,6 +115,8 @@ function RecentTransaction({ type, title, amount, currency, date, status }: Rece
 
 export default function EnhancedDashboard() {
   const { user } = useAuth();
+  const fullName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name;
+  const firstName = fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   const { wallets, transactions, loading: walletLoading, getTotalBalance } = useWallet();
   const { creditCards, loading: creditLoading } = useCredit();
   const [hideBalance, setHideBalance] = useState(false);
@@ -160,7 +162,7 @@ export default function EnhancedDashboard() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Welcome back, {user?.name || 'User'} 👋
+            Welcome back, {firstName} 👋
           </h1>
           <p className="text-muted-foreground">Here's what's happening with your money today.</p>
         </div>

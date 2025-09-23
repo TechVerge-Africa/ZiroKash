@@ -105,10 +105,15 @@
     @apply border-border;
   }
   
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+    overflow-x: hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -306,6 +311,33 @@
 .hero-glow {
   background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.2), transparent 70%);
   filter: blur(40px);
+}
+
+/* Mobile Optimized Animations */
+@media (max-width: 768px) {
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .transform-card:hover {
+    transform: translateY(-2px);
+  }
+  
+  .moving-gradient {
+    animation: gradientMove 20s ease infinite;
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  .transform-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  .group:active .group-hover\\:scale-110 {
+    transform: scale(1.05);
+  }
 }
 
 .moving-gradient {

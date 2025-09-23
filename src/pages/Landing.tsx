@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { HeroScene } from "@/components/3d/HeroScene";
-import { Suspense } from "react";
 import {
   ArrowRight,
   CheckCircle,
@@ -53,42 +51,38 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50 transition-all duration-300">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg sm:text-xl animate-pulse-subtle">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
               Z
             </div>
-            <span className="text-xl sm:text-2xl font-bold gradient-text">ZiroKash</span>
+            <span className="text-2xl font-bold gradient-text">ZiroKash</span>
           </div>
           
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
-            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group">
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Features
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group">
+            <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How It Works
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#business" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group">
+            <a href="#business" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               For Business
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#support" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group">
+            <a href="#support" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Support
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
           </nav>
           
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             <Link to="/auth">
-              <Button variant="ghost" size="sm" className="hover:bg-primary/10">
+              <Button variant="ghost" size="sm">
                 Sign In
               </Button>
             </Link>
             <Link to="/auth">
-              <Button size="sm" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-lg hover:shadow-xl transition-all duration-300">
+              <Button size="sm" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90">
                 Get Started
               </Button>
             </Link>
@@ -96,52 +90,26 @@ export default function Landing() {
 
           <button 
             onClick={toggleMenu}
-            className="lg:hidden p-2 hover:bg-accent rounded-lg transition-colors"
+            className="md:hidden p-2 hover:bg-accent rounded-lg transition-colors"
           >
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
-        {/* Enhanced Mobile Menu */}
+        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden bg-background/95 backdrop-blur-xl border-t border-border/50 animate-fade-in">
-            <div className="container mx-auto px-4 sm:px-6 py-6 space-y-6">
-              <div className="space-y-4">
-                <a 
-                  href="#features" 
-                  className="block text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Features
-                </a>
-                <a 
-                  href="#how-it-works" 
-                  className="block text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  How It Works
-                </a>
-                <a 
-                  href="#business" 
-                  className="block text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  For Business
-                </a>
-                <a 
-                  href="#support" 
-                  className="block text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Support
-                </a>
-              </div>
-              <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
-                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="ghost" size="lg" className="w-full justify-center">Sign In</Button>
+          <div className="md:hidden bg-background border-t border-border">
+            <div className="container mx-auto px-4 py-4 space-y-4">
+              <a href="#features" className="block text-sm font-medium text-muted-foreground">Features</a>
+              <a href="#how-it-works" className="block text-sm font-medium text-muted-foreground">How It Works</a>
+              <a href="#business" className="block text-sm font-medium text-muted-foreground">For Business</a>
+              <a href="#support" className="block text-sm font-medium text-muted-foreground">Support</a>
+              <div className="flex flex-col gap-2 pt-4">
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="w-full">Sign In</Button>
                 </Link>
-                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                  <Button size="lg" className="w-full bg-gradient-to-r from-primary to-secondary shadow-lg">Get Started</Button>
+                <Link to="/auth">
+                  <Button size="sm" className="w-full bg-gradient-to-r from-primary to-secondary">Get Started</Button>
                 </Link>
               </div>
             </div>
@@ -150,132 +118,117 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-12 md:pt-28 md:pb-20 relative overflow-hidden min-h-screen flex items-center">
-        {/* 3D Background Scene */}
-        <div className="absolute inset-0 w-full h-full opacity-60">
-          <Suspense fallback={<div className="hero-glow absolute inset-0 opacity-30" />}>
-            <HeroScene />
-          </Suspense>
-        </div>
-        
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/70 to-background/90" />
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-4 md:mb-6 bg-primary/10 text-primary border-primary/20 text-xs sm:text-sm">
+      <section className="pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
+        <div className="hero-glow absolute inset-0 opacity-30"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary border-primary/20">
               🚀 Africa's Leading Cashless Payment Ecosystem
             </Badge>
             
-            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 gradient-text animate-hero-title leading-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-fade-in">
               Africa's Future is Cashless with ZiroKash
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 md:mb-8 max-w-4xl mx-auto animate-hero-subtitle leading-relaxed px-4 sm:px-0">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto animate-fade-in">
               Fast, secure, and borderless payments for everyone. Send money, pay bills, and grow your wealth across Africa with zero borders.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 mb-8 md:mb-12 animate-fade-up-delayed px-4 sm:px-0">
-              <Link to="/auth" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base md:text-lg px-6 md:px-8 py-3 h-12 md:h-14 font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in">
+              <Link to="/auth">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-lg px-8 py-3">
+                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto text-base md:text-lg px-6 md:px-8 py-3 h-12 md:h-14 border-2 hover:bg-primary/5 transition-all duration-300">
-                <Download className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+                <Download className="mr-2 h-5 w-5" />
                 Download App
               </Button>
             </div>
 
-            {/* Hero Image - Mobile Optimized */}
-            <div className="relative mt-8 md:mt-16 parallax-element slide-up" style={{ transform: `translateY(${scrollY * 0.05}px)` }}>
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none h-20 md:h-32 bottom-0"></div>
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 rounded-2xl blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
-                <img 
-                  src="/images/hero.png" 
-                  alt="ZiroKash Mobile App and Cards"
-                  className="relative w-full max-w-3xl md:max-w-4xl mx-auto rounded-xl md:rounded-2xl shadow-2xl border border-border/50 hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.02]"
-                />
-              </div>
+            {/* Hero Image */}
+            <div className="relative mt-16" style={{ transform: `translateY(${scrollY * 0.1}px)` }}>
+              <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none h-32 bottom-0"></div>
+              <img 
+                src="/images/hero.png" 
+                alt="ZiroKash Mobile App and Cards"
+                className="w-full max-w-4xl mx-auto rounded-lg shadow-2xl border border-border/50"
+              />
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16 md:py-24 lg:py-32 bg-muted/30 relative overflow-hidden">
-        {/* Subtle background animation */}
-        <div className="absolute inset-0 moving-gradient opacity-10"></div>
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 gradient-text leading-tight">
+      <section id="features" className="py-20 md:py-32 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 gradient-text">
               Everything You Need in One Wallet
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0 leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               ZiroKash combines all your financial needs into one powerful platform designed for modern Africa.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            <Card className="glass-card transform-card group">
-              <CardContent className="p-4 sm:p-6">
-                <div className="bg-gradient-to-br from-primary to-secondary w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="glass-card transform-card">
+              <CardContent className="p-6">
+                <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <Wallet className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Digital Wallet</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Store your balance securely and track all your transactions in real-time with detailed analytics.</p>
+                <h3 className="text-xl font-bold mb-2">Digital Wallet</h3>
+                <p className="text-muted-foreground">Store your balance securely and track all your transactions in real-time with detailed analytics.</p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card transform-card group">
-              <CardContent className="p-4 sm:p-6">
-                <div className="bg-gradient-to-br from-primary to-secondary w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Send className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <Card className="glass-card transform-card">
+              <CardContent className="p-6">
+                <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <Send className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">P2P Payments</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Send and receive money instantly to anyone across Africa using phone numbers or QR codes.</p>
+                <h3 className="text-xl font-bold mb-2">P2P Payments</h3>
+                <p className="text-muted-foreground">Send and receive money instantly to anyone across Africa using phone numbers or QR codes.</p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card transform-card group">
-              <CardContent className="p-4 sm:p-6">
-                <div className="bg-gradient-to-br from-primary to-secondary w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <Card className="glass-card transform-card">
+              <CardContent className="p-6">
+                <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <DollarSign className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Bills & Utilities</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Pay airtime, electricity, water, internet bills and more with just a few taps.</p>
+                <h3 className="text-xl font-bold mb-2">Bills & Utilities</h3>
+                <p className="text-muted-foreground">Pay airtime, electricity, water, internet bills and more with just a few taps.</p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card transform-card group">
-              <CardContent className="p-4 sm:p-6">
-                <div className="bg-gradient-to-br from-primary to-secondary w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <QrCode className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <Card className="glass-card transform-card">
+              <CardContent className="p-6">
+                <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <QrCode className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Merchant Payments</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Pay at stores with QR codes and enjoy seamless in-app checkout experiences.</p>
+                <h3 className="text-xl font-bold mb-2">Merchant Payments</h3>
+                <p className="text-muted-foreground">Pay at stores with QR codes and enjoy seamless in-app checkout experiences.</p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card transform-card group">
-              <CardContent className="p-4 sm:p-6">
-                <div className="bg-gradient-to-br from-primary to-secondary w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Building className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <Card className="glass-card transform-card">
+              <CardContent className="p-6">
+                <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <Building className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Corporate Collections</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Powerful APIs and SDKs for businesses to integrate seamless payment solutions.</p>
+                <h3 className="text-xl font-bold mb-2">Corporate Collections</h3>
+                <p className="text-muted-foreground">Powerful APIs and SDKs for businesses to integrate seamless payment solutions.</p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card transform-card group">
-              <CardContent className="p-4 sm:p-6">
-                <div className="bg-gradient-to-br from-primary to-secondary w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <Card className="glass-card transform-card">
+              <CardContent className="p-6">
+                <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <Shield className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2">Bank-Level Security</h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Advanced fraud detection, biometric login, and full KYC/AML compliance for your safety.</p>
+                <h3 className="text-xl font-bold mb-2">Bank-Level Security</h3>
+                <p className="text-muted-foreground">Advanced fraud detection, biometric login, and full KYC/AML compliance for your safety.</p>
               </CardContent>
             </Card>
           </div>
@@ -283,18 +236,18 @@ export default function Landing() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-16 md:py-24 lg:py-32 relative overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 gradient-text leading-tight">
+      <section id="how-it-works" className="py-20 md:py-32">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 gradient-text">
               How ZiroKash Works
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4 sm:px-0 leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Get started with ZiroKash in three simple steps and join Africa's cashless revolution.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="bg-gradient-to-br from-primary to-secondary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
                 1

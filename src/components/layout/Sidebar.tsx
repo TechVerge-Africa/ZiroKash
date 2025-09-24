@@ -90,7 +90,7 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <>
-      <div className="flex items-center gap-2 px-3 py-4">
+      <div className="flex items-center gap-2 px-3 py-4 z-90">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
             Z
@@ -159,7 +159,7 @@ export default function Sidebar() {
       {menuButton}
       <aside
         className={cn(
-          "flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-40 border-r border-sidebar-border transition-transform duration-300",
+          "flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-50 border-r border-sidebar-border transition-transform duration-300",
           isMobile 
             ? isOpen ? "translate-x-0 w-64" : "-translate-x-full" 
             : "w-64"
@@ -169,7 +169,7 @@ export default function Sidebar() {
       </aside>
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
           onClick={() => setIsOpen(false)}
         />
       )}

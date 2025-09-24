@@ -1,11 +1,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap, Smartphone, DollarSign, Send, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap, Smartphone, DollarSign, Send, TrendingUp, Menu, User } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   
@@ -41,39 +50,152 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Header/Navigation */}
-      <header className="border-b border-white/10 backdrop-blur-lg fixed w-full z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
-              Z
+      <header className="fixed w-full z-50 transition-all duration-300" style={{ 
+        backgroundColor: scrollY > 0 ? 'rgba(0, 0, 0, 0.8)' : 'transparent',
+        backdropFilter: scrollY > 0 ? 'blur(12px)' : 'none',
+        borderBottom: scrollY > 0 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+      }}>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 group cursor-pointer">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-full blur-sm opacity-75 group-hover:opacity-100 transition duration-200"></div>
+                <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
+                  Z
+                </div>
+              </div>
+              <span className="text-2xl font-bold gradient-text tracking-tight">ZiroKash</span>
             </div>
-            <span className="text-2xl font-bold gradient-text">ZiroKash</span>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-8">
+              <Link to="#features" className="nav-link group">
+                <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">
+                  Features
+                </span>
+                <div className="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"></div>
+              </Link>
+              <Link to="#benefits" className="nav-link group">
+                <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">
+                  Benefits
+                </span>
+                <div className="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"></div>
+              </Link>
+              <Link to="#security" className="nav-link group">
+                <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">
+                  Security
+                </span>
+                <div className="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"></div>
+              </Link>
+            </nav>
+            
+            {/* Auth Buttons - Desktop */}
+            <div className="hidden md:flex items-center gap-4">
+              <Link to="/auth">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="relative overflow-hidden group hover:text-primary transition-colors duration-300"
+                >
+                  <span className="relative z-10">Sign In</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button 
+                  size="sm" 
+                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-primary/50"
+                >
+                  <span>Get Started</span>
+                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md"></div>
+                </Button>
+              </Link>
+            </div>
+
+            {/* Mobile Menu and Auth */}
+            <div className="md:hidden flex items-center gap-3">
+              {/* Avatar Dropdown for Auth */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative h-9 w-9 rounded-full"
+                  >
+                    <Avatar className="h-9 w-9 border-2 border-primary/20 hover:border-primary/50 transition-colors duration-200">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/10 to-secondary/10">
+                        <User className="h-4 w-4 text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-lg border border-white/10">
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth" className="flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Sign In</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to="/auth" 
+                      className="bg-gradient-to-r from-primary to-secondary text-white rounded-md hover:opacity-90"
+                    >
+                      <ArrowRight className="mr-2 h-4 w-4" />
+                      <span>Get Started</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Menu Button for Navigation */}
+              <button 
+                className="p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="h-5 w-5 text-foreground" />
+              </button>
+            </div>
           </div>
-          
-          <nav className="hidden md:flex items-center gap-8">
-            <Link to="#features" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hover-scale">
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        <div className={`
+          fixed inset-0 bg-background/95 backdrop-blur-lg transform transition-transform duration-300 md:hidden
+          ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+        `}>
+          <div className="flex flex-col items-center justify-center h-full gap-8">
+            <Link 
+              to="#features" 
+              className="text-xl font-medium text-foreground/80 hover:text-foreground transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
               Features
             </Link>
-            <Link to="#benefits" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hover-scale">
+            <Link 
+              to="#benefits" 
+              className="text-xl font-medium text-foreground/80 hover:text-foreground transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
               Benefits
             </Link>
-            <Link to="#security" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hover-scale">
+            <Link 
+              to="#security" 
+              className="text-xl font-medium text-foreground/80 hover:text-foreground transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
               Security
             </Link>
-          </nav>
-          
-          <div className="flex items-center gap-4">
-            <Link to="/auth">
-              <Button variant="ghost" size="sm" className="hover-scale">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button size="sm" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover-scale">
-                Get Started
-              </Button>
-            </Link>
           </div>
+          {/* Close Button */}
+          <button 
+            className="absolute top-4 right-4 p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <svg className="h-5 w-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       </header>
       
@@ -83,14 +205,12 @@ export default function Landing() {
         <div className="hero-particles absolute inset-0"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-hero-title">
-              Your All-in-One Digital Wallet
-            </h1>
-            <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto animate-hero-subtitle">
-              Send money, pay bills, invest, and manage your finances - all in one powerful app built for modern Africa.
-            </p>
-            
-            {/* Key Features Preview */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-hero-title">
+                Africa's First Borderless Digital Wallet
+              </h1>
+              <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto animate-hero-subtitle">
+                Making cash obsolete with instant borderless transfers, unified digital currency, and seamless financial solutions for a truly cashless African economy.
+              </p>            {/* Key Features Preview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-2xl mx-auto">
               <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
                 <Smartphone className="h-6 w-6 text-primary mb-2" />
@@ -161,10 +281,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 parallax-element">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              Revolutionary Financial Features
+              One Africa, One Currency
             </h2>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              ZiroKash combines the convenience of mobile money with modern digital banking to create a seamless African financial experience.
+              ZiroKash leverages cloud-native infrastructure and AI-driven technology to eliminate barriers of cash, banking limits, and forex exchange.
             </p>
           </div>
           
@@ -176,7 +296,7 @@ export default function Landing() {
               </div>
               <h3 className="text-xl font-bold mb-2">Send & Receive Money</h3>
               <p className="text-foreground/70">
-                Transfer money instantly to anyone via phone number, email, or QR code with minimal fees.
+                Send and receive money instantly across borders with our unified digital currency system.
               </p>
             </div>
             
@@ -185,9 +305,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <DollarSign className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Pay Bills & Airtime</h3>
+              <h3 className="text-xl font-bold mb-2">Bill & Utility Payments</h3>
               <p className="text-foreground/70">
-                Pay for utilities, buy airtime, and handle all your bills directly from your wallet.
+                Pay for airtime, water, electricity, and internet services seamlessly from your wallet.
               </p>
             </div>
             
@@ -196,9 +316,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <CreditCard className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Virtual & Physical Cards</h3>
+              <h3 className="text-xl font-bold mb-2">Virtual Cards</h3>
               <p className="text-foreground/70">
-                Get instant virtual cards for online shopping and order physical cards for everyday use.
+                Access virtual cards for online shopping, subscriptions, and secure transactions worldwide.
               </p>
             </div>
             
@@ -207,9 +327,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Invest & Save</h3>
+              <h3 className="text-xl font-bold mb-2">Corporate Collections</h3>
               <p className="text-foreground/70">
-                Grow your money with savings plans, investments, and build your credit score digitally.
+                Utilize our APIs and SDKs for businesses to receive payments and manage transactions efficiently.
               </p>
             </div>
             
@@ -218,9 +338,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <Globe className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Merchant Payments</h3>
+              <h3 className="text-xl font-bold mb-2">Merchant Solutions</h3>
               <p className="text-foreground/70">
-                Accept payments from customers with QR codes, payment links, and POS integration.
+                Enable QR code payments and in-app checkout for seamless merchant transactions.
               </p>
             </div>
             
@@ -229,9 +349,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <Smartphone className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">USSD & Offline</h3>
+              <h3 className="text-xl font-bold mb-2">Unified Digital Currency</h3>
               <p className="text-foreground/70">
-                Access your wallet even without internet using USSD codes and offline payment methods.
+                Experience borderless transactions with our unified digital currency system.
               </p>
             </div>
             
@@ -288,10 +408,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 parallax-element">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              Why Choose ZiroKash
+              Building a Cashless African Economy
             </h2>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              Experience the future of African finance with benefits that traditional banks simply can't offer.
+              Leveraging advanced technology to create a seamless, borderless financial ecosystem.
             </p>
           </div>
           
@@ -303,9 +423,9 @@ export default function Landing() {
                   <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-1">Lower Transaction Fees</h3>
+                  <h3 className="text-lg font-medium mb-1">Cloud-Native Infrastructure</h3>
                   <p className="text-foreground/70">
-                    Save up to 90% on cross-border payments compared to traditional banks and payment processors.
+                    Built on modern cloud infrastructure for maximum reliability and scalability across borders.
                   </p>
                 </div>
               </div>
@@ -316,9 +436,9 @@ export default function Landing() {
                   <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-1">Instant Settlements</h3>
+                  <h3 className="text-lg font-medium mb-1">AI-Driven Security</h3>
                     <p className="text-foreground/70">
-                      No more waiting days for transactions to clear. ZiroKash settlements happen in seconds, not days.
+                      Advanced fraud detection and security systems powered by artificial intelligence.
                     </p>
                 </div>
               </div>
@@ -329,9 +449,9 @@ export default function Landing() {
                   <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-1">Full Transparency</h3>
+                  <h3 className="text-lg font-medium mb-1">Blockchain-Ready Architecture</h3>
                     <p className="text-foreground/70">
-                      Every transaction is recorded digitally, providing full transparency and real-time tracking.
+                      Built with future-proof technology to support seamless integration with blockchain systems.
                     </p>
                 </div>
               </div>
@@ -347,10 +467,10 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="parallax-element slide-up">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 gradient-text">
-                Bank-Level Security with Digital Innovation
+                Secure Infrastructure for a Cashless Future
               </h2>
               <p className="text-lg text-foreground/70 mb-8">
-                ZiroKash combines cutting-edge security practices with modern digital banking to keep your assets safe.
+                Built on cutting-edge technology with AI-driven security to protect your digital assets across borders.
               </p>
               
               <div className="space-y-4">
@@ -410,10 +530,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text parallax-element zoom-in">
-              Ready to Experience the Future of Finance?
+              Join the Cashless Revolution
             </h2>
             <p className="text-lg text-foreground/70 mb-8 max-w-2xl mx-auto parallax-element zoom-in delay-100">
-              Join thousands of users who have already made the switch to ZiroKash's modern financial platform.
+              Be part of Africa's digital transformation with ZiroKash's borderless financial ecosystem.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 parallax-element zoom-in delay-200">
               <Link to="/auth">

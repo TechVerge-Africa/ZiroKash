@@ -17,12 +17,21 @@ export default function Payments() {
       </div>
 
       <Tabs defaultValue="send-receive" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-          <TabsTrigger value="send-receive" className="text-xs sm:text-sm">Send & Receive</TabsTrigger>
-          <TabsTrigger value="bills" className="text-xs sm:text-sm">Bill Payments</TabsTrigger>
-          <TabsTrigger value="merchants" className="text-xs sm:text-sm">Merchants</TabsTrigger>
-          <TabsTrigger value="history" className="text-xs sm:text-sm">History</TabsTrigger>
-        </TabsList>
+<TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-4 scrollbar-hide">
+  <TabsTrigger value="send-receive" className="flex-shrink-0 text-xs sm:text-sm">
+    Send & Receive
+  </TabsTrigger>
+  <TabsTrigger value="bills" className="flex-shrink-0 text-xs sm:text-sm">
+    Bill Payments
+  </TabsTrigger>
+  <TabsTrigger value="merchants" className="flex-shrink-0 text-xs sm:text-sm">
+    Merchants
+  </TabsTrigger>
+  <TabsTrigger value="history" className="flex-shrink-0 text-xs sm:text-sm">
+    History
+  </TabsTrigger>
+</TabsList>
+
 
         <TabsContent value="send-receive" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">

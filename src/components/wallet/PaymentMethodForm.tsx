@@ -133,7 +133,7 @@ export function PaymentMethodForm({ type, onSuccess }: PaymentMethodFormProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="mtn">MTN Mobile Money</SelectItem>
-              <SelectItem value="vodafone">Vodafone Cash</SelectItem>
+              <SelectItem value="vodafone">Telecel Cash</SelectItem>
               <SelectItem value="airtel">Airtel Money</SelectItem>
               <SelectItem value="tigo">Tigo Cash</SelectItem>
             </SelectContent>

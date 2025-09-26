@@ -1,1 +1,30 @@
 project_id = "kbhyqypwwmkvssrcbfdb"
+
+[api]
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+secure_nonce = true
+
+[functions.auth-api]
+verify_jwt = false
+
+[functions.wallet-transfer]
+verify_jwt = true
+
+[functions.merchant-payment]
+verify_jwt = true
+
+[functions.bill-payment]
+verify_jwt = true
+
+[functions.corporate-collections]
+verify_jwt = false

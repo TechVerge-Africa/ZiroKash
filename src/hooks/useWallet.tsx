@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useCurrency } from './useCurrency';
 
 interface Wallet {
   id: string;
@@ -24,6 +25,7 @@ interface Transaction {
 
 export function useWallet() {
   const { user } = useAuth();
+  const { userCurrency, convertAmount } = useCurrency();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,11 +123,21 @@ export function useWallet() {
   }, [user]);
 
   const getTotalBalance = () => {
-    return wallets.reduce((total, wallet) => total + wallet.balance, 0);
+    return wallets.reduce((total, wallet) => {
+      // Convert wallet balance to user's currency
+      const balance = wallet.balance / 100; // Convert from cents
+      const convertedBalance = convertAmount(balance, wallet.currency);
+      return total + convertedBalance;
+    }, 0);
   };
 
   const getWalletByType = (type: 'main' | 'savings' | 'investment') => {
     return wallets.find(w => w.wallet_type === type);
+  };
+
+  const getConvertedBalance = (wallet: Wallet) => {
+    const balance = wallet.balance / 100; // Convert from cents
+    return convertAmount(balance, wallet.currency);
   };
 
   return {
@@ -138,5 +150,7 @@ export function useWallet() {
     fetchTransactions,
     getTotalBalance,
     getWalletByType,
+    getConvertedBalance,
+    userCurrency,
   };
 }

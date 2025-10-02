@@ -43,3 +43,9 @@ verify_jwt = true
 
 [functions.withdraw-bank]
 verify_jwt = true
+
+[functions.detect-country]
+verify_jwt = true
+
+[functions.currency-rates]
+verify_jwt = false

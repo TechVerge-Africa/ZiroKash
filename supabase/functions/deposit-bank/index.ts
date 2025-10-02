@@ -31,17 +31,17 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { amount, currency = 'GHS' }: DepositRequest = await req.json();
+    const { amount }: DepositRequest = await req.json();
 
     // Validation
     if (!amount || amount <= 0) {
       throw new Error('Invalid amount');
     }
 
-    // Get user's main wallet
+    // Get user's main wallet with currency
     const { data: wallet, error: walletError } = await supabaseClient
       .from('wallets')
-      .select('id')
+      .select('id, currency')
       .eq('user_id', user.id)
       .eq('wallet_type', 'main')
       .single();
@@ -49,6 +49,8 @@ Deno.serve(async (req) => {
     if (walletError || !wallet) {
       throw new Error('Wallet not found');
     }
+
+    const currency = wallet.currency || 'GHS';
 
     // Convert amount to cents
     const amountInCents = Math.round(amount * 100);

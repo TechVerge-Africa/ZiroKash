@@ -34,7 +34,21 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { amount, bank_code, account_number, account_name, currency = 'GHS' }: WithdrawRequest = await req.json();
+    const { amount, bank_code, account_number, account_name }: WithdrawRequest = await req.json();
+
+    // Get user's main wallet with currency
+    const { data: wallet, error: walletError } = await supabaseClient
+      .from('wallets')
+      .select('id, balance, currency')
+      .eq('user_id', user.id)
+      .eq('wallet_type', 'main')
+      .single();
+
+    if (walletError || !wallet) {
+      throw new Error('Wallet not found');
+    }
+
+    const currency = wallet.currency || 'GHS';
 
     // Validation
     if (!amount || amount <= 0) {
@@ -44,17 +58,6 @@ Deno.serve(async (req) => {
       throw new Error('Bank details required');
     }
 
-    // Get user's main wallet
-    const { data: wallet, error: walletError } = await supabaseClient
-      .from('wallets')
-      .select('id, balance')
-      .eq('user_id', user.id)
-      .eq('wallet_type', 'main')
-      .single();
-
-    if (walletError || !wallet) {
-      throw new Error('Wallet not found');
-    }
 
     // Convert amount to cents
     const amountInCents = Math.round(amount * 100);

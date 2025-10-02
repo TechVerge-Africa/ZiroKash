@@ -43,17 +43,6 @@ Deno.serve(async (req) => {
       throw new Error('Phone number required');
     }
 
-    // Get user's main wallet
-    const { data: wallet, error: walletError } = await supabaseClient
-      .from('wallets')
-      .select('id, balance')
-      .eq('user_id', user.id)
-      .eq('wallet_type', 'main')
-      .single();
-
-    if (walletError || !wallet) {
-      throw new Error('Wallet not found');
-    }
 
     // Convert amount to cents
     const amountInCents = Math.round(amount * 100);

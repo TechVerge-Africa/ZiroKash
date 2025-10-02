@@ -73,6 +73,50 @@ export type Database = {
           },
         ]
       }
+      blockchain_addresses: {
+        Row: {
+          address: string
+          blockchain_network: string
+          created_at: string | null
+          id: string
+          phone_number: string | null
+          private_key_encrypted: string
+          updated_at: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          address: string
+          blockchain_network: string
+          created_at?: string | null
+          id?: string
+          phone_number?: string | null
+          private_key_encrypted: string
+          updated_at?: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          address?: string
+          blockchain_network?: string
+          created_at?: string | null
+          id?: string
+          phone_number?: string | null
+          private_key_encrypted?: string
+          updated_at?: string | null
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blockchain_addresses_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corporate_collections: {
         Row: {
           amount: number
@@ -510,6 +554,7 @@ export type Database = {
         Row: {
           amount: number
           blockchain_hash: string | null
+          blockchain_network: string | null
           created_at: string
           currency: string
           description: string | null
@@ -532,6 +577,7 @@ export type Database = {
         Insert: {
           amount: number
           blockchain_hash?: string | null
+          blockchain_network?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -554,6 +600,7 @@ export type Database = {
         Update: {
           amount?: number
           blockchain_hash?: string | null
+          blockchain_network?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -589,6 +636,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_identifiers: {
+        Row: {
+          created_at: string | null
+          id: string
+          identifier_type: string
+          identifier_value: string
+          is_verified: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          identifier_type: string
+          identifier_value: string
+          is_verified?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          identifier_type?: string
+          identifier_value?: string
+          is_verified?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -674,12 +748,15 @@ export type Database = {
         Row: {
           balance: number
           blockchain_address: string | null
+          blockchain_network: string | null
           created_at: string
           currency: string
           daily_limit: number | null
           id: string
           is_active: boolean | null
           monthly_limit: number | null
+          on_chain_balance: number | null
+          stablecoin_contract: string | null
           updated_at: string
           user_id: string
           wallet_type: string
@@ -687,12 +764,15 @@ export type Database = {
         Insert: {
           balance?: number
           blockchain_address?: string | null
+          blockchain_network?: string | null
           created_at?: string
           currency?: string
           daily_limit?: number | null
           id?: string
           is_active?: boolean | null
           monthly_limit?: number | null
+          on_chain_balance?: number | null
+          stablecoin_contract?: string | null
           updated_at?: string
           user_id: string
           wallet_type: string
@@ -700,12 +780,15 @@ export type Database = {
         Update: {
           balance?: number
           blockchain_address?: string | null
+          blockchain_network?: string | null
           created_at?: string
           currency?: string
           daily_limit?: number | null
           id?: string
           is_active?: boolean | null
           monthly_limit?: number | null
+          on_chain_balance?: number | null
+          stablecoin_contract?: string | null
           updated_at?: string
           user_id?: string
           wallet_type?: string

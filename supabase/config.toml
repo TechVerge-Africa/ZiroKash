@@ -28,3 +28,18 @@ verify_jwt = true
 
 [functions.corporate-collections]
 verify_jwt = false
+
+[functions.deposit-momo]
+verify_jwt = true
+
+[functions.deposit-bank]
+verify_jwt = true
+
+[functions.deposit-webhook]
+verify_jwt = false
+
+[functions.withdraw-momo]
+verify_jwt = true
+
+[functions.withdraw-bank]
+verify_jwt = true

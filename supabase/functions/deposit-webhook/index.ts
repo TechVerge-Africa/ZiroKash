@@ -1,0 +1,119 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import { crypto } from 'https://deno.land/std@0.177.0/crypto/mod.ts';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-paystack-signature',
+};
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Verify webhook signature from Paystack
+    const paystackSignature = req.headers.get('x-paystack-signature');
+    const body = await req.text();
+    
+    const paystackSecret = Deno.env.get('PAYSTACK_SECRET_KEY');
+    const hash = await crypto.subtle.digest(
+      'SHA-512',
+      new TextEncoder().encode(paystackSecret + body)
+    );
+    const expectedSignature = Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    if (paystackSignature !== expectedSignature) {
+      console.error('Invalid webhook signature');
+      throw new Error('Invalid signature');
+    }
+
+    const payload = JSON.parse(body);
+    console.log('Webhook received:', payload.event);
+
+    if (payload.event === 'charge.success') {
+      const reference = payload.data.reference;
+      const transactionId = payload.data.metadata?.transaction_id;
+
+      if (!transactionId) {
+        console.error('No transaction ID in webhook');
+        return new Response('OK', { status: 200 });
+      }
+
+      // Get transaction
+      const { data: transaction, error: txError } = await supabaseClient
+        .from('transactions')
+        .select('*, to_wallet_id')
+        .eq('id', transactionId)
+        .single();
+
+      if (txError || !transaction) {
+        console.error('Transaction not found:', transactionId);
+        throw new Error('Transaction not found');
+      }
+
+      // Get wallet
+      const { data: wallet, error: walletError } = await supabaseClient
+        .from('wallets')
+        .select('balance')
+        .eq('id', transaction.to_wallet_id)
+        .single();
+
+      if (walletError || !wallet) {
+        throw new Error('Wallet not found');
+      }
+
+      // Credit wallet
+      const newBalance = (wallet.balance || 0) + transaction.amount;
+      const { error: updateError } = await supabaseClient
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('id', transaction.to_wallet_id);
+
+      if (updateError) {
+        console.error('Failed to update wallet:', updateError);
+        throw new Error('Failed to credit wallet');
+      }
+
+      // Update transaction status
+      await supabaseClient
+        .from('transactions')
+        .update({
+          status: 'completed',
+          processed_at: new Date().toISOString(),
+          metadata: { ...transaction.metadata, webhook_payload: payload.data },
+        })
+        .eq('id', transactionId);
+
+      console.log(`Deposit completed: ${transactionId}, credited ${transaction.amount} cents`);
+
+    } else if (payload.event === 'charge.failed') {
+      const transactionId = payload.data.metadata?.transaction_id;
+      
+      if (transactionId) {
+        await supabaseClient
+          .from('transactions')
+          .update({
+            status: 'failed',
+            metadata: { error: payload.data.gateway_response },
+          })
+          .eq('id', transactionId);
+
+        console.log(`Deposit failed: ${transactionId}`);
+      }
+    }
+
+    return new Response('OK', { status: 200, headers: corsHeaders });
+
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return new Response('Error', { status: 500, headers: corsHeaders });
+  }
+});

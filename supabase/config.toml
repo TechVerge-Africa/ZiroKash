@@ -49,3 +49,6 @@ verify_jwt = true
 
 [functions.currency-rates]
 verify_jwt = false
+
+[functions.lookup-recipient]
+verify_jwt = true

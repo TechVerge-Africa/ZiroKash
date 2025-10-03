@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -8,8 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, Loader2, QrCode, Phone, Mail } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, Loader2, QrCode, Phone, Mail, CheckCircle2 } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
+import { useLookup } from "@/hooks/useLookup";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const sendMoneySchema = z.object({
@@ -22,9 +25,10 @@ const sendMoneySchema = z.object({
 });
 
 export function SendMoneyForm() {
-  const { wallets, createTransaction, updateWalletBalance, getWalletByType } = useWallet();
+  const { wallets, getWalletByType } = useWallet();
+  const { lookupRecipient, recipient, loading: lookupLoading } = useLookup();
   const [isLoading, setIsLoading] = useState(false);
-  const [sendMethod, setSendMethod] = useState<"address" | "phone" | "email" | "qr">("address");
+  const [sendMethod, setSendMethod] = useState<"address" | "phone" | "email" | "qr">("phone");
 
   const form = useForm<z.infer<typeof sendMoneySchema>>({
     resolver: zodResolver(sendMoneySchema),
@@ -36,6 +40,18 @@ export function SendMoneyForm() {
     },
   });
 
+  // Debounced recipient lookup
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const recipientValue = form.watch('recipient');
+      if (recipientValue && recipientValue.length > 3 && (sendMethod === 'phone' || sendMethod === 'email')) {
+        lookupRecipient(recipientValue);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [form.watch('recipient'), sendMethod]);
+
   const onSubmit = async (values: z.infer<typeof sendMoneySchema>) => {
     setIsLoading(true);
     try {
@@ -46,35 +62,44 @@ export function SendMoneyForm() {
         throw new Error("Wallet not found");
       }
       
-      if (wallet.balance < amount) {
-        throw new Error("Insufficient balance");
+      // Convert wallet balance from cents to dollars for comparison
+      const walletBalanceInDollars = wallet.balance / 100;
+      if (walletBalanceInDollars < amount) {
+        throw new Error(`Insufficient balance. Available: $${walletBalanceInDollars.toFixed(2)}`);
       }
 
-      // Create transaction
-      await createTransaction(
-        'send',
-        amount,
-        values.recipient,
-        values.description
-      );
+      // If recipient is a ZiroKash user, use wallet-transfer
+      if (recipient?.is_zirokash_user) {
+        const { error } = await supabase.functions.invoke('wallet-transfer', {
+          body: {
+            recipient_user_id: recipient.user_id,
+            amount: Math.round(amount * 100), // Convert to cents
+            description: values.description || `Transfer to ${recipient.full_name}`,
+            currency: wallet.currency
+          }
+        });
 
-      // Update wallet balance
-      await updateWalletBalance(values.fromWallet, wallet.balance - amount);
+        if (error) throw error;
 
-      const recipientLabel = sendMethod === "phone" ? "phone number" : 
-                           sendMethod === "email" ? "email" : 
-                           sendMethod === "qr" ? "QR code" : "address";
-
-      toast({
-        title: "Payment Sent Successfully",
-        description: `$${amount} has been sent to ${recipientLabel}: ${values.recipient}`,
-      });
+        toast({
+          title: "Transfer Successful",
+          description: `$${amount.toFixed(2)} sent to ${recipient.full_name}`,
+        });
+      } else {
+        // External transfer (blockchain or other methods)
+        toast({
+          title: "External Transfer",
+          description: "External transfers will be implemented soon",
+          variant: "destructive"
+        });
+        return;
+      }
 
       form.reset();
     } catch (error: any) {
       toast({
         title: "Payment Failed",
-        description: error.message,
+        description: error.message || "An error occurred",
         variant: "destructive",
       });
     } finally {
@@ -112,7 +137,7 @@ export function SendMoneyForm() {
                       {wallets.map((wallet) => (
                         <SelectItem key={wallet.id} value={wallet.wallet_type}>
                           {wallet.wallet_type.charAt(0).toUpperCase() + wallet.wallet_type.slice(1)} - 
-                          ${wallet.balance.toFixed(2)}
+                          ${(wallet.balance / 100).toFixed(2)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -166,7 +191,22 @@ export function SendMoneyForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder="Enter phone number" {...field} />
+                          <div className="space-y-2">
+                            <Input placeholder="Enter phone number" {...field} />
+                            {lookupLoading && (
+                              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                Looking up recipient...
+                              </p>
+                            )}
+                            {recipient && (
+                              <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/20 rounded-md">
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                <span className="text-sm font-medium">{recipient.full_name}</span>
+                                <Badge variant="secondary" className="ml-auto">ZiroKash User</Badge>
+                              </div>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

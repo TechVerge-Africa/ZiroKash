@@ -43,7 +43,7 @@ export default function Wallet() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">${mainWallet?.balance.toLocaleString() || '0.00'}</span>
+                    <span className="text-3xl font-bold">${((mainWallet?.balance || 0) / 100).toFixed(2)}</span>
                     <span className="ml-2 text-green-500 text-sm">+2.5%</span>
                   </div>
                   <span className="text-muted-foreground text-sm">Available balance</span>
@@ -73,7 +73,7 @@ export default function Wallet() {
               <CardContent>
                 <div className="flex flex-col">
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">${cryptoWallet?.balance.toLocaleString() || '0.00'}</span>
+                    <span className="text-3xl font-bold">${((cryptoWallet?.balance || 0) / 100).toFixed(2)}</span>
                     <span className="ml-2 text-red-500 text-sm">-1.2%</span>
                   </div>
                   <span className="text-muted-foreground text-sm">In cryptocurrencies</span>
@@ -129,7 +129,7 @@ export default function Wallet() {
                             </div>
                           </div>
                           <p className={`font-medium ${tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? 'text-green-500' : 'text-red-500'}`}>
-                            {tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? '+' : '-'}${tx.amount}
+                            {tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? '+' : '-'}${(tx.amount / 100).toFixed(2)}
                           </p>
                         </div>
                       ))

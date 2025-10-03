@@ -20,7 +20,7 @@ export default function BalanceCard({ balance, currency }: BalanceCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline mb-4">
-          <span className="text-3xl font-bold mr-2">{balance.toLocaleString()}</span>
+          <span className="text-3xl font-bold mr-2">${balance.toFixed(2)}</span>
           <span className="text-xl text-muted-foreground">{currency}</span>
         </div>
         

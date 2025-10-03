@@ -126,13 +126,13 @@ export default function EnhancedDashboard() {
     const totalCredit = creditCards.reduce((sum, card) => sum + card.credit_limit, 0);
     const monthlySpend = transactions
       .filter(t => new Date(t.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
-      .reduce((sum, t) => sum + (t.transaction_type === 'send' ? t.amount : 0), 0);
+      .reduce((sum, t) => sum + (t.transaction_type === 'send' ? (t.amount / 100) : 0), 0);
 
     return {
       totalBalance,
       totalCredit,
       monthlySpend,
-      savingsBalance: wallets.find(w => w.wallet_type === 'savings')?.balance || 0
+      savingsBalance: (wallets.find(w => w.wallet_type === 'savings')?.balance || 0) / 100
     };
   }, [wallets, creditCards, transactions, getTotalBalance]);
 
@@ -141,7 +141,7 @@ export default function EnhancedDashboard() {
       id: t.id,
       type: t.transaction_type === 'receive' ? 'receive' : 'send',
       title: t.description || `${t.transaction_type} Transaction`,
-      amount: t.amount,
+      amount: t.amount / 100, // Convert from cents to dollars
       currency: t.currency,
       date: new Date(t.created_at).toLocaleDateString(),
       status: t.status === 'pending' ? 'pending' : t.status === 'failed' ? 'failed' : 'completed'

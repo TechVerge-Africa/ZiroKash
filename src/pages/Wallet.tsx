@@ -1,15 +1,22 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowDown, ArrowUp, CreditCard, DollarSign, Plus, Wallet as WalletIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
+import { PaymentMethodForm } from "@/components/wallet/PaymentMethodForm";
 
 export default function Wallet() {
-  const { wallets, transactions, loading, getTotalBalance, getWalletByType } = useWallet();
+  const { wallets, transactions, loading, getTotalBalance, getWalletByType, fetchWallets } = useWallet();
+  const [depositDialogOpen, setDepositDialogOpen] = useState(false);
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  
   const mainWallet = getWalletByType('main');
   const cryptoWallet = getWalletByType('investment');
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -18,17 +25,13 @@ export default function Wallet() {
           <p className="text-muted-foreground">Manage your digital assets and payments</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setDepositDialogOpen(true)}>
             <ArrowDown className="mr-2 h-4 w-4" />
             Deposit
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setWithdrawDialogOpen(true)}>
             <ArrowUp className="mr-2 h-4 w-4" />
             Withdraw
-          </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Money
           </Button>
         </div>
       </div>
@@ -300,6 +303,36 @@ export default function Wallet() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deposit Funds</DialogTitle>
+          </DialogHeader>
+          <PaymentMethodForm 
+            type="deposit" 
+            onSuccess={() => {
+              setDepositDialogOpen(false);
+              fetchWallets();
+            }} 
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Withdraw Funds</DialogTitle>
+          </DialogHeader>
+          <PaymentMethodForm 
+            type="withdraw" 
+            onSuccess={() => {
+              setWithdrawDialogOpen(false);
+              fetchWallets();
+            }} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

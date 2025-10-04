@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, Smartphone, Bitcoin, DollarSign } from "lucide-react";
-import { useWallet } from "@/hooks/useWallet";
+import { CreditCard, Smartphone } from "lucide-react";
+import { useDeposit } from "@/hooks/useDeposit";
+import { useWithdraw } from "@/hooks/useWithdraw";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 
 interface PaymentMethodFormProps {
@@ -16,104 +18,117 @@ interface PaymentMethodFormProps {
 
 export function PaymentMethodForm({ type, onSuccess }: PaymentMethodFormProps) {
   const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { createTransaction, updateWalletBalance, getWalletByType } = useWallet();
+  const { depositMomo, depositBank, loading: depositLoading } = useDeposit();
+  const { withdrawMomo, withdrawBank, loading: withdrawLoading } = useWithdraw();
+  const { userCurrency } = useCurrency();
   const { toast } = useToast();
+  
+  const loading = depositLoading || withdrawLoading;
 
-  const handleSubmit = async (method: string, formData: any) => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast({
-        title: "Invalid amount",
-        description: "Please enter a valid amount",
-        variant: "destructive",
-      });
-      return;
-    }
+  const BankForm = () => {
+    const [accountNumber, setAccountNumber] = useState("");
+    const [accountName, setAccountName] = useState("");
+    const [bankCode, setBankCode] = useState("");
 
-    setLoading(true);
-    try {
-      const transactionAmount = parseFloat(amount);
-      const mainWallet = getWalletByType('main');
-      
-      if (type === 'withdraw' && mainWallet && mainWallet.balance < transactionAmount) {
+    const handleBankSubmit = async () => {
+      if (!amount || parseFloat(amount) <= 0) {
         toast({
-          title: "Insufficient funds",
-          description: "You don't have enough balance for this withdrawal",
+          title: "Invalid amount",
+          description: "Please enter a valid amount",
           variant: "destructive",
         });
         return;
       }
 
-      // Create transaction record
-      await createTransaction(
-        type === 'deposit' ? 'deposit' : 'withdraw',
-        transactionAmount,
-        formData.address || formData.accountNumber,
-        `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} via ${method}`
-      );
+      try {
+        if (type === 'deposit') {
+          const { error } = await depositBank({
+            amount: parseFloat(amount),
+            currency: userCurrency,
+          });
+          
+          if (error) throw error;
+        } else {
+          if (!accountNumber || !accountName || !bankCode) {
+            toast({
+              title: "Missing information",
+              description: "Please fill in all bank details",
+              variant: "destructive",
+            });
+            return;
+          }
 
-      // Update wallet balance
-      if (mainWallet) {
-        const newBalance = type === 'deposit' 
-          ? mainWallet.balance + transactionAmount
-          : mainWallet.balance - transactionAmount;
+          const { error } = await withdrawBank({
+            amount: parseFloat(amount),
+            currency: userCurrency,
+            bankCode,
+            accountNumber,
+            accountName,
+          });
+          
+          if (error) throw error;
+        }
+
+        toast({
+          title: "Success",
+          description: type === 'deposit' 
+            ? "Deposit initiated successfully" 
+            : "Withdrawal initiated successfully",
+        });
         
-        await updateWalletBalance('main', newBalance);
+        setAmount("");
+        setAccountNumber("");
+        setAccountName("");
+        setBankCode("");
+        onSuccess?.();
+      } catch (error: any) {
+        toast({
+          title: "Transaction failed",
+          description: error.message || "Please try again later",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} successful`,
-        description: `$${amount} has been ${type === 'deposit' ? 'added to' : 'withdrawn from'} your wallet`,
-      });
-
-      setAmount("");
-      onSuccess?.();
-    } catch (error) {
-      toast({
-        title: "Transaction failed",
-        description: "Please try again later",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const BankForm = () => {
-    const [accountNumber, setAccountNumber] = useState("");
-    const [bankName, setBankName] = useState("");
+    };
 
     return (
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="bankName">Bank Name</Label>
-          <Select value={bankName} onValueChange={setBankName}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select your bank" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="chase">Chase Bank</SelectItem>
-              <SelectItem value="wells-fargo">Wells Fargo</SelectItem>
-              <SelectItem value="bank-of-america">Bank of America</SelectItem>
-              <SelectItem value="citibank">Citibank</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="accountNumber">Account Number</Label>
-          <Input
-            id="accountNumber"
-            placeholder="Enter account number"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-          />
-        </div>
+        {type === 'withdraw' && (
+          <>
+            <div>
+              <Label htmlFor="bankCode">Bank Code</Label>
+              <Input
+                id="bankCode"
+                placeholder="Enter bank code"
+                value={bankCode}
+                onChange={(e) => setBankCode(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="accountNumber">Account Number</Label>
+              <Input
+                id="accountNumber"
+                placeholder="Enter account number"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="accountName">Account Name</Label>
+              <Input
+                id="accountName"
+                placeholder="Enter account name"
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+              />
+            </div>
+          </>
+        )}
         <Button 
-          onClick={() => handleSubmit('Bank Account', { accountNumber, bankName })}
-          disabled={loading || !accountNumber || !bankName}
+          onClick={handleBankSubmit}
+          disabled={loading || !amount}
           className="w-full"
         >
-          {loading ? 'Processing...' : `${type === 'deposit' ? 'Deposit' : 'Withdraw'} $${amount}`}
+          {loading ? 'Processing...' : `${type === 'deposit' ? 'Deposit' : 'Withdraw'} ${amount}`}
         </Button>
       </div>
     );
@@ -122,6 +137,66 @@ export function PaymentMethodForm({ type, onSuccess }: PaymentMethodFormProps) {
   const MomoForm = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [provider, setProvider] = useState("");
+
+    const handleMomoSubmit = async () => {
+      if (!amount || parseFloat(amount) <= 0) {
+        toast({
+          title: "Invalid amount",
+          description: "Please enter a valid amount",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!phoneNumber || !provider) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in all fields",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        if (type === 'deposit') {
+          const { error } = await depositMomo({
+            amount: parseFloat(amount),
+            phoneNumber,
+            provider,
+            currency: userCurrency,
+          });
+          
+          if (error) throw error;
+        } else {
+          const { error } = await withdrawMomo({
+            amount: parseFloat(amount),
+            phoneNumber,
+            provider,
+            currency: userCurrency,
+          });
+          
+          if (error) throw error;
+        }
+
+        toast({
+          title: "Success",
+          description: type === 'deposit' 
+            ? "Deposit initiated successfully" 
+            : "Withdrawal initiated successfully",
+        });
+        
+        setAmount("");
+        setPhoneNumber("");
+        setProvider("");
+        onSuccess?.();
+      } catch (error: any) {
+        toast({
+          title: "Transaction failed",
+          description: error.message || "Please try again later",
+          variant: "destructive",
+        });
+      }
+    };
 
     return (
       <div className="space-y-4">
@@ -133,9 +208,8 @@ export function PaymentMethodForm({ type, onSuccess }: PaymentMethodFormProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="mtn">MTN Mobile Money</SelectItem>
-              <SelectItem value="vodafone">Telecel Cash</SelectItem>
-              <SelectItem value="airtel">Airtel Money</SelectItem>
-              <SelectItem value="tigo">Tigo Cash</SelectItem>
+              <SelectItem value="vodafone">Vodafone Cash</SelectItem>
+              <SelectItem value="airteltigo">AirtelTigo Money</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -149,94 +223,16 @@ export function PaymentMethodForm({ type, onSuccess }: PaymentMethodFormProps) {
           />
         </div>
         <Button 
-          onClick={() => handleSubmit('Mobile Money', { phoneNumber, provider })}
+          onClick={handleMomoSubmit}
           disabled={loading || !phoneNumber || !provider}
           className="w-full"
         >
-          {loading ? 'Processing...' : `${type === 'deposit' ? 'Deposit' : 'Withdraw'} $${amount}`}
+          {loading ? 'Processing...' : `${type === 'deposit' ? 'Deposit' : 'Withdraw'} ${amount}`}
         </Button>
       </div>
     );
   };
 
-  const CryptoForm = () => {
-    const [address, setAddress] = useState("");
-    const [currency, setCurrency] = useState("");
-
-    return (
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="currency">Cryptocurrency</Label>
-          <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select cryptocurrency" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="btc">Bitcoin (BTC)</SelectItem>
-              <SelectItem value="eth">Ethereum (ETH)</SelectItem>
-              <SelectItem value="usdt">Tether (USDT)</SelectItem>
-              <SelectItem value="sol">Solana (SOL)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="address">Wallet Address</Label>
-          <Input
-            id="address"
-            placeholder="Enter wallet address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </div>
-        <Button 
-          onClick={() => handleSubmit('Cryptocurrency', { address, currency })}
-          disabled={loading || !address || !currency}
-          className="w-full"
-        >
-          {loading ? 'Processing...' : `${type === 'deposit' ? 'Deposit' : 'Withdraw'} $${amount}`}
-        </Button>
-      </div>
-    );
-  };
-
-  const ForexForm = () => {
-    const [fromCurrency, setFromCurrency] = useState("");
-    const [toCurrency, setToCurrency] = useState("USD");
-
-    return (
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="fromCurrency">From Currency</Label>
-          <Select value={fromCurrency} onValueChange={setFromCurrency}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select currency" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="eur">Euro (EUR)</SelectItem>
-              <SelectItem value="gbp">British Pound (GBP)</SelectItem>
-              <SelectItem value="jpy">Japanese Yen (JPY)</SelectItem>
-              <SelectItem value="cad">Canadian Dollar (CAD)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="toCurrency">To Currency</Label>
-          <Input
-            id="toCurrency"
-            value="USD"
-            disabled
-          />
-        </div>
-        <Button 
-          onClick={() => handleSubmit('Forex Exchange', { fromCurrency, toCurrency })}
-          disabled={loading || !fromCurrency}
-          className="w-full"
-        >
-          {loading ? 'Processing...' : `Exchange to $${amount} USD`}
-        </Button>
-      </div>
-    );
-  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -258,36 +254,24 @@ export function PaymentMethodForm({ type, onSuccess }: PaymentMethodFormProps) {
             />
           </div>
 
-          <Tabs defaultValue="bank" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="bank">
-                <CreditCard className="h-4 w-4" />
-              </TabsTrigger>
+          <Tabs defaultValue="momo" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="momo">
-                <Smartphone className="h-4 w-4" />
+                <Smartphone className="mr-2 h-4 w-4" />
+                Mobile Money
               </TabsTrigger>
-              <TabsTrigger value="crypto">
-                <Bitcoin className="h-4 w-4" />
-              </TabsTrigger>
-              <TabsTrigger value="forex">
-                <DollarSign className="h-4 w-4" />
+              <TabsTrigger value="bank">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Bank
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="bank">
-              <BankForm />
-            </TabsContent>
 
             <TabsContent value="momo">
               <MomoForm />
             </TabsContent>
 
-            <TabsContent value="crypto">
-              <CryptoForm />
-            </TabsContent>
-
-            <TabsContent value="forex">
-              <ForexForm />
+            <TabsContent value="bank">
+              <BankForm />
             </TabsContent>
           </Tabs>
         </div>

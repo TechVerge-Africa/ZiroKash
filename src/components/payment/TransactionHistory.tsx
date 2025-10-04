@@ -101,7 +101,7 @@ export function TransactionHistory() {
                     <span className={`font-medium ${
                       transaction.transaction_type === 'send' ? 'text-red-600' : 'text-green-600'
                     }`}>
-                      {transaction.transaction_type === 'send' ? '-' : '+'}${transaction.amount}
+                      {transaction.transaction_type === 'send' ? '-' : '+'}${(transaction.amount / 100).toFixed(2)}
                     </span>
                     {getStatusIcon(transaction.status)}
                   </div>

@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowDown, ArrowUp, CreditCard, DollarSign, Plus, Wallet as WalletIcon } from "lucide-react";
+import { ArrowDown, ArrowUp, CreditCard, DollarSign, Wallet as WalletIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
-import { PaymentMethodForm } from "@/components/wallet/PaymentMethodForm";
+import { DepositDialog } from "@/components/wallet/DepositDialog";
+import { WithdrawDialog } from "@/components/wallet/WithdrawDialog";
 
 export default function Wallet() {
   const { wallets, transactions, loading, getTotalBalance, getWalletByType, fetchWallets } = useWallet();
@@ -165,7 +165,6 @@ export default function Wallet() {
                       </div>
                     </div>
                     <Button className="w-full">
-                      <Plus className="mr-2 h-4 w-4" />
                       Add Payment Method
                     </Button>
                   </div>
@@ -183,7 +182,6 @@ export default function Wallet() {
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">You don't have any scheduled transactions.</p>
                     <Button className="mt-4">
-                      <Plus className="mr-2 h-4 w-4" />
                       Schedule a Payment
                     </Button>
                   </div>
@@ -304,35 +302,17 @@ export default function Wallet() {
         </div>
       </div>
 
-      <Dialog open={depositDialogOpen} onOpenChange={setDepositDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Deposit Funds</DialogTitle>
-          </DialogHeader>
-          <PaymentMethodForm 
-            type="deposit" 
-            onSuccess={() => {
-              setDepositDialogOpen(false);
-              fetchWallets();
-            }} 
-          />
-        </DialogContent>
-      </Dialog>
+      <DepositDialog 
+        open={depositDialogOpen} 
+        onOpenChange={setDepositDialogOpen}
+        onSuccess={fetchWallets}
+      />
 
-      <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Withdraw Funds</DialogTitle>
-          </DialogHeader>
-          <PaymentMethodForm 
-            type="withdraw" 
-            onSuccess={() => {
-              setWithdrawDialogOpen(false);
-              fetchWallets();
-            }} 
-          />
-        </DialogContent>
-      </Dialog>
+      <WithdrawDialog 
+        open={withdrawDialogOpen} 
+        onOpenChange={setWithdrawDialogOpen}
+        onSuccess={fetchWallets}
+      />
     </div>
   );
 }

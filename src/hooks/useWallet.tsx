@@ -119,6 +119,45 @@ export function useWallet() {
 
     if (user) {
       loadData();
+
+      // Set up real-time subscription for transactions
+      const transactionsChannel = supabase
+        .channel('transactions_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'transactions',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            fetchTransactions();
+          }
+        )
+        .subscribe();
+
+      // Set up real-time subscription for wallets
+      const walletsChannel = supabase
+        .channel('wallets_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'wallets',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            fetchWallets();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(transactionsChannel);
+        supabase.removeChannel(walletsChannel);
+      };
     }
   }, [user]);
 

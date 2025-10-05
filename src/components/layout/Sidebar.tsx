@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -64,13 +64,6 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
-
-  // Listen for toggle events from Header
-  useEffect(() => {
-    const handleToggle = () => setIsOpen((prev) => !prev);
-    window.addEventListener('toggle-sidebar', handleToggle);
-    return () => window.removeEventListener('toggle-sidebar', handleToggle);
-  }, []);
 
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = location.pathname === item.href;
@@ -150,8 +143,20 @@ export default function Sidebar() {
     </>
   );
 
+  const menuButton = isMobile && (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
+      onClick={toggleSidebar}
+    >
+      <Menu size={20} />
+    </Button>
+  );
+
   return (
     <>
+      {menuButton}
       <aside
         className={cn(
           "flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-50 border-r border-sidebar-border transition-transform duration-300",

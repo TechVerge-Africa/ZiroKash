@@ -3,6 +3,7 @@ import { CreditCard, DollarSign, Plus, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface BalanceCardProps {
   balance: number;
@@ -10,6 +11,9 @@ interface BalanceCardProps {
 }
 
 export default function BalanceCard({ balance, currency }: BalanceCardProps) {
+  const { formatAmount, convertAmount, userCurrency } = useCurrency();
+  const convertedBalance = convertAmount(balance, 'USD');
+  
   return (
     <Card className="glass-card border-white/10 overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4">
@@ -20,8 +24,8 @@ export default function BalanceCard({ balance, currency }: BalanceCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline mb-4">
-          <span className="text-3xl font-bold mr-2">${balance.toFixed(2)}</span>
-          <span className="text-xl text-muted-foreground">{currency}</span>
+          <span className="text-3xl font-bold mr-2">{formatAmount(convertedBalance)}</span>
+          <span className="text-xl text-muted-foreground">{userCurrency}</span>
         </div>
         
         <div className="grid grid-cols-2 gap-2">

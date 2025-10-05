@@ -3,6 +3,7 @@ import { ArrowDownLeft, ArrowUpRight, Clock, CheckCircle, XCircle } from "lucide
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWallet } from "@/hooks/useWallet";
+import { useCurrency } from "@/hooks/useCurrency";
 import { formatDistanceToNow } from "date-fns";
 
 export interface Transaction {
@@ -23,6 +24,7 @@ interface TransactionsListProps {
 
 export default function TransactionsList({ className }: TransactionsListProps) {
   const { transactions, loading } = useWallet();
+  const { formatAmount, convertAmount } = useCurrency();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -126,7 +128,7 @@ export default function TransactionsList({ className }: TransactionsListProps) {
                     <p className={`font-medium ${
                       isIncoming ? "text-green-600" : "text-red-600"
                     }`}>
-                      {isIncoming ? "+" : "-"}${(transaction.amount / 100).toFixed(2)}
+                      {isIncoming ? "+" : "-"}{formatAmount(convertAmount(transaction.amount / 100, 'USD'))}
                     </p>
                     {getStatusIcon(transaction.status)}
                   </div>

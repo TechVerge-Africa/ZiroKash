@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -26,8 +27,9 @@ const signUpSchema = z.object({
 });
 
 export function AuthForm() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -68,6 +70,18 @@ export function AuthForm() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        console.error("Google sign in error:", error.message);
+      }
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -130,6 +144,30 @@ export function AuthForm() {
                 </Button>
               </form>
             </Form>
+            
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            
+            <Button
+              
+              type="button"
+              className="w-full bg-background border hover:bg-blue-800"
+              disabled={isGoogleLoading}
+              onClick={onGoogleSignIn}
+            >
+              {isGoogleLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FcGoogle />
+              )}
+              Continue with Google
+            </Button>
           </TabsContent>
           
           <TabsContent value="signup">
@@ -193,6 +231,30 @@ export function AuthForm() {
                 </Button>
               </form>
             </Form>
+            
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            
+            <Button
+             
+              type="button"
+              className="w-full bg-background border hover:bg-blue-800"
+              disabled={isGoogleLoading}
+              onClick={onGoogleSignIn}
+            >
+              {isGoogleLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FcGoogle />
+              )}
+              Continue with Google
+            </Button>
           </TabsContent>
         </Tabs>
         </CardContent>

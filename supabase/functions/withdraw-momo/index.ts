@@ -43,6 +43,17 @@ Deno.serve(async (req) => {
       throw new Error('Phone number required');
     }
 
+    // Get user's main wallet
+    const { data: wallet, error: walletError } = await supabaseClient
+      .from('wallets')
+      .select('id, balance, currency')
+      .eq('user_id', user.id)
+      .eq('wallet_type', 'main')
+      .single();
+
+    if (walletError || !wallet) {
+      throw new Error('Wallet not found');
+    }
 
     // Convert amount to cents
     const amountInCents = Math.round(amount * 100);
@@ -191,6 +202,42 @@ Deno.serve(async (req) => {
       .eq('id', transaction.id);
 
     console.log(`MoMo withdrawal initiated: ${transaction.id} for user ${user.id}`);
+
+    // Get user profile for notification
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('full_name')
+      .eq('user_id', user.id)
+      .single();
+
+    // Get notification preferences
+    const { data: notifPrefs } = await supabaseClient
+      .from('notification_preferences')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    // Send notification (don't block response)
+    if (notifPrefs) {
+      supabaseClient.functions.invoke('send-notification', {
+        body: {
+          type: notifPrefs.email_enabled && notifPrefs.sms_enabled ? 'both' : notifPrefs.email_enabled ? 'email' : 'sms',
+          template: 'transaction-success',
+          recipient: {
+            email: user.email,
+            phone: phone_number,
+            name: profile?.full_name || user.email?.split('@')[0] || 'User',
+          },
+          data: {
+            transactionType: 'Withdrawal',
+            amount: (amountInCents / 100).toFixed(2),
+            currency: wallet.currency,
+            reference: transferData.data.transfer_code,
+            date: new Date().toLocaleString(),
+          },
+        },
+      }).catch(err => console.error('Notification error:', err));
+    }
 
     return new Response(
       JSON.stringify({

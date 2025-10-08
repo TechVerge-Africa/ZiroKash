@@ -94,6 +94,42 @@ Deno.serve(async (req) => {
 
       console.log(`Deposit completed: ${transactionId}, credited ${transaction.amount} cents`);
 
+      // Send success notification
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', transaction.user_id)
+        .single();
+
+      const { data: user } = await supabaseClient.auth.admin.getUserById(transaction.user_id);
+
+      const { data: notifPrefs } = await supabaseClient
+        .from('notification_preferences')
+        .select('*')
+        .eq('user_id', transaction.user_id)
+        .single();
+
+      if (notifPrefs && user) {
+        await supabaseClient.functions.invoke('send-notification', {
+          body: {
+            type: notifPrefs.email_enabled && notifPrefs.sms_enabled ? 'both' : notifPrefs.email_enabled ? 'email' : 'sms',
+            template: 'transaction-success',
+            recipient: {
+              email: user.user.email,
+              phone: transaction.metadata?.phone_number,
+              name: profile?.full_name || user.user.email?.split('@')[0] || 'User',
+            },
+            data: {
+              transactionType: 'Deposit',
+              amount: (transaction.amount / 100).toFixed(2),
+              currency: transaction.currency,
+              reference: reference,
+              date: new Date().toLocaleString(),
+            },
+          },
+        }).catch(err => console.error('Notification error:', err));
+      }
+
     } else if (payload.event === 'charge.failed') {
       const transactionId = payload.data.metadata?.transaction_id;
       
@@ -107,6 +143,50 @@ Deno.serve(async (req) => {
           .eq('id', transactionId);
 
         console.log(`Deposit failed: ${transactionId}`);
+
+        // Send failure notification
+        const { data: transaction } = await supabaseClient
+          .from('transactions')
+          .select('*')
+          .eq('id', transactionId)
+          .single();
+
+        if (transaction) {
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', transaction.user_id)
+            .single();
+
+          const { data: user } = await supabaseClient.auth.admin.getUserById(transaction.user_id);
+
+          const { data: notifPrefs } = await supabaseClient
+            .from('notification_preferences')
+            .select('*')
+            .eq('user_id', transaction.user_id)
+            .single();
+
+          if (notifPrefs && user) {
+            await supabaseClient.functions.invoke('send-notification', {
+              body: {
+                type: notifPrefs.email_enabled && notifPrefs.sms_enabled ? 'both' : notifPrefs.email_enabled ? 'email' : 'sms',
+                template: 'transaction-failed',
+                recipient: {
+                  email: user.user.email,
+                  phone: transaction.metadata?.phone_number,
+                  name: profile?.full_name || user.user.email?.split('@')[0] || 'User',
+                },
+                data: {
+                  transactionType: 'Deposit',
+                  amount: (transaction.amount / 100).toFixed(2),
+                  currency: transaction.currency,
+                  reference: payload.data.reference,
+                  reason: payload.data.gateway_response || 'Payment declined',
+                },
+              },
+            }).catch(err => console.error('Notification error:', err));
+          }
+        }
       }
     }
 

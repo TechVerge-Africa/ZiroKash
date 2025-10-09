@@ -206,7 +206,7 @@ export default function EnhancedDashboard() {
         <QuickStat
           title="Total Balance"
           value={hideBalance ? "****" : formatAmount(stats.totalBalance)}
-          change="+2.5%"
+          change={null}
           isPositive={true}
           icon={
             <Button
@@ -224,7 +224,7 @@ export default function EnhancedDashboard() {
         <QuickStat
           title="Savings"
           value={formatAmount(stats.savingsBalance)}
-          change="+8.2%"
+          change={null}
           isPositive={true}
           icon={<PiggyBank className="h-6 w-6 text-primary" />}
           onClick={() => {}}
@@ -233,7 +233,7 @@ export default function EnhancedDashboard() {
         <QuickStat
           title="Monthly Spending"
           value={formatAmount(stats.monthlySpend)}
-          change="-5.1%"
+          change={null}
           isPositive={true}
           icon={<TrendingUp className="h-6 w-6 text-primary" />}
           onClick={() => {}}
@@ -242,6 +242,7 @@ export default function EnhancedDashboard() {
         <QuickStat
           title="Available Credit"
           value={formatAmount(stats.totalCredit)}
+          change={null}
           icon={<CreditCard className="h-6 w-6 text-primary" />}
           onClick={() => {}}
         />
@@ -342,76 +343,21 @@ export default function EnhancedDashboard() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Savings Goal */}
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Savings Goal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Emergency Fund</span>
-                  <span className="text-sm font-medium">70%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full w-[70%]"></div>
-                </div>
-                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>$7,000</span>
-                  <span>$10,000</span>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/wallet">Add to Savings</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Security Status */}
           <Card className="glass-card border-white/10">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Security Status
+                Account Security
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm">2FA Enabled</span>
-                <Badge variant="default" className="bg-green-500">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">PIN Set</span>
-                <Badge variant="default" className="bg-green-500">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Biometric</span>
-                <Badge variant="secondary">Setup</Badge>
+                <span className="text-sm">Account Status</span>
+                <Badge variant="default" className="bg-green-500">Verified</Badge>
               </div>
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/security">Manage Security</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Rewards */}
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Gift className="h-5 w-5" />
-                Rewards
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-primary">1,250</p>
-                <p className="text-sm text-muted-foreground">ZiroPoints Available</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/rewards">Redeem Rewards</Link>
+                <Link to="/security">Security Settings</Link>
               </Button>
             </CardContent>
           </Card>

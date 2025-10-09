@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       throw new Error('Payment provider not configured');
     }
 
-    // Create transfer recipient
+    // Create transfer recipient using system email
     const recipientResponse = await fetch('https://api.paystack.co/transferrecipient', {
       method: 'POST',
       headers: {
@@ -134,6 +134,10 @@ Deno.serve(async (req) => {
         account_number: account_number,
         bank_code: bank_code,
         currency: currency,
+        metadata: {
+          user_id: user.id,
+          user_email: user.email, // Store actual email in metadata for our use
+        },
       }),
     });
 

@@ -130,10 +130,14 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         type: 'mobile_money',
-        name: user.email?.split('@')[0] || 'User',
+        name: 'ZiroKash User',
         account_number: phone_number,
         bank_code: provider.toUpperCase(),
         currency: currency,
+        metadata: {
+          user_id: user.id,
+          user_email: user.email, // Store actual email in metadata for our use
+        },
       }),
     });
 

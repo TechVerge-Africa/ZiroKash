@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: user.email,
+        email: 'transactions@zirokash.com', // Use proxy email to hide Paystack from users
         amount: amountInCents,
         currency: currency,
         reference: transaction.id,
@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
         metadata: {
           transaction_id: transaction.id,
           user_id: user.id,
+          user_email: user.email, // Store actual email in metadata for our use
         },
         callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/deposit-webhook`,
       }),

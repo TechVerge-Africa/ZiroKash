@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;    /* Slightly off-white for better contrast */
     --foreground: 217 35% 15%;
     
     --card: 0 0% 100%;
@@ -13,34 +13,34 @@
     --popover: 0 0% 100%;
     --popover-foreground: 217 35% 15%;
     
-    --primary: 217 91% 30%;
+    --primary: 24 85% 50%;      /* Vibrant Orange */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 180 100% 50%;
-    --secondary-foreground: 217 35% 15%;
+    --secondary: 160 60% 45%;   /* Richer Forest Green */
+    --secondary-foreground: 24 75% 98%;
     
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 20% 97%;       /* Cooler gray for better contrast */
+    --muted-foreground: 215 25% 35%;  /* Darker muted text for readability */
     
-    --accent: 271 81% 56%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 93% 47%;       /* Gold */
+    --accent-foreground: 24 35% 15%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 30%;
+    --border: 215 25% 85%;      /* More visible border color */
+    --input: 215 25% 85%;
+    --ring: 24 75% 50%;
     
     --radius: 0.75rem;
     
     /* ZiroKash Brand Colors */
-    --zirokash-blue: 217 91% 30%;
-    --zirokash-teal: 180 100% 50%;
-    --zirokash-purple: 271 81% 56%;
-    --zirokash-gradient: linear-gradient(135deg, hsl(217 91% 30%) 0%, hsl(180 100% 50%) 50%, hsl(271 81% 56%) 100%);
+    --zirokash-orange: 24 75% 50%;     /* Primary brand color */
+    --zirokash-green: 160 50% 45%;     /* Growth & prosperity */
+    --zirokash-gold: 45 93% 47%;       /* African wealth & heritage */
+    --zirokash-gradient: linear-gradient(135deg, hsl(24 75% 50%) 0%, hsl(160 50% 45%) 50%, hsl(45 93% 47%) 100%);
     --zirokash-glass: rgba(255, 255, 255, 0.1);
-    --zirokash-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    --zirokash-shadow: 0 8px 32px rgba(50, 30, 0, 0.37);
     
     --sidebar-background: 210 40% 96.1%;
     --sidebar-foreground: 222 47% 11%;
@@ -62,32 +62,32 @@
     --popover: 217 35% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217 91% 40%;
+    --primary: 24 85% 55%;       /* Brighter Orange for dark theme */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 100% 60%;
-    --secondary-foreground: 217 35% 8%;
+    --secondary: 160 60% 50%;    /* Brighter Forest Green */
+    --secondary-foreground: 24 85% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 24 32.6% 17.5%;
+    --muted-foreground: 24 20.2% 65.1%;
 
-    --accent: 271 81% 66%;
+    --accent: 45 100% 50%;      /* Brighter Gold */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217 91% 40%;
+    --border: 24 32.6% 17.5%;
+    --input: 24 32.6% 17.5%;
+    --ring: 24 85% 55%;
     
     /* ZiroKash Dark Colors */
-    --zirokash-blue: 217 91% 40%;
-    --zirokash-teal: 180 100% 60%;
-    --zirokash-purple: 271 81% 66%;
-    --zirokash-gradient: linear-gradient(135deg, hsl(217 91% 40%) 0%, hsl(180 100% 60%) 50%, hsl(271 81% 66%) 100%);
+    --zirokash-orange: 24 85% 55%;     /* Primary brand color */
+    --zirokash-green: 160 60% 50%;     /* Growth & prosperity */
+    --zirokash-gold: 45 100% 50%;      /* African wealth & heritage */
+    --zirokash-gradient: linear-gradient(135deg, hsl(24 85% 55%) 0%, hsl(160 60% 50%) 50%, hsl(45 100% 50%) 100%);
     --zirokash-glass: rgba(255, 255, 255, 0.05);
-    --zirokash-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    --zirokash-shadow: 0 8px 32px rgba(50, 30, 0, 0.2);
 
     --sidebar-background: 222 47% 10%;
     --sidebar-foreground: 210 40% 98%;

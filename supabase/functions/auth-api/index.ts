@@ -18,6 +18,10 @@ interface LoginRequest {
   password: string;
 }
 
+interface GoogleLoginRequest {
+  id_token: string;
+}
+
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -34,6 +38,8 @@ serve(async (req) => {
   // Route to different handlers
   if (path.includes('/register')) {
     return handleRegister(req);
+  } else if (path.includes('/login/google')) {
+    return handleGoogleLogin(req);
   } else if (path.includes('/login')) {
     return handleLogin(req);
   } else if (path.includes('/me')) {
@@ -159,6 +165,104 @@ async function handleLogin(req: Request) {
     console.error('Login error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Login failed' }),
+      { 
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+}
+
+async function handleGoogleLogin(req: Request) {
+  try {
+    const { id_token }: GoogleLoginRequest = await req.json();
+
+    // Validate input
+    if (!id_token) {
+      throw new Error('Google ID token is required');
+    }
+
+    // Sign in with Google using the ID token
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: id_token,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Check if user profile exists, create if not
+    let { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single();
+
+    if (profileError && profileError.code === 'PGRST116') {
+      // Profile doesn't exist, create one
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: data.user.id,
+          full_name: data.user.user_metadata.full_name || data.user.user_metadata.name,
+          email: data.user.email,
+          kyc_status: 'pending',
+          verification_level: 1
+        })
+        .select()
+        .single();
+      
+      if (createError) {
+        console.error('Error creating profile:', createError);
+      } else {
+        profile = newProfile;
+      }
+    }
+
+    // Get user roles
+    const { data: roles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', data.user.id);
+
+    // If no roles exist, assign default user role
+    if (!roles || roles.length === 0) {
+      await supabase
+        .from('user_roles')
+        .insert({
+          user_id: data.user.id,
+          role: 'user'
+        });
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          full_name: profile?.full_name || data.user.user_metadata.full_name || data.user.user_metadata.name,
+          phone: profile?.phone,
+          kyc_status: profile?.kyc_status || 'pending',
+          verification_level: profile?.verification_level || 1,
+          roles: roles?.map(r => r.role) || ['user'],
+          avatar_url: data.user.user_metadata.avatar_url
+        },
+        session: {
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+          expires_at: data.session.expires_at
+        },
+        message: 'Google login successful'
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Google login error:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Google login failed' }),
       { 
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

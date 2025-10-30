@@ -33,19 +33,15 @@ export default function Header(): JSX.Element {
   };
   
   return (
-    <div className="sticky top-0 z-20 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="relative flex h-16 items-center justify-between px-2 sm:px-4">
-        {/* Left side - Menu Icon (mobile) or Search (desktop) */}
+    <div className="sticky top-0 z-20 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className={cn(
+        "relative flex h-14 md:h-16 items-center justify-between",
+        isMobile ? "px-4" : "px-6 border-b border-border"
+      )}>
+        {/* Left side - Page Title (mobile) or Search (desktop) */}
         <div className="flex-1 flex items-center min-w-0 md:max-w-xs">
           {isMobile ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90 transition-colors relative z-20"
-              onClick={() => document.dispatchEvent(new Event('toggle-sidebar'))}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            <div></div>
           ) : (
             <div className="relative flex-1">
               <input
@@ -57,8 +53,8 @@ export default function Header(): JSX.Element {
           )}
         </div>
 
-        {/* Center - Logo (mobile only) */}
-        {isMobile && (
+        {/* Center - Logo (desktop only) */}
+        {!isMobile && (
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
             <Link to="/dashboard" className="flex items-center">
               <div className="relative group">
@@ -73,14 +69,17 @@ export default function Header(): JSX.Element {
         )}
 
         {/* Right side - Notifications & User menu */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-3 flex-shrink-0">
           {/* Notifications */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative h-9 w-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90 transition-colors"
+            className={cn(
+              "relative",
+              isMobile ? "h-8 w-8" : "h-9 w-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90"
+            )}
           >
-            <Bell size={18} className="text-foreground/80" />
+            <Bell size={isMobile ? 20 : 18} className="text-foreground/80" />
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background"></span>
           </Button>
           
@@ -89,9 +88,12 @@ export default function Header(): JSX.Element {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="gap-2 h-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90 transition-colors px-2"
+                className={cn(
+                  "gap-2",
+                  isMobile ? "h-8 w-8 p-0" : "h-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90 px-2"
+                )}
               >
-                <Avatar className="h-7 w-7">
+                <Avatar className={isMobile ? "h-8 w-8" : "h-7 w-7"}>
                   <AvatarFallback className="bg-gradient-to-br from-primary/10 to-secondary/10 text-primary text-xs">
                     {getUserInitials()}
                   </AvatarFallback>

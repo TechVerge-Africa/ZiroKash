@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -65,6 +65,13 @@ export default function Sidebar() {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
+  // Listen for toggle events from bottom nav
+  useEffect(() => {
+    const handleToggle = () => setIsOpen(prev => !prev);
+    document.addEventListener('toggle-sidebar', handleToggle);
+    return () => document.removeEventListener('toggle-sidebar', handleToggle);
+  }, []);
+
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = location.pathname === item.href;
     
@@ -89,50 +96,65 @@ export default function Sidebar() {
   };
 
   const sidebarContent = (
-    <>
-      <div className="flex items-center gap-2 px-3 py-4 z-90">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-            Z
+    <div className="flex flex-col h-full">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-4">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+              Z
+            </div>
+            <span className="text-xl font-bold gradient-text">ZiroKash</span>
+          </Link>
+          {isMobile && (
+            <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
+              <X size={20} />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Scrollable Navigation Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-sidebar-accent scrollbar-track-transparent">
+        <div className="px-3 py-2">
+          {/* Only show main nav items on desktop */}
+          {!isMobile && (
+            <div className="space-y-1">
+              {mainNavItems.map((item) => (
+                <NavLink key={item.name} item={item} />
+              ))}
+            </div>
+          )}
+          
+          {/* Show additional services on both mobile and desktop */}
+          <div className={cn("space-y-1", !isMobile && "mt-6")}>
+            <p className="text-xs font-medium text-muted-foreground px-3 mb-2">SERVICES</p>
+            {additionalNavItems.map((item) => (
+              <NavLink key={item.name} item={item} />
+            ))}
           </div>
-          <span className="text-xl font-bold gradient-text">ZiroKash</span>
-        </Link>
-        {isMobile && (
-          <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
-            <X size={20} />
-          </Button>
-        )}
-      </div>
-      <div className="px-3 py-2">
-        <div className="space-y-1">
-          {mainNavItems.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-        
-        <div className="mt-6 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground px-3 mb-2">SERVICES</p>
-          {additionalNavItems.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-        
-        <div className="mt-6 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground px-3 mb-2">ACCOUNT</p>
-          {accountNavItems.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
-        </div>
-        
-        <div className="mt-6 space-y-1">
-          <p className="text-xs font-medium text-muted-foreground px-3 mb-2">HELP</p>
-          {supportNavItems.map((item) => (
-            <NavLink key={item.name} item={item} />
-          ))}
+          
+          {/* Show account settings on both */}
+          <div className="mt-6 space-y-1">
+            <p className="text-xs font-medium text-muted-foreground px-3 mb-2">ACCOUNT</p>
+            {accountNavItems.map((item) => (
+              <NavLink key={item.name} item={item} />
+            ))}
+          </div>
+          
+          {/* Show support links on both */}
+          <div className="mt-6 space-y-1">
+            <p className="text-xs font-medium text-muted-foreground px-3 mb-2">HELP</p>
+            {supportNavItems.map((item) => (
+              <NavLink key={item.name} item={item} />
+            ))}
+          </div>
         </div>
       </div>
-      <div className="mt-auto px-3 py-4">
-        <div className="glass-card rounded-lg p-3 mb-4">
+
+      {/* Fixed Footer */}
+      <div className="flex-shrink-0 px-3 py-4 border-t border-sidebar-border bg-sidebar">
+        <div className="glass-card rounded-lg p-3">
           <p className="text-xs text-muted-foreground">Go Pro</p>
           <p className="text-sm font-medium mt-1">Upgrade to Premium</p>
           <Button size="sm" className="mt-2 w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
@@ -140,7 +162,7 @@ export default function Sidebar() {
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 
   const menuButton = isMobile && (
@@ -160,9 +182,8 @@ export default function Sidebar() {
       <aside
         className={cn(
           "flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-50 border-r border-sidebar-border transition-transform duration-300",
-          isMobile 
-            ? isOpen ? "translate-x-0 w-64" : "-translate-x-full" 
-            : "w-64"
+          "w-64",
+          isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
         )}
       >
         {sidebarContent}

@@ -44,48 +44,50 @@ serve(async (req) => {
           expires_at: expiresAt,
         });
 
-        // Send SMS via Twilio (with dev mode fallback)
-        const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-        const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-        const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+        // Send SMS via AfricasTalking (Ghana-focused provider)
+        const atUsername = Deno.env.get('AFRICAS_TALKING_USERNAME');
+        const atApiKey = Deno.env.get('AFRICAS_TALKING_API_KEY');
 
         let smsSuccess = false;
         let devMode = false;
 
-        if (twilioAccountSid && twilioAuthToken && twilioPhone) {
+        if (atUsername && atApiKey) {
           try {
-            const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+            const atUrl = 'https://api.africastalking.com/version1/messaging';
             const body = new URLSearchParams({
-              To: phone,
-              From: twilioPhone,
-              Body: `Your ZiroKash verification code is: ${otpCode}. Valid for 5 minutes.`,
+              username: atUsername,
+              to: phone,
+              message: `Your ZiroKash verification code is: ${otpCode}. Valid for 5 minutes. Do not share this code.`,
+              from: 'ZiroKash'
             });
 
-            const twilioResponse = await fetch(twilioUrl, {
+            const atResponse = await fetch(atUrl, {
               method: 'POST',
               headers: {
-                'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
+                'apiKey': atApiKey,
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
               },
               body: body.toString(),
             });
 
-            if (twilioResponse.ok) {
+            const responseData = await atResponse.json();
+            
+            if (atResponse.ok && responseData.SMSMessageData?.Recipients?.[0]?.status === 'Success') {
               smsSuccess = true;
-              console.log('OTP sent via Twilio to:', phone);
+              console.log('OTP sent via AfricasTalking to:', phone);
             } else {
-              const errorText = await twilioResponse.text();
-              console.error('Twilio error:', errorText);
+              console.error('AfricasTalking error:', responseData);
               console.log('Falling back to dev mode');
               devMode = true;
             }
           } catch (error) {
-            console.error('Twilio request failed:', error);
+            console.error('AfricasTalking request failed:', error);
             console.log('Falling back to dev mode');
             devMode = true;
           }
         } else {
-          console.log('Twilio credentials not configured, using dev mode');
+          console.log('AfricasTalking credentials not configured, using dev mode');
           devMode = true;
         }
 
@@ -97,7 +99,8 @@ serve(async (req) => {
           JSON.stringify({ 
             success: true, 
             message: responseMessage,
-            devMode 
+            devMode,
+            ...(devMode && { otp: otpCode }) // Include OTP in dev mode for testing
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );

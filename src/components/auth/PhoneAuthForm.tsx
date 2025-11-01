@@ -38,9 +38,15 @@ export function PhoneAuthForm() {
 
       if (error) throw error;
 
+      // If in dev mode, show the OTP in the toast
+      const description = data.devMode 
+        ? `DEV MODE: Your code is ${data.otp}` 
+        : `Verification code sent to ${phone}`;
+
       toast({
         title: "OTP Sent!",
-        description: `Verification code sent to ${phone}`,
+        description,
+        duration: data.devMode ? 10000 : 5000, // Longer duration in dev mode
       });
       setStep('otp');
     } catch (error: any) {

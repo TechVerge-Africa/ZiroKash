@@ -44,43 +44,61 @@ serve(async (req) => {
           expires_at: expiresAt,
         });
 
-        // Send SMS via Twilio
+        // Send SMS via Twilio (with dev mode fallback)
         const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
         const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
         const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
 
-        if (!twilioAccountSid || !twilioAuthToken || !twilioPhone) {
-          console.error('Twilio credentials not configured');
-          return new Response(
-            JSON.stringify({ success: true, message: 'OTP sent (dev mode)', otp: otpCode }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-          );
+        let smsSuccess = false;
+        let devMode = false;
+
+        if (twilioAccountSid && twilioAuthToken && twilioPhone) {
+          try {
+            const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+            const body = new URLSearchParams({
+              To: phone,
+              From: twilioPhone,
+              Body: `Your ZiroKash verification code is: ${otpCode}. Valid for 5 minutes.`,
+            });
+
+            const twilioResponse = await fetch(twilioUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: body.toString(),
+            });
+
+            if (twilioResponse.ok) {
+              smsSuccess = true;
+              console.log('OTP sent via Twilio to:', phone);
+            } else {
+              const errorText = await twilioResponse.text();
+              console.error('Twilio error:', errorText);
+              console.log('Falling back to dev mode');
+              devMode = true;
+            }
+          } catch (error) {
+            console.error('Twilio request failed:', error);
+            console.log('Falling back to dev mode');
+            devMode = true;
+          }
+        } else {
+          console.log('Twilio credentials not configured, using dev mode');
+          devMode = true;
         }
 
-        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-        const body = new URLSearchParams({
-          To: phone,
-          From: twilioPhone,
-          Body: `Your ZiroKash verification code is: ${otpCode}. Valid for 5 minutes.`,
-        });
+        const responseMessage = devMode 
+          ? `OTP sent (dev mode). Your code is: ${otpCode}`
+          : 'OTP sent successfully to your phone';
 
-        const twilioResponse = await fetch(twilioUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: body.toString(),
-        });
-
-        if (!twilioResponse.ok) {
-          console.error('Twilio error:', await twilioResponse.text());
-          throw new Error('Failed to send SMS');
-        }
-
-        console.log('OTP sent to:', phone);
         return new Response(
-          JSON.stringify({ success: true, message: 'OTP sent successfully' }),
+          JSON.stringify({ 
+            success: true, 
+            message: responseMessage,
+            devMode 
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }

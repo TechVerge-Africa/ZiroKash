@@ -490,6 +490,36 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otps: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          otp_hash: string
+          phone: string
+          verified: boolean | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          otp_hash: string
+          phone: string
+          verified?: boolean | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          otp_hash?: string
+          phone?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -501,6 +531,7 @@ export type Database = {
           kyc_documents: Json | null
           kyc_status: Database["public"]["Enums"]["kyc_status"] | null
           phone: string | null
+          phone_verified: boolean | null
           updated_at: string
           user_id: string
           verification_level: number | null
@@ -516,6 +547,7 @@ export type Database = {
           kyc_documents?: Json | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
           phone?: string | null
+          phone_verified?: boolean | null
           updated_at?: string
           user_id: string
           verification_level?: number | null
@@ -531,6 +563,7 @@ export type Database = {
           kyc_documents?: Json | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"] | null
           phone?: string | null
+          phone_verified?: boolean | null
           updated_at?: string
           user_id?: string
           verification_level?: number | null
@@ -691,6 +724,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_pins: {
+        Row: {
+          created_at: string | null
+          failed_attempts: number | null
+          id: string
+          locked_until: string | null
+          pin_hash: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          locked_until?: string | null
+          pin_hash: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          failed_attempts?: number | null
+          id?: string
+          locked_until?: string | null
+          pin_hash?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
@@ -827,6 +890,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_otps: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]

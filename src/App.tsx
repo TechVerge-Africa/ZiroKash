@@ -23,7 +23,6 @@ import Rewards from "./pages/Rewards";
 import Profile from "./pages/Profile";
 import Support from "./pages/Support";
 import About from "./pages/About";
-import Onboarding from "./pages/Onboarding";
 import MainLayout from "./components/layout/MainLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
@@ -52,11 +51,6 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<RootRedirect />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/onboarding" element={
-        <ProtectedRoute>
-          <Onboarding />
-        </ProtectedRoute>
-      } />
       
       {/* Protected Routes */}
       <Route path="/dashboard" element={

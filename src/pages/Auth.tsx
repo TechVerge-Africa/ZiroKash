@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PhoneAuthForm } from "@/components/auth/PhoneAuthForm";
+import { AuthForm } from "@/components/auth/AuthForm";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Auth() {
@@ -23,7 +23,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen grid-pattern flex flex-col items-center justify-center p-4">
-      <PhoneAuthForm />
+      <AuthForm />
       
       <div className="mt-8 text-center text-sm text-muted-foreground max-w-md">
         <p>© 2025 ZiroKash. All rights reserved.</p>

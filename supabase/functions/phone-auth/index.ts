@@ -44,63 +44,45 @@ serve(async (req) => {
           expires_at: expiresAt,
         });
 
-        // Send SMS via AfricasTalking (Ghana-focused provider)
+        // Send SMS via AfricasTalking
         const atUsername = Deno.env.get('AFRICAS_TALKING_USERNAME');
         const atApiKey = Deno.env.get('AFRICAS_TALKING_API_KEY');
 
-        let smsSuccess = false;
-        let devMode = false;
-
-        if (atUsername && atApiKey) {
-          try {
-            const atUrl = 'https://api.africastalking.com/version1/messaging';
-            const body = new URLSearchParams({
-              username: atUsername,
-              to: phone,
-              message: `Your ZiroKash verification code is: ${otpCode}. Valid for 5 minutes. Do not share this code.`,
-              from: 'ZiroKash'
-            });
-
-            const atResponse = await fetch(atUrl, {
-              method: 'POST',
-              headers: {
-                'apiKey': atApiKey,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json'
-              },
-              body: body.toString(),
-            });
-
-            const responseData = await atResponse.json();
-            
-            if (atResponse.ok && responseData.SMSMessageData?.Recipients?.[0]?.status === 'Success') {
-              smsSuccess = true;
-              console.log('OTP sent via AfricasTalking to:', phone);
-            } else {
-              console.error('AfricasTalking error:', responseData);
-              console.log('Falling back to dev mode');
-              devMode = true;
-            }
-          } catch (error) {
-            console.error('AfricasTalking request failed:', error);
-            console.log('Falling back to dev mode');
-            devMode = true;
-          }
-        } else {
-          console.log('AfricasTalking credentials not configured, using dev mode');
-          devMode = true;
+        if (!atUsername || !atApiKey) {
+          throw new Error('SMS service not configured');
         }
 
-        const responseMessage = devMode 
-          ? `OTP sent (dev mode). Your code is: ${otpCode}`
-          : 'OTP sent successfully to your phone';
+        const atUrl = 'https://api.africastalking.com/version1/messaging';
+        const body = new URLSearchParams({
+          username: atUsername,
+          to: phone,
+          message: `Your ZiroKash verification code is: ${otpCode}. Valid for 5 minutes. Do not share this code.`,
+          from: 'ZiroKash'
+        });
+
+        const atResponse = await fetch(atUrl, {
+          method: 'POST',
+          headers: {
+            'apiKey': atApiKey,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          },
+          body: body.toString(),
+        });
+
+        const responseData = await atResponse.json();
+        
+        if (!atResponse.ok || responseData.SMSMessageData?.Recipients?.[0]?.status !== 'Success') {
+          console.error('AfricasTalking error:', responseData);
+          throw new Error('Failed to send SMS');
+        }
+
+        console.log('OTP sent via AfricasTalking to:', phone);
 
         return new Response(
           JSON.stringify({ 
             success: true, 
-            message: responseMessage,
-            devMode,
-            ...(devMode && { otp: otpCode }) // Include OTP in dev mode for testing
+            message: 'OTP sent successfully to your phone'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
@@ -161,13 +143,14 @@ serve(async (req) => {
       }
 
       case 'create-account': {
-        // Create auth user with phone as email substitute
-        const randomEmail = `${phone.replace(/\+/g, '')}@zirokash.temp`;
-        const randomPassword = crypto.randomUUID();
+        const { email, password } = await req.json();
+
+        // Create auth user with email or phone-based email
+        const userEmail = email || `${phone.replace(/\+/g, '')}@zirokash.temp`;
 
         const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email: randomEmail,
-          password: randomPassword,
+          email: userEmail,
+          password: password,
           email_confirm: true,
           user_metadata: {
             phone: phone,
@@ -188,18 +171,6 @@ serve(async (req) => {
           })
           .eq('user_id', authData.user.id);
 
-        // Hash and store PIN
-        const pinEncoder = new TextEncoder();
-        const pinData = pinEncoder.encode(pin);
-        const pinHashBuffer = await crypto.subtle.digest('SHA-256', pinData);
-        const pinHashArray = Array.from(new Uint8Array(pinHashBuffer));
-        const pinHash = pinHashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-        await supabase.from('user_pins').insert({
-          user_id: authData.user.id,
-          pin_hash: pinHash,
-        });
-
         console.log('Account created for:', phone);
 
         return new Response(
@@ -207,6 +178,32 @@ serve(async (req) => {
             success: true, 
             userId: authData.user.id,
             message: 'Account created successfully' 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
+
+      case 'setup-pin': {
+        const { userId } = await req.json();
+
+        // Hash and store PIN
+        const pinEncoder = new TextEncoder();
+        const pinData = pinEncoder.encode(pin);
+        const pinHashBuffer = await crypto.subtle.digest('SHA-256', pinData);
+        const pinHashArray = Array.from(new Uint8Array(pinHashBuffer));
+        const pinHash = pinHashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        await supabase.from('user_pins').upsert({
+          user_id: userId,
+          pin_hash: pinHash,
+        });
+
+        console.log('PIN setup for user:', userId);
+
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: 'PIN setup successfully' 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );

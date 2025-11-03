@@ -7,15 +7,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Phone, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-type AuthStep = 'phone' | 'otp' | 'pin-setup' | 'pin-enter';
+type AuthStep = 'phone' | 'otp' | 'signup' | 'login';
 
 export function PhoneAuthForm() {
   const { toast } = useToast();
   const [step, setStep] = useState<AuthStep>('phone');
   const [phone, setPhone] = useState('+233');
   const [otp, setOtp] = useState('');
-  const [pin, setPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -38,15 +39,9 @@ export function PhoneAuthForm() {
 
       if (error) throw error;
 
-      // If in dev mode, show the OTP in the toast
-      const description = data.devMode 
-        ? `DEV MODE: Your code is ${data.otp}` 
-        : `Verification code sent to ${phone}`;
-
       toast({
         title: "OTP Sent!",
-        description,
-        duration: data.devMode ? 10000 : 5000, // Longer duration in dev mode
+        description: `Verification code sent to ${phone}`,
       });
       setStep('otp');
     } catch (error: any) {
@@ -83,16 +78,16 @@ export function PhoneAuthForm() {
       
       if (data.isNewUser) {
         toast({
-          title: "Welcome to ZiroKash!",
-          description: "Please set up your secure PIN",
+          title: "Phone Verified!",
+          description: "Please create your account",
         });
-        setStep('pin-setup');
+        setStep('signup');
       } else {
         toast({
           title: "Welcome back!",
-          description: "Please enter your PIN",
+          description: "Please enter your password",
         });
-        setStep('pin-enter');
+        setStep('login');
       }
     } catch (error: any) {
       toast({
@@ -105,20 +100,20 @@ export function PhoneAuthForm() {
     }
   };
 
-  const handleSetupPIN = async () => {
-    if (pin.length < 4 || pin.length > 6) {
+  const handleSignup = async () => {
+    if (password.length < 6) {
       toast({
-        title: "Invalid PIN",
-        description: "PIN must be 4-6 digits",
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters",
         variant: "destructive",
       });
       return;
     }
 
-    if (pin !== confirmPin) {
+    if (password !== confirmPassword) {
       toast({
-        title: "PINs don't match",
-        description: "Please make sure both PINs are the same",
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are the same",
         variant: "destructive",
       });
       return;
@@ -127,18 +122,25 @@ export function PhoneAuthForm() {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('phone-auth', {
-        body: { action: 'create-account', phone, pin }
+        body: { action: 'create-account', phone, email: email || undefined, password }
       });
 
       if (error) throw error;
+
+      // Sign in the user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email || `${phone.replace(/\+/g, '')}@zirokash.temp`,
+        password,
+      });
+
+      if (signInError) throw signInError;
 
       toast({
         title: "Account Created!",
-        description: "Redirecting to dashboard...",
+        description: "Redirecting to onboarding...",
       });
       
-      // Redirect will be handled by auth state change
-      window.location.href = '/dashboard';
+      window.location.href = '/onboarding';
     } catch (error: any) {
       toast({
         title: "Error",
@@ -150,11 +152,11 @@ export function PhoneAuthForm() {
     }
   };
 
-  const handleVerifyPIN = async () => {
-    if (pin.length < 4) {
+  const handleLogin = async () => {
+    if (password.length < 6) {
       toast({
-        title: "Invalid PIN",
-        description: "Please enter your PIN",
+        title: "Invalid Password",
+        description: "Please enter your password",
         variant: "destructive",
       });
       return;
@@ -162,20 +164,12 @@ export function PhoneAuthForm() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('phone-auth', {
-        body: { action: 'verify-pin', phone, pin, userId }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: `${phone.replace(/\+/g, '')}@zirokash.temp`,
+        password,
       });
 
       if (error) throw error;
-
-      if (data.attemptsLeft !== undefined) {
-        toast({
-          title: "Invalid PIN",
-          description: `${data.attemptsLeft} attempts remaining`,
-          variant: "destructive",
-        });
-        return;
-      }
 
       toast({
         title: "Login Successful!",
@@ -201,8 +195,8 @@ export function PhoneAuthForm() {
         <CardDescription>
           {step === 'phone' && 'Enter your phone number to continue'}
           {step === 'otp' && 'Enter the code sent to your phone'}
-          {step === 'pin-setup' && 'Create your secure PIN'}
-          {step === 'pin-enter' && 'Enter your PIN to sign in'}
+          {step === 'signup' && 'Create your account'}
+          {step === 'login' && 'Enter your password to sign in'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -264,40 +258,48 @@ export function PhoneAuthForm() {
           </>
         )}
 
-        {step === 'pin-setup' && (
+        {step === 'signup' && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="pin">Create PIN (4-6 digits)</Label>
+              <Label htmlFor="email">Email (Optional)</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="pin"
+                  id="password"
                   type="password"
-                  placeholder="****"
-                  maxLength={6}
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Min. 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="flex-1"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-pin">Confirm PIN</Label>
+              <Label htmlFor="confirm-password">Confirm Password</Label>
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="confirm-pin"
+                  id="confirm-password"
                   type="password"
-                  placeholder="****"
-                  maxLength={6}
-                  value={confirmPin}
-                  onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="flex-1"
                 />
               </div>
             </div>
             <Button 
-              onClick={handleSetupPIN} 
+              onClick={handleSignup} 
               disabled={loading}
               className="w-full"
             >
@@ -306,25 +308,24 @@ export function PhoneAuthForm() {
           </>
         )}
 
-        {step === 'pin-enter' && (
+        {step === 'login' && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="pin">Enter PIN</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="pin"
+                  id="password"
                   type="password"
-                  placeholder="****"
-                  maxLength={6}
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="flex-1"
                 />
               </div>
             </div>
             <Button 
-              onClick={handleVerifyPIN} 
+              onClick={handleLogin} 
               disabled={loading}
               className="w-full"
             >
@@ -335,11 +336,11 @@ export function PhoneAuthForm() {
               onClick={() => {
                 setStep('phone');
                 setOtp('');
-                setPin('');
+                setPassword('');
               }}
               className="w-full"
             >
-              Forgot PIN? Reset via OTP
+              Forgot Password? Reset via OTP
             </Button>
           </>
         )}

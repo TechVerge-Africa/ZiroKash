@@ -24,7 +24,11 @@ const sendMoneySchema = z.object({
   description: z.string().optional(),
 });
 
-export function SendMoneyForm() {
+interface SendMoneyFormProps {
+  onSuccess?: () => void;
+}
+
+export function SendMoneyForm({ onSuccess }: SendMoneyFormProps = {}) {
   const { wallets, getWalletByType } = useWallet();
   const { lookupRecipient, recipient, loading: lookupLoading } = useLookup();
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +89,10 @@ export function SendMoneyForm() {
           title: "Transfer Successful",
           description: `$${amount.toFixed(2)} sent to ${recipient.full_name}`,
         });
+        
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         // External transfer (blockchain or other methods)
         toast({

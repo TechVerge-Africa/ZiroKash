@@ -1,307 +1,104 @@
-
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, CreditCard, DollarSign, Wallet as WalletIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowDown, ArrowUp, Send as SendIcon, Wallet as WalletIcon } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { DepositDialog } from "@/components/wallet/DepositDialog";
 import { WithdrawDialog } from "@/components/wallet/WithdrawDialog";
+import { SendMoneyDialog } from "@/components/wallet/SendMoneyDialog";
+import { ReceiveMoneyDialog } from "@/components/wallet/ReceiveMoneyDialog";
 
 export default function Wallet() {
-  const { wallets, transactions, loading, getTotalBalance, getWalletByType, fetchWallets } = useWallet();
+  const { wallets, transactions, loading, fetchWallets, getWalletByType } = useWallet();
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
   
   const mainWallet = getWalletByType('main');
-  const cryptoWallet = getWalletByType('investment');
+  const balance = (mainWallet?.balance || 0) / 100;
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Wallet</h1>
-          <p className="text-muted-foreground">Manage your digital assets and payments</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setDepositDialogOpen(true)}>
-            <ArrowDown className="mr-2 h-4 w-4" />
-            Deposit
-          </Button>
-          <Button variant="outline" onClick={() => setWithdrawDialogOpen(true)}>
-            <ArrowUp className="mr-2 h-4 w-4" />
-            Withdraw
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Wallet</h1>
+        <p className="text-muted-foreground mt-1">Manage your digital wallet</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="glass-card border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Main Balance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col">
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">${((mainWallet?.balance || 0) / 100).toFixed(2)}</span>
-                    <span className="ml-2 text-green-500 text-sm">+2.5%</span>
-                  </div>
-                  <span className="text-muted-foreground text-sm">Available balance</span>
-                  
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="outline" asChild>
-                      <Link to="/payments">
-                        <ArrowUp className="mr-2 h-3 w-3" />
-                        Send
-                      </Link>
-                    </Button>
-                    <Button size="sm" variant="outline" asChild>
-                      <Link to="/payments">
-                        <ArrowDown className="mr-2 h-3 w-3" />
-                        Receive
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="glass-card border-white/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Crypto Balance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col">
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-bold">${((cryptoWallet?.balance || 0) / 100).toFixed(2)}</span>
-                    <span className="ml-2 text-red-500 text-sm">-1.2%</span>
-                  </div>
-                  <span className="text-muted-foreground text-sm">In cryptocurrencies</span>
-                  
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="outline" asChild>
-                      <Link to="/investments">
-                        <DollarSign className="mr-2 h-3 w-3" />
-                        Buy
-                      </Link>
-                    </Button>
-                    <Button size="sm" variant="outline" asChild>
-                      <Link to="/investments">
-                        <CreditCard className="mr-2 h-3 w-3" />
-                        Sell
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Wallet Balance Card */}
+      <Card className="glass-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg">Wallet Balance</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <div className="text-4xl font-bold">₵{balance.toFixed(2)}</div>
+            <p className="text-sm text-muted-foreground">Available balance</p>
           </div>
           
-          <Tabs defaultValue="transactions" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="transactions">Transactions</TabsTrigger>
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-            </TabsList>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Button onClick={() => setDepositDialogOpen(true)} variant="outline" className="flex-col h-auto py-4">
+              <ArrowDown className="h-5 w-5 mb-1" />
+              <span className="text-xs">Deposit</span>
+            </Button>
             
-            <TabsContent value="transactions" className="mt-4">
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Recent Transactions</CardTitle>
-                  <CardDescription>Your latest financial activities</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {loading ? (
-                      <p className="text-center text-muted-foreground">Loading transactions...</p>
-                    ) : transactions.length === 0 ? (
-                      <p className="text-center text-muted-foreground">No transactions yet</p>
-                    ) : (
-                      transactions.slice(0, 5).map((tx) => (
-                        <div key={tx.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-white/5 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                              <WalletIcon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="font-medium">{tx.description || `${tx.transaction_type} Transaction`}</p>
-                              <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                          <p className={`font-medium ${tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? 'text-green-500' : 'text-red-500'}`}>
-                            {tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? '+' : '-'}${(tx.amount / 100).toFixed(2)}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            <Button onClick={() => setWithdrawDialogOpen(true)} variant="outline" className="flex-col h-auto py-4">
+              <ArrowUp className="h-5 w-5 mb-1" />
+              <span className="text-xs">Withdraw</span>
+            </Button>
             
-            <TabsContent value="payments" className="mt-4">
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Payment Methods</CardTitle>
-                  <CardDescription>Your linked payment sources</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                            <CreditCard className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Visa ending in 4242</p>
-                            <p className="text-xs text-muted-foreground">Expires 06/26</p>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline">Default</Button>
-                      </div>
-                    </div>
-                    <Button className="w-full">
-                      Add Payment Method
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            <Button onClick={() => setSendDialogOpen(true)} variant="outline" className="flex-col h-auto py-4">
+              <SendIcon className="h-5 w-5 mb-1" />
+              <span className="text-xs">Send</span>
+            </Button>
             
-            <TabsContent value="scheduled" className="mt-4">
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Scheduled Transactions</CardTitle>
-                  <CardDescription>Upcoming and recurring payments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">You don't have any scheduled transactions.</p>
-                    <Button className="mt-4">
-                      Schedule a Payment
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-        
-        <div className="space-y-6">
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
-                  <Link to="/payments">
-                    <ArrowUp className="h-5 w-5 mb-2" />
-                    <span className="text-xs">Send Money</span>
-                  </Link>
-                </Button>
-                
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
-                  <Link to="/payments">
-                    <ArrowDown className="h-5 w-5 mb-2" />
-                    <span className="text-xs">Receive</span>
-                  </Link>
-                </Button>
-                
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
-                  <Link to="/investments">
-                    <DollarSign className="h-5 w-5 mb-2" />
-                    <span className="text-xs">Exchange</span>
-                  </Link>
-                </Button>
-                
-                <Button className="h-auto py-4 flex flex-col items-center" variant="outline" asChild>
-                  <Link to="/payments">
-                    <CreditCard className="h-5 w-5 mb-2" />
-                    <span className="text-xs">Pay Bills</span>
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Spending Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm">Monthly Spending</p>
-                    <p className="text-sm font-medium">$2,450 / $5,000</p>
-                  </div>
-                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-1/2 rounded-full"></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm">Savings Goal</p>
-                    <p className="text-sm font-medium">$10,200 / $25,000</p>
-                  </div>
-                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500 w-1/4 rounded-full"></div>
-                  </div>
-                </div>
-                
-                <div className="pt-2">
-                  <Button variant="outline" className="w-full">
-                    View Full Report
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Currency Exchange</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">From</p>
-                    <div className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
-                      <span>USD</span>
-                      <span>$</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">To</p>
-                    <div className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
-                      <span>EUR</span>
-                      <span>€</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Amount</p>
-                  <div className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
-                    <span>$100.00</span>
-                    <span>€92.34</span>
-                  </div>
-                </div>
-                
-                <Button className="w-full">Exchange Now</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            <Button onClick={() => setReceiveDialogOpen(true)} variant="outline" className="flex-col h-auto py-4">
+              <ArrowDown className="h-5 w-5 mb-1" />
+              <span className="text-xs">Receive</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
+      {/* Recent Transactions */}
+      <Card className="glass-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg">Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {loading ? (
+              <p className="text-center text-muted-foreground py-8">Loading...</p>
+            ) : transactions.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No transactions yet</p>
+            ) : (
+              transactions.slice(0, 10).map((tx) => (
+                <div key={tx.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <WalletIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{tx.description || `${tx.transaction_type}`}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <p className={`font-medium ${
+                    tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' 
+                      ? 'text-green-600 dark:text-green-500' 
+                      : 'text-red-600 dark:text-red-500'
+                  }`}>
+                    {tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? '+' : '-'}
+                    ₵{(tx.amount / 100).toFixed(2)}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialogs */}
       <DepositDialog 
         open={depositDialogOpen} 
         onOpenChange={setDepositDialogOpen}
@@ -312,6 +109,17 @@ export default function Wallet() {
         open={withdrawDialogOpen} 
         onOpenChange={setWithdrawDialogOpen}
         onSuccess={fetchWallets}
+      />
+
+      <SendMoneyDialog 
+        open={sendDialogOpen} 
+        onOpenChange={setSendDialogOpen}
+        onSuccess={fetchWallets}
+      />
+
+      <ReceiveMoneyDialog 
+        open={receiveDialogOpen} 
+        onOpenChange={setReceiveDialogOpen}
       />
     </div>
   );

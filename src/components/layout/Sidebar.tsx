@@ -34,18 +34,18 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
   { name: "Wallet", href: "/wallet", icon: <Wallet size={20} /> },
-  { name: "Payments", href: "/payments", icon: <Send size={20} /> },
-  { name: "Cards", href: "/cards", icon: <CreditCard size={20} /> },
-  { name: "Investments", href: "/investments", icon: <LineChart size={20} /> },
-  { name: "Credit", href: "/credit", icon: <DollarSign size={20} /> },
+  { name: "Transactions", href: "/transactions", icon: <Send size={20} /> },
+  { name: "ZiroPay", href: "/ziropay", icon: <DollarSign size={20} /> },
+  { name: "Savings", href: "/savings", icon: <LineChart size={20} /> },
 ];
 
-const additionalNavItems: NavItem[] = [
-  { name: "Insurance", href: "/insurance", icon: <Shield size={20} /> },
-  { name: "Merchant", href: "/merchant", icon: <Building size={20} /> },
-  { name: "Rewards", href: "/rewards", icon: <Gift size={20} /> },
-  { name: "Offline/USSD", href: "/offline", icon: <Phone size={20} /> },
-];
+// Commented out for future implementation
+// const additionalNavItems: NavItem[] = [
+//   { name: "Insurance", href: "/insurance", icon: <Shield size={20} /> },
+//   { name: "Merchant", href: "/merchant", icon: <Building size={20} /> },
+//   { name: "Rewards", href: "/rewards", icon: <Gift size={20} /> },
+//   { name: "Offline/USSD", href: "/offline", icon: <Phone size={20} /> },
+// ];
 
 const accountNavItems: NavItem[] = [
   { name: "Profile", href: "/profile", icon: <User size={20} /> },
@@ -126,13 +126,13 @@ export default function Sidebar() {
             </div>
           )}
           
-          {/* Show additional services on both mobile and desktop */}
-          <div className={cn("space-y-1", !isMobile && "mt-6")}>
+          {/* Additional services commented out for now */}
+          {/* <div className={cn("space-y-1", !isMobile && "mt-6")}>
             <p className="text-xs font-medium text-muted-foreground px-3 mb-2">SERVICES</p>
             {additionalNavItems.map((item) => (
               <NavLink key={item.name} item={item} />
             ))}
-          </div>
+          </div> */}
           
           {/* Show account settings on both */}
           <div className="mt-6 space-y-1">

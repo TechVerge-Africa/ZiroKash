@@ -6,23 +6,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
-import Cards from "./pages/Cards";
-import Payments from "./pages/Payments";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import Investments from "./pages/Investments";
-import Credit from "./pages/Credit";
+import Transactions from "./pages/Transactions";
+import ZiroPay from "./pages/ZiroPay";
+import Savings from "./pages/Savings";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
-import KYC from "./pages/KYC";
-import Security from "./pages/Security";
-import Insurance from "./pages/Insurance";
-import MerchantTools from "./pages/MerchantTools";
-import OfflineUSSD from "./pages/OfflineUSSD";
-import Rewards from "./pages/Rewards";
-import Profile from "./pages/Profile";
-import Support from "./pages/Support";
-import About from "./pages/About";
+import NotFound from "./pages/NotFound";
+// Commented out features for future implementation
+// import Cards from "./pages/Cards";
+// import Credit from "./pages/Credit";
+// import Investments from "./pages/Investments";
 import MainLayout from "./components/layout/MainLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
@@ -67,31 +61,24 @@ function AppRoutes() {
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/cards" element={
+      <Route path="/transactions" element={
         <ProtectedRoute>
           <MainLayout>
-            <Cards />
+            <Transactions />
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/payments" element={
+      <Route path="/ziropay" element={
         <ProtectedRoute>
           <MainLayout>
-            <Payments />
+            <ZiroPay />
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/investments" element={
+      <Route path="/savings" element={
         <ProtectedRoute>
           <MainLayout>
-            <Investments />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/credit" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Credit />
+            <Savings />
           </MainLayout>
         </ProtectedRoute>
       } />
@@ -99,69 +86,6 @@ function AppRoutes() {
         <ProtectedRoute>
           <MainLayout>
             <Settings />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/kyc" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <KYC />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/security" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Security />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/insurance" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Insurance />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/merchant" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <MerchantTools />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/offline" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <OfflineUSSD />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/rewards" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Rewards />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Profile />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/support" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Support />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/about" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <About />
           </MainLayout>
         </ProtectedRoute>
       } />

@@ -2,9 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Home,
   Wallet,
-  Send,
-  CreditCard,
-  Menu
+  Receipt,
+  DollarSign,
+  Settings
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from 'lucide-react';
@@ -25,28 +25,27 @@ export function BottomNav() {
       href: '/wallet'
     },
     {
-      icon: Send,
-      label: 'Send',
-      href: '/payments'
+      icon: Receipt,
+      label: 'Transactions',
+      href: '/transactions'
     },
     {
-      icon: CreditCard,
-      label: 'Cards',
-      href: '/cards'
+      icon: DollarSign,
+      label: 'ZiroPay',
+      href: '/ziropay'
+    },
+    {
+      icon: Settings,
+      label: 'Settings',
+      href: '/settings'
     }
-    // {
-    //   icon: Menu,
-    //   label: 'Menu',
-    //   href: '#',
-    //   action: () => document.dispatchEvent(new Event('toggle-sidebar'))
-    // }
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-background border-t shadow-lg md:hidden dark:bg-background/80 dark:backdrop-blur-lg">
       <div 
         className={cn(
-          "grid h-full grid-cols-4 mx-auto max-w-md",
+          "grid h-full grid-cols-5 mx-auto max-w-md",
           "bg-white dark:bg-transparent",
           "shadow-[0_-4px_10px_rgba(0,0,0,0.03)] dark:shadow-none" // Subtle shadow in light mode
         )}

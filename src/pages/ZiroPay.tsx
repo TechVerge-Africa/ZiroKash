@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Link2, Eye, Download, DollarSign, Settings } from "lucide-react";
+import { Plus, Link2, Eye, Download, DollarSign, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { FormPreview } from "@/components/ziropay/FormPreview";
 import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
 import { ThemePicker } from "@/components/ziropay/ThemePicker";
 import { supabase } from "@/integrations/supabase/client";
+import { usePaymentForms } from "@/hooks/usePaymentForms";
 
 interface FormField {
   id: string;
@@ -34,6 +36,8 @@ interface ReceiptTemplate {
 }
 
 export default function ZiroPay() {
+  const navigate = useNavigate();
+  const { forms, stats, isLoading, refetch } = usePaymentForms();
   const [isInstitution, setIsInstitution] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [formTitle, setFormTitle] = useState("");
@@ -51,25 +55,11 @@ export default function ZiroPay() {
     customFields: [],
   });
 
-  // Sample payment forms
-  const paymentForms = [
-    {
-      id: '1',
-      title: 'School Fees Payment',
-      amount: 5000,
-      collected: 125000,
-      responses: 25,
-      status: 'active'
-    },
-    {
-      id: '2',
-      title: 'Event Registration',
-      amount: 200,
-      collected: 8000,
-      responses: 40,
-      status: 'active'
-    }
-  ];
+  // Calculate overall stats
+  const totalCollected = Object.values(stats).reduce((sum, s) => sum + s.totalCollected, 0);
+  const totalSubmissions = Object.values(stats).reduce((sum, s) => sum + s.totalSubmissions, 0);
+  const totalPaid = Object.values(stats).reduce((sum, s) => sum + s.paidSubmissions, 0);
+  const activeForms = forms.filter(f => f.is_active).length;
 
   const handleCreateForm = async () => {
     if (!formTitle.trim()) {
@@ -104,12 +94,15 @@ export default function ZiroPay() {
 
       toast.success("Payment form created! Share the link to start collecting.");
       setIsCreating(false);
+      refetch();
       
       // Reset form
       setFormTitle("");
       setFormDescription("");
       setFormFields([]);
       setThemeColor("#0056D2");
+      setLogoUrl("");
+      setSignatureUrl("");
     } catch (error: any) {
       console.error("Error creating form:", error);
       toast.error(error.message || "Failed to create form");
@@ -267,9 +260,9 @@ export default function ZiroPay() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₵133,000</div>
+            <div className="text-2xl font-bold">GHS {totalCollected.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              +18% from last month
+              From {totalPaid} paid submissions
             </p>
           </CardContent>
         </Card>
@@ -280,7 +273,7 @@ export default function ZiroPay() {
             <Link2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">{activeForms}</div>
             <p className="text-xs text-muted-foreground">
               Currently accepting payments
             </p>
@@ -293,9 +286,9 @@ export default function ZiroPay() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">65</div>
+            <div className="text-2xl font-bold">{totalSubmissions}</div>
             <p className="text-xs text-muted-foreground">
-              Successful transactions
+              Total submissions
             </p>
           </CardContent>
         </Card>
@@ -306,9 +299,9 @@ export default function ZiroPay() {
             <Download className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₵3,200</div>
+            <div className="text-2xl font-bold">{totalSubmissions - totalPaid}</div>
             <p className="text-xs text-muted-foreground">
-              Awaiting confirmation
+              Pending payments
             </p>
           </CardContent>
         </Card>
@@ -321,46 +314,68 @@ export default function ZiroPay() {
           <CardDescription>Manage all your payment collection forms</CardDescription>
         </CardHeader>
         <CardContent>
-          {paymentForms.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            </div>
+          ) : forms.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No payment forms yet. Create one to get started!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {paymentForms.map((form) => (
-                <div 
-                  key={form.id} 
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="space-y-1">
+              {forms.map((form) => {
+                const formStats = stats[form.id] || { totalSubmissions: 0, paidSubmissions: 0, totalCollected: 0 };
+                
+                return (
+                  <div 
+                    key={form.id} 
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{form.title}</h3>
+                        <Badge variant={form.is_active ? "default" : "secondary"} className="text-xs">
+                          {form.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{formStats.totalSubmissions} submissions</span>
+                        <span>•</span>
+                        <span>{formStats.paidSubmissions} paid</span>
+                        <span>•</span>
+                        <span className="font-semibold text-primary">
+                          GHS {formStats.totalCollected.toLocaleString()} collected
+                        </span>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{form.title}</h3>
-                      <Badge variant="outline" className="text-xs">
-                        {form.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>₵{form.amount} per payment</span>
-                      <span>•</span>
-                      <span>{form.responses} payments received</span>
-                      <span>•</span>
-                      <span className="font-semibold text-primary">
-                        ₵{form.collected.toLocaleString()} collected
-                      </span>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-2"
+                        onClick={() => {
+                          const link = `${window.location.origin}/pay/${form.id}`;
+                          navigator.clipboard.writeText(link);
+                          toast.success('Payment link copied!');
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy Link
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-2"
+                        onClick={() => navigate(`/ziropay/${form.id}`)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Link2 className="h-4 w-4" />
-                      Copy Link
-                    </Button>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Eye className="h-4 w-4" />
-                      View
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

@@ -9,6 +9,7 @@ import Wallet from "./pages/Wallet";
 import Transactions from "./pages/Transactions";
 import ZiroPay from "./pages/ZiroPay";
 import PaymentForm from "./pages/PaymentForm";
+import FormDetails from "./pages/FormDetails";
 import Savings from "./pages/Savings";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -49,6 +50,15 @@ function AppRoutes() {
       
       {/* Public payment form route */}
       <Route path="/pay/:formId" element={<PaymentForm />} />
+      
+      {/* Protected form details route */}
+      <Route path="/ziropay/:formId" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <FormDetails />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
       
       {/* Protected Routes */}
       <Route path="/dashboard" element={

@@ -1,16 +1,55 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Link2, Eye, Download, DollarSign } from "lucide-react";
+import { Plus, Link2, Eye, Download, DollarSign, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { FormBuilder } from "@/components/ziropay/FormBuilder";
+import { FormPreview } from "@/components/ziropay/FormPreview";
+import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
+import { ThemePicker } from "@/components/ziropay/ThemePicker";
+import { supabase } from "@/integrations/supabase/client";
+
+interface FormField {
+  id: string;
+  type: "text" | "email" | "dropdown" | "amount";
+  label: string;
+  required: boolean;
+  options?: string[];
+  defaultValue?: string;
+}
+
+interface ReceiptTemplate {
+  headerText: string;
+  footerText: string;
+  showLogo: boolean;
+  showSignature: boolean;
+  showQRCode: boolean;
+  customFields: string[];
+}
 
 export default function ZiroPay() {
   const [isInstitution, setIsInstitution] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formFields, setFormFields] = useState<FormField[]>([]);
+  const [themeColor, setThemeColor] = useState("#0056D2");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [signatureUrl, setSignatureUrl] = useState("");
+  const [receiptTemplate, setReceiptTemplate] = useState<ReceiptTemplate>({
+    headerText: "Official Payment Receipt",
+    footerText: "Thank you for your payment",
+    showLogo: true,
+    showSignature: true,
+    showQRCode: false,
+    customFields: [],
+  });
 
   // Sample payment forms
   const paymentForms = [
@@ -32,9 +71,49 @@ export default function ZiroPay() {
     }
   ];
 
-  const handleCreateForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Payment form created! Share the link to start collecting.");
+  const handleCreateForm = async () => {
+    if (!formTitle.trim()) {
+      toast.error("Please enter a form title");
+      return;
+    }
+
+    if (formFields.length === 0) {
+      toast.error("Please add at least one field to your form");
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to create forms");
+        return;
+      }
+
+      const { error } = await supabase.from("payment_forms").insert({
+        user_id: user.id,
+        title: formTitle,
+        description: formDescription || null,
+        fields: formFields as any,
+        theme_color: themeColor,
+        logo_url: logoUrl || null,
+        signature_url: signatureUrl || null,
+        receipt_template: receiptTemplate as any,
+      });
+
+      if (error) throw error;
+
+      toast.success("Payment form created! Share the link to start collecting.");
+      setIsCreating(false);
+      
+      // Reset form
+      setFormTitle("");
+      setFormDescription("");
+      setFormFields([]);
+      setThemeColor("#0056D2");
+    } catch (error: any) {
+      console.error("Error creating form:", error);
+      toast.error(error.message || "Failed to create form");
+    }
   };
 
   const handleBecomeInstitution = () => {
@@ -79,63 +158,103 @@ export default function ZiroPay() {
           <p className="text-muted-foreground mt-2">Collect payments with ease</p>
         </div>
         
-        <Dialog>
+        <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
               Create Payment Form
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Payment Form</DialogTitle>
               <DialogDescription>
-                Build a custom form to collect payments from your customers
+                Build a custom form with drag-and-drop fields, preview in real-time, and design branded receipts
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateForm} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="form-title">Form Title</Label>
-                  <Input id="form-title" placeholder="e.g., School Fees Payment" />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (₵)</Label>
-                  <Input id="amount" type="number" placeholder="1000" />
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Left Panel - Builder */}
+              <div className="space-y-6">
+                <Tabs defaultValue="form" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="form">Form</TabsTrigger>
+                    <TabsTrigger value="design">Design</TabsTrigger>
+                    <TabsTrigger value="receipt">Receipt</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="form" className="space-y-4 mt-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Form Title *</Label>
+                        <Input
+                          value={formTitle}
+                          onChange={(e) => setFormTitle(e.target.value)}
+                          placeholder="e.g., School Fees Payment"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={formDescription}
+                          onChange={(e) => setFormDescription(e.target.value)}
+                          placeholder="Provide payment instructions or details..."
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <FormBuilder fields={formFields} onFieldsChange={setFormFields} />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="design" className="mt-4">
+                    <ThemePicker color={themeColor} onColorChange={setThemeColor} />
+                  </TabsContent>
+
+                  <TabsContent value="receipt" className="mt-4">
+                    <ReceiptDesigner
+                      template={receiptTemplate}
+                      onTemplateChange={setReceiptTemplate}
+                      logoUrl={logoUrl}
+                      signatureUrl={signatureUrl}
+                      onLogoUpload={setLogoUrl}
+                      onSignatureUpload={setSignatureUrl}
+                    />
+                  </TabsContent>
+                </Tabs>
+
+                <div className="flex gap-3">
+                  <Button onClick={handleCreateForm} className="flex-1">
+                    Save & Publish Form
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsCreating(false)}>
+                    Cancel
+                  </Button>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description" 
-                  placeholder="Provide payment instructions or details..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="institution-name">Institution Name</Label>
-                <Input id="institution-name" placeholder="Your Organization" />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Contact Email</Label>
-                  <Input id="email" type="email" placeholder="contact@institution.com" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Contact Phone</Label>
-                  <Input id="phone" type="tel" placeholder="+233 XX XXX XXXX" />
+              {/* Right Panel - Live Preview */}
+              <div className="lg:sticky lg:top-6 h-fit">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-muted-foreground">Live Preview</h3>
+                    <Badge variant="outline">Real-time</Badge>
+                  </div>
+                  <div className="border rounded-lg p-6 bg-muted/20">
+                    <FormPreview
+                      title={formTitle}
+                      description={formDescription}
+                      fields={formFields}
+                      themeColor={themeColor}
+                      logoUrl={logoUrl}
+                    />
+                  </div>
                 </div>
               </div>
-
-              <Button type="submit" className="w-full">
-                Create & Get Payment Link
-              </Button>
-            </form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

@@ -18,20 +18,23 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: 'email' | 'sms' | 'both';
-  template: 'transaction-success' | 'transaction-failed';
+  type: 'email' | 'sms' | 'both' | 'merchant_application' | 'merchant_approved';
+  template?: 'transaction-success' | 'transaction-failed';
   recipient: {
     email?: string;
     phone?: string;
     name: string;
   };
   data: {
-    transactionType: string;
-    amount: string;
-    currency: string;
-    reference: string;
+    transactionType?: string;
+    amount?: string;
+    currency?: string;
+    reference?: string;
     date?: string;
     reason?: string;
+    businessName?: string;
+    businessType?: string;
+    applicantEmail?: string;
   };
 }
 
@@ -47,8 +50,126 @@ serve(async (req) => {
 
     const results: any = {};
 
-    // Send Email
-    if (type === 'email' || type === 'both') {
+    // Handle merchant-specific emails
+    if (type === 'merchant_application') {
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #0056D2 0%, #004aad 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">🎉 Welcome to ZiroPay!</h1>
+          </div>
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p style="font-size: 16px; margin-top: 0;">Dear ${data.businessName},</p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              Thank you for applying to become a ZiroPay merchant. We have received your application and our team will review it within <strong>24 hours</strong>.
+            </p>
+            <div style="background-color: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #0056D2;">
+              <h3 style="margin-top: 0; color: #0056D2;">Application Details</h3>
+              <p style="margin: 5px 0;"><strong>Business Name:</strong> ${data.businessName}</p>
+              <p style="margin: 5px 0;"><strong>Business Type:</strong> ${data.businessType}</p>
+              <p style="margin: 5px 0;"><strong>Contact Email:</strong> ${data.applicantEmail}</p>
+            </div>
+            <div style="background-color: #e3f2fd; padding: 20px; margin: 20px 0; border-radius: 8px;">
+              <h3 style="margin-top: 0; color: #0056D2;">What Happens Next?</h3>
+              <ul style="line-height: 1.8; padding-left: 20px;">
+                <li>Our team reviews your application</li>
+                <li>You'll receive an approval email within 24 hours</li>
+                <li>Set up your security PIN</li>
+                <li>Start creating payment forms and accepting payments!</li>
+              </ul>
+            </div>
+            <div style="background-color: white; padding: 20px; margin: 20px 0; border-radius: 8px;">
+              <h3 style="margin-top: 0; color: #0056D2;">Once Approved, You'll Be Able To:</h3>
+              <ul style="line-height: 1.8; padding-left: 20px;">
+                <li>✓ Create custom payment forms for fees, donations, and services</li>
+                <li>✓ Accept payments from students, members, or donors</li>
+                <li>✓ Track all transactions in real-time with detailed analytics</li>
+                <li>✓ Generate branded receipts automatically</li>
+                <li>✓ Share payment links via WhatsApp, email, or social media</li>
+              </ul>
+            </div>
+            <p style="font-size: 14px; color: #666; margin-top: 30px;">
+              If you have any questions, please don't hesitate to contact our support team.
+            </p>
+            <p style="font-size: 16px; margin-top: 20px;">
+              Best regards,<br>
+              <strong>The ZiroPay Team</strong>
+            </p>
+          </div>
+          <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+            <p>© 2025 ZiroPay. Simplifying payments across Ghana.</p>
+          </div>
+        </div>
+      `;
+
+      const emailResult = await resend.emails.send({
+        from: 'ZiroPay <onboarding@resend.dev>',
+        to: [recipient.email!],
+        subject: 'Application Received - ZiroPay Merchant Account 🎉',
+        html,
+      });
+
+      results.email = emailResult;
+      console.log('Merchant application email sent:', emailResult);
+    } else if (type === 'merchant_approved') {
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">🎉 Congratulations! You're Approved!</h1>
+          </div>
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p style="font-size: 16px; margin-top: 0;">Dear ${data.businessName},</p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              <strong>Great news!</strong> Your ZiroPay merchant application has been approved. You can now start accepting payments and managing your finances effortlessly.
+            </p>
+            <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 25px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #4caf50; text-align: center;">
+              <h2 style="margin: 0; color: #2e7d32; font-size: 24px;">✓ Your Account is Now Active</h2>
+              <p style="margin: 10px 0 0 0; color: #2e7d32; font-size: 14px;">You can now access all merchant features</p>
+            </div>
+            <div style="background-color: white; padding: 20px; margin: 20px 0; border-radius: 8px;">
+              <h3 style="margin-top: 0; color: #0056D2;">🚀 Next Steps:</h3>
+              <ol style="line-height: 2; padding-left: 20px; font-size: 16px;">
+                <li>Log in to your ZiroPay dashboard</li>
+                <li>Set up your security PIN (if you haven't already)</li>
+                <li>Create your first payment form</li>
+                <li>Share the payment link with your payers</li>
+                <li>Start receiving payments instantly!</li>
+              </ol>
+            </div>
+            <div style="background-color: #fff3cd; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #ffc107;">
+              <h3 style="margin-top: 0; color: #856404;">💡 Pro Tips:</h3>
+              <ul style="line-height: 1.8; padding-left: 20px; font-size: 14px; color: #856404;">
+                <li>Customize your payment forms with your organization's branding</li>
+                <li>Use descriptive form titles to help payers identify the payment</li>
+                <li>Enable automatic receipt generation for better record-keeping</li>
+                <li>Monitor your analytics to track payment trends</li>
+              </ul>
+            </div>
+            <p style="font-size: 16px; margin-top: 30px;">
+              Welcome to the ZiroPay family! We're excited to have you on board.
+            </p>
+            <p style="font-size: 16px; margin-top: 20px;">
+              Best regards,<br>
+              <strong>The ZiroPay Team</strong>
+            </p>
+          </div>
+          <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+            <p>© 2025 ZiroPay. Simplifying payments across Ghana.</p>
+          </div>
+        </div>
+      `;
+
+      const emailResult = await resend.emails.send({
+        from: 'ZiroPay <onboarding@resend.dev>',
+        to: [recipient.email!],
+        subject: '🎉 Approved! Start Accepting Payments with ZiroPay',
+        html,
+      });
+
+      results.email = emailResult;
+      console.log('Merchant approval email sent:', emailResult);
+    }
+    // Handle transaction emails
+    else if (type === 'email' || type === 'both') {
       if (!recipient.email) {
         throw new Error('Email address required for email notifications');
       }
@@ -60,10 +181,10 @@ serve(async (req) => {
         html = await renderAsync(
           React.createElement(TransactionSuccessEmail, {
             recipientName: recipient.name,
-            transactionType: data.transactionType,
-            amount: data.amount,
-            currency: data.currency,
-            reference: data.reference,
+            transactionType: data.transactionType!,
+            amount: data.amount!,
+            currency: data.currency!,
+            reference: data.reference!,
             date: data.date || new Date().toLocaleString(),
           })
         );
@@ -72,10 +193,10 @@ serve(async (req) => {
         html = await renderAsync(
           React.createElement(TransactionFailedEmail, {
             recipientName: recipient.name,
-            transactionType: data.transactionType,
-            amount: data.amount,
-            currency: data.currency,
-            reference: data.reference,
+            transactionType: data.transactionType!,
+            amount: data.amount!,
+            currency: data.currency!,
+            reference: data.reference!,
             reason: data.reason || 'Unknown error',
           })
         );

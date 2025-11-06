@@ -52,3 +52,9 @@ verify_jwt = false
 
 [functions.lookup-recipient]
 verify_jwt = true
+
+[functions.payment-form-submit]
+verify_jwt = false
+
+[functions.form-payment-webhook]
+verify_jwt = false

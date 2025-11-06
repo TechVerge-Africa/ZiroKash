@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
 import Transactions from "./pages/Transactions";
 import ZiroPay from "./pages/ZiroPay";
+import PaymentForm from "./pages/PaymentForm";
 import Savings from "./pages/Savings";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -45,6 +46,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<RootRedirect />} />
       <Route path="/auth" element={<Auth />} />
+      
+      {/* Public payment form route */}
+      <Route path="/pay/:formId" element={<PaymentForm />} />
       
       {/* Protected Routes */}
       <Route path="/dashboard" element={

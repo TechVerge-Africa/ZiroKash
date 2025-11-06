@@ -272,6 +272,44 @@ export type Database = {
         }
         Relationships: []
       }
+      form_api_keys: {
+        Row: {
+          api_key: string
+          created_at: string | null
+          form_id: string
+          id: string
+          last_used_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string | null
+          form_id: string
+          id?: string
+          last_used_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string | null
+          form_id?: string
+          id?: string
+          last_used_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_api_keys_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "payment_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_submissions: {
         Row: {
           amount: number

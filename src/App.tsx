@@ -10,7 +10,6 @@ import Transactions from "./pages/Transactions";
 import ZiroPay from "./pages/ZiroPay";
 import PaymentForm from "./pages/PaymentForm";
 import FormDetails from "./pages/FormDetails";
-import { MerchantPinSetup } from "@/components/ziropay/MerchantPinSetup";
 import Savings from "./pages/Savings";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -88,11 +87,6 @@ function AppRoutes() {
           <MainLayout>
             <ZiroPay />
           </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/ziropay/setup-pin" element={
-        <ProtectedRoute>
-          <MerchantPinSetup />
         </ProtectedRoute>
       } />
       <Route path="/savings" element={

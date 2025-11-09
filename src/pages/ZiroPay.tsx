@@ -70,7 +70,7 @@ export default function ZiroPay() {
     
     if (!merchant) {
       setMerchantStatus('none');
-    } else if (merchant.verification_status === 'approved' && merchant.is_active) {
+    } else if (merchant.verification_status === 'verified' && merchant.is_active) {
       setMerchantStatus('approved');
     } else {
       setMerchantStatus('pending');
@@ -85,15 +85,6 @@ export default function ZiroPay() {
     return <MerchantPinVerify onVerified={() => setPinVerified(true)} />;
   }
 
-  const { forms, stats, isLoading, refetch } = usePaymentForms();
-  const [isInstitution, setIsInstitution] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [formTitle, setFormTitle] = useState("");
-  const [formDescription, setFormDescription] = useState("");
-  const [formFields, setFormFields] = useState<FormField[]>([]);
-  const [themeColor, setThemeColor] = useState("#0056D2");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [signatureUrl, setSignatureUrl] = useState("");
   const [receiptTemplate, setReceiptTemplate] = useState<ReceiptTemplate>({
     headerText: "Official Payment Receipt",
     footerText: "Thank you for your payment",

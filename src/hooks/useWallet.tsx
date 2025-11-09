@@ -76,7 +76,7 @@ export function useWallet() {
         user_id: user.id,
         transaction_type: type,
         amount,
-        currency: 'USD',
+        currency: 'GHS',
         recipient_address: toAddress,
         description,
         status: 'pending'

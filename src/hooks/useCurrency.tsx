@@ -3,8 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
-  'USD': '$',
-  'GHS': '₵',
+  'GHS': 'GH₵',
   'NGN': '₦',
   'KES': 'KSh',
   'UGX': 'USh',
@@ -19,15 +18,15 @@ export function useCurrency() {
   const [userCurrency, setUserCurrency] = useState<string>('GHS');
   const [loading, setLoading] = useState(true);
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({
-    'USD': 1,
-    'GHS': 15.50,
-    'NGN': 1650,
-    'KES': 129,
-    'UGX': 3700,
-    'TZS': 2500,
-    'ZAR': 18.50,
-    'GBP': 0.79,
-    'EUR': 0.92,
+    'GHS': 1, // Base currency
+    'USD': 0.063,
+    'NGN': 102.5,
+    'KES': 8.3,
+    'UGX': 237,
+    'TZS': 158,
+    'ZAR': 1.19,
+    'GBP': 0.050,
+    'EUR': 0.058,
   });
 
   useEffect(() => {
@@ -85,13 +84,14 @@ export function useCurrency() {
     detectAndSetCurrency();
   }, [user]);
 
-  const convertAmount = (amount: number, fromCurrency: string = 'USD', toCurrency?: string): number => {
+  const convertAmount = (amount: number, fromCurrency: string = 'GHS', toCurrency?: string): number => {
     const targetCurrency = toCurrency || userCurrency;
     const fromRate = exchangeRates[fromCurrency] || 1;
     const toRate = exchangeRates[targetCurrency] || 1;
     
-    const amountInUSD = amount / fromRate;
-    return Math.round(amountInUSD * toRate * 100) / 100;
+    // Convert from source to GHS, then to target
+    const amountInGHS = amount / fromRate;
+    return Math.round(amountInGHS * toRate * 100) / 100;
   };
 
   const formatAmount = (amount: number, currency?: string): string => {

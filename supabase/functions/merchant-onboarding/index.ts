@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
         business_phone: validatedData.business_phone,
         contact_person: validatedData.contact_person,
         merchant_type: validatedData.merchant_type,
-        verification_status: 'approved', // Auto-approve for Ghana
+        verification_status: 'verified', // Auto-approve for Ghana
         is_active: true,
         requires_review: true, // Flag for later compliance review
         created_at: new Date().toISOString()

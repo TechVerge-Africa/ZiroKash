@@ -1,83 +1,166 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
+/**
+ * Paystack Webhook Handler for ZiroPay Form Payments
+ * Processes payment confirmations and credits merchant wallets
+ */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-paystack-signature',
-};
+import { corsHeaders, handleError, successResponse, ZiroPayError } from '../_shared/errors.ts';
+import { createSupabaseClient, updateWalletBalance, createTransaction } from '../_shared/db.ts';
+import { PaystackService } from '../_shared/paystack.ts';
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const paystack = new PaystackService();
+    
+    // Verify Paystack signature
     const signature = req.headers.get('x-paystack-signature');
     const body = await req.text();
     
-    // Verify Paystack signature
-    const secret = Deno.env.get('PAYSTACK_SECRET_KEY') ?? '';
-    const encoder = new TextEncoder();
-    const data = encoder.encode(body);
-    const key = encoder.encode(secret);
-    
-    const hmac = await crypto.subtle.importKey(
-      'raw',
-      key,
-      { name: 'HMAC', hash: 'SHA-512' },
-      false,
-      ['sign']
-    );
-    
-    const signatureBytes = await crypto.subtle.sign('HMAC', hmac, data);
-    const hash = Array.from(new Uint8Array(signatureBytes))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    if (hash !== signature) {
-      console.error('Invalid signature');
-      return new Response('Invalid signature', { status: 401 });
+    if (!signature) {
+      throw new ZiroPayError('INVALID_SIGNATURE', 'Missing webhook signature', 401);
     }
-
+    
+    // Note: Paystack uses HMAC SHA512 for webhook signatures
+    const hash = await crypto.subtle.digest(
+      'SHA-512',
+      new TextEncoder().encode(Deno.env.get('PAYSTACK_SECRET_KEY') + body)
+    );
+    const hashArray = Array.from(new Uint8Array(hash));
+    const computedSignature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    if (computedSignature !== signature) {
+      console.error('[webhook] Invalid signature');
+      throw new ZiroPayError('INVALID_SIGNATURE', 'Invalid webhook signature', 401);
+    }
+    
     const event = JSON.parse(body);
-    console.log('Webhook event:', event.event);
-
+    const supabase = createSupabaseClient();
+    
+    console.log(`[webhook] Event received: ${event.event}`);
+    
+    // Handle charge success
     if (event.event === 'charge.success') {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
-      const { reference, metadata } = event.data;
-      const submissionId = metadata.submission_id;
-
+      const reference = event.data.reference;
+      const amount = event.data.amount; // In pesewas
+      
+      console.log(`[webhook] Processing successful payment: ${reference}, amount: ${amount} pesewas`);
+      
+      // Verify transaction with Paystack
+      const verification = await paystack.verifyTransaction(reference);
+      
+      if (verification.status !== 'success') {
+        throw new ZiroPayError('PAYMENT_FAILED', 'Payment verification failed', 400);
+      }
+      
+      // Get form submission
+      const { data: submission, error: submissionError } = await supabase
+        .from('form_submissions')
+        .select('*, payment_forms(user_id)')
+        .eq('id', reference)
+        .single();
+      
+      if (submissionError || !submission) {
+        console.error('[webhook] Submission not found:', reference);
+        throw new ZiroPayError('NOT_FOUND', 'Form submission not found', 404);
+      }
+      
       // Update submission status
       const { error: updateError } = await supabase
         .from('form_submissions')
         .update({
           status: 'paid',
-          transaction_id: reference
+          transaction_id: reference,
+          metadata: { paystack_data: verification }
         })
-        .eq('id', submissionId);
-
+        .eq('id', reference);
+      
       if (updateError) {
-        console.error('Update error:', updateError);
-        return new Response('Error updating submission', { status: 500 });
+        console.error('[webhook] Failed to update submission:', updateError);
+        throw new ZiroPayError('DATABASE_ERROR', 'Failed to update submission', 500);
       }
-
-      console.log(`Submission ${submissionId} marked as paid`);
+      
+      // Get merchant's wallet
+      const merchantUserId = submission.payment_forms.user_id;
+      const { data: merchantWallet, error: walletError } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', merchantUserId)
+        .eq('wallet_type', 'merchant')
+        .eq('is_active', true)
+        .single();
+      
+      if (walletError || !merchantWallet) {
+        console.error('[webhook] Merchant wallet not found for user:', merchantUserId);
+        throw new ZiroPayError('WALLET_NOT_FOUND', 'Merchant wallet not found', 404);
+      }
+      
+      // Credit merchant wallet
+      await updateWalletBalance(merchantWallet.id, amount, 'credit');
+      
+      // Create transaction record
+      await createTransaction({
+        user_id: merchantUserId,
+        transaction_type: 'payment_received',
+        amount: amount,
+        currency: 'GHS',
+        status: 'completed',
+        to_wallet_id: merchantWallet.id,
+        description: `Payment for form: ${submission.form_id}`,
+        metadata: {
+          form_id: submission.form_id,
+          submission_id: submission.id,
+          payer_name: submission.payer_name,
+          payer_email: submission.payer_email
+        },
+        external_reference: reference,
+        payment_method: 'paystack'
+      });
+      
+      // Send receipt email
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'payment_success',
+            user_id: merchantUserId,
+            data: {
+              amount: amount / 100, // Convert to GHS
+              reference: reference,
+              payer_name: submission.payer_name,
+              payer_email: submission.payer_email
+            }
+          }
+        });
+      } catch (emailError) {
+        console.error('[webhook] Failed to send notification:', emailError);
+        // Don't fail the webhook if email fails
+      }
+      
+      console.log(`[webhook] Payment processed successfully: ${reference}`);
     }
-
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
+    
+    // Handle charge failure
+    if (event.event === 'charge.failed') {
+      const reference = event.data.reference;
+      
+      console.log(`[webhook] Payment failed: ${reference}`);
+      
+      // Update submission status
+      await supabase
+        .from('form_submissions')
+        .update({
+          status: 'failed',
+          metadata: { paystack_data: event.data }
+        })
+        .eq('id', reference);
+    }
+    
+    return successResponse({ received: true });
+    
   } catch (error) {
-    console.error('Webhook error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return handleError(error, 'form-payment-webhook');
   }
 });

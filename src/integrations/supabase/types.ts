@@ -14,108 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
-      bills: {
+      api_rate_limits: {
         Row: {
-          account_number: string
-          amount: number
-          bill_type: string
-          biller_code: string
-          biller_name: string
           created_at: string | null
-          due_date: string | null
-          external_reference: string | null
+          endpoint: string
           id: string
-          metadata: Json | null
-          paid_at: string | null
-          status: Database["public"]["Enums"]["transaction_status"] | null
-          transaction_id: string | null
+          request_count: number | null
           user_id: string
+          window_start: string | null
         }
         Insert: {
-          account_number: string
-          amount: number
-          bill_type: string
-          biller_code: string
-          biller_name: string
           created_at?: string | null
-          due_date?: string | null
-          external_reference?: string | null
+          endpoint: string
           id?: string
-          metadata?: Json | null
-          paid_at?: string | null
-          status?: Database["public"]["Enums"]["transaction_status"] | null
-          transaction_id?: string | null
+          request_count?: number | null
           user_id: string
+          window_start?: string | null
         }
         Update: {
-          account_number?: string
-          amount?: number
-          bill_type?: string
-          biller_code?: string
-          biller_name?: string
           created_at?: string | null
-          due_date?: string | null
-          external_reference?: string | null
+          endpoint?: string
           id?: string
-          metadata?: Json | null
-          paid_at?: string | null
-          status?: Database["public"]["Enums"]["transaction_status"] | null
-          transaction_id?: string | null
+          request_count?: number | null
           user_id?: string
+          window_start?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "bills_transaction_id_fkey"
-            columns: ["transaction_id"]
-            isOneToOne: false
-            referencedRelation: "transactions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      blockchain_addresses: {
-        Row: {
-          address: string
-          blockchain_network: string
-          created_at: string | null
-          id: string
-          phone_number: string | null
-          private_key_encrypted: string
-          updated_at: string | null
-          user_id: string
-          wallet_id: string
-        }
-        Insert: {
-          address: string
-          blockchain_network: string
-          created_at?: string | null
-          id?: string
-          phone_number?: string | null
-          private_key_encrypted: string
-          updated_at?: string | null
-          user_id: string
-          wallet_id: string
-        }
-        Update: {
-          address?: string
-          blockchain_network?: string
-          created_at?: string | null
-          id?: string
-          phone_number?: string | null
-          private_key_encrypted?: string
-          updated_at?: string | null
-          user_id?: string
-          wallet_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "blockchain_addresses_wallet_id_fkey"
-            columns: ["wallet_id"]
-            isOneToOne: false
-            referencedRelation: "wallets"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       corporate_collections: {
         Row: {
@@ -175,102 +99,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      credit_cards: {
-        Row: {
-          card_name: string
-          card_number: string
-          card_type: string
-          created_at: string
-          credit_limit: number
-          current_balance: number
-          due_date: string | null
-          id: string
-          is_active: boolean
-          is_frozen: boolean
-          minimum_payment: number
-          security_settings: Json | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          card_name: string
-          card_number: string
-          card_type?: string
-          created_at?: string
-          credit_limit?: number
-          current_balance?: number
-          due_date?: string | null
-          id?: string
-          is_active?: boolean
-          is_frozen?: boolean
-          minimum_payment?: number
-          security_settings?: Json | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          card_name?: string
-          card_number?: string
-          card_type?: string
-          created_at?: string
-          credit_limit?: number
-          current_balance?: number
-          due_date?: string | null
-          id?: string
-          is_active?: boolean
-          is_frozen?: boolean
-          minimum_payment?: number
-          security_settings?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      crypto_portfolio: {
-        Row: {
-          balance: number
-          created_at: string
-          current_price: number
-          id: string
-          name: string
-          profit_loss: number
-          profit_loss_percentage: number
-          purchase_price: number
-          symbol: string
-          total_value: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          balance?: number
-          created_at?: string
-          current_price?: number
-          id?: string
-          name: string
-          profit_loss?: number
-          profit_loss_percentage?: number
-          purchase_price?: number
-          symbol: string
-          total_value?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          balance?: number
-          created_at?: string
-          current_price?: number
-          id?: string
-          name?: string
-          profit_loss?: number
-          profit_loss_percentage?: number
-          purchase_price?: number
-          symbol?: string
-          total_value?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       form_api_keys: {
         Row: {
@@ -404,108 +232,51 @@ export type Database = {
           },
         ]
       }
-      investments: {
-        Row: {
-          asset_name: string
-          asset_type: string
-          created_at: string
-          current_price: number
-          current_value: number
-          id: string
-          profit_loss: number
-          profit_loss_percentage: number
-          purchase_price: number
-          shares_owned: number
-          symbol: string | null
-          total_invested: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          asset_name: string
-          asset_type: string
-          created_at?: string
-          current_price?: number
-          current_value?: number
-          id?: string
-          profit_loss?: number
-          profit_loss_percentage?: number
-          purchase_price?: number
-          shares_owned?: number
-          symbol?: string | null
-          total_invested?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          asset_name?: string
-          asset_type?: string
-          created_at?: string
-          current_price?: number
-          current_value?: number
-          id?: string
-          profit_loss?: number
-          profit_loss_percentage?: number
-          purchase_price?: number
-          shares_owned?: number
-          symbol?: string | null
-          total_invested?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       merchants: {
         Row: {
-          api_key: string | null
           business_address: string | null
           business_email: string
           business_name: string
           business_phone: string | null
-          business_registration_number: string | null
-          commission_rate: number | null
+          contact_person: string | null
           created_at: string | null
           id: string
           is_active: boolean | null
-          settlement_account_id: string | null
+          merchant_type: string | null
+          requires_review: boolean | null
           updated_at: string | null
           user_id: string
           verification_status: Database["public"]["Enums"]["kyc_status"] | null
-          webhook_url: string | null
         }
         Insert: {
-          api_key?: string | null
           business_address?: string | null
           business_email: string
           business_name: string
           business_phone?: string | null
-          business_registration_number?: string | null
-          commission_rate?: number | null
+          contact_person?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
-          settlement_account_id?: string | null
+          merchant_type?: string | null
+          requires_review?: boolean | null
           updated_at?: string | null
           user_id: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
-          webhook_url?: string | null
         }
         Update: {
-          api_key?: string | null
           business_address?: string | null
           business_email?: string
           business_name?: string
           business_phone?: string | null
-          business_registration_number?: string | null
-          commission_rate?: number | null
+          contact_person?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
-          settlement_account_id?: string | null
+          merchant_type?: string | null
+          requires_review?: boolean | null
           updated_at?: string | null
           user_id?: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
-          webhook_url?: string | null
         }
         Relationships: []
       }
@@ -701,45 +472,6 @@ export type Database = {
         }
         Relationships: []
       }
-      savings_plans: {
-        Row: {
-          created_at: string
-          current_amount: number
-          id: string
-          monthly_contribution: number
-          plan_name: string
-          status: string
-          target_amount: number
-          target_date: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          current_amount?: number
-          id?: string
-          monthly_contribution: number
-          plan_name: string
-          status?: string
-          target_amount: number
-          target_date?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          current_amount?: number
-          id?: string
-          monthly_contribution?: number
-          plan_name?: string
-          status?: string
-          target_amount?: number
-          target_date?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       transactions: {
         Row: {
           amount: number
@@ -859,6 +591,8 @@ export type Database = {
           created_at: string | null
           failed_attempts: number | null
           id: string
+          is_locked: boolean | null
+          last_failed_attempt: string | null
           locked_until: string | null
           pin_hash: string
           updated_at: string | null
@@ -868,6 +602,8 @@ export type Database = {
           created_at?: string | null
           failed_attempts?: number | null
           id?: string
+          is_locked?: boolean | null
+          last_failed_attempt?: string | null
           locked_until?: string | null
           pin_hash: string
           updated_at?: string | null
@@ -877,6 +613,8 @@ export type Database = {
           created_at?: string | null
           failed_attempts?: number | null
           id?: string
+          is_locked?: boolean | null
+          last_failed_attempt?: string | null
           locked_until?: string | null
           pin_hash?: string
           updated_at?: string | null
@@ -907,62 +645,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      virtual_cards: {
-        Row: {
-          card_holder_name: string
-          card_number: string
-          created_at: string | null
-          cvv: string
-          daily_limit: number | null
-          expiry_month: number
-          expiry_year: number
-          id: string
-          spending_limit: number | null
-          status: Database["public"]["Enums"]["card_status"] | null
-          updated_at: string | null
-          user_id: string
-          wallet_id: string
-        }
-        Insert: {
-          card_holder_name: string
-          card_number: string
-          created_at?: string | null
-          cvv: string
-          daily_limit?: number | null
-          expiry_month: number
-          expiry_year: number
-          id?: string
-          spending_limit?: number | null
-          status?: Database["public"]["Enums"]["card_status"] | null
-          updated_at?: string | null
-          user_id: string
-          wallet_id: string
-        }
-        Update: {
-          card_holder_name?: string
-          card_number?: string
-          created_at?: string | null
-          cvv?: string
-          daily_limit?: number | null
-          expiry_month?: number
-          expiry_year?: number
-          id?: string
-          spending_limit?: number | null
-          status?: Database["public"]["Enums"]["card_status"] | null
-          updated_at?: string | null
-          user_id?: string
-          wallet_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "virtual_cards_wallet_id_fkey"
-            columns: ["wallet_id"]
-            isOneToOne: false
-            referencedRelation: "wallets"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       wallets: {
         Row: {
@@ -1020,7 +702,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_transaction: { Args: never; Returns: undefined }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_limit?: number
+          p_user_id: string
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       cleanup_expired_otps: { Args: never; Returns: undefined }
+      commit_transaction: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
@@ -1028,6 +721,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      rollback_transaction: { Args: never; Returns: undefined }
     }
     Enums: {
       card_status: "active" | "frozen" | "cancelled"

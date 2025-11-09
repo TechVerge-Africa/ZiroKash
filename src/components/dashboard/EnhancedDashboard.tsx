@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useWallet } from "@/hooks/useWallet";
-import { useCredit } from "@/hooks/useCredit";
+// Credit functionality removed
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -120,7 +120,7 @@ export default function EnhancedDashboard() {
   const fullName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name;
   const firstName = fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   const { wallets, transactions, loading: walletLoading, getTotalBalance } = useWallet();
-  const { creditCards, loading: creditLoading } = useCredit();
+  const creditCards: any[] = [];
   const { formatAmount, convertAmount, loading: currencyLoading } = useCurrency();
   const [hideBalance, setHideBalance] = useState(false);
 
@@ -165,7 +165,7 @@ export default function EnhancedDashboard() {
     });
   }, [transactions, convertAmount, formatAmount]);
 
-  if (walletLoading || creditLoading || currencyLoading) {
+  if (walletLoading || currencyLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

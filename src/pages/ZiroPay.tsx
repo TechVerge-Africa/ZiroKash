@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
 import { ThemePicker } from "@/components/ziropay/ThemePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
+import { MerchantOnboarding } from "@/components/ziropay/MerchantOnboarding";
+import { MerchantPinVerify } from "@/components/ziropay/MerchantPinVerify";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FormField {
   id: string;
@@ -36,7 +39,52 @@ interface ReceiptTemplate {
 }
 
 export default function ZiroPay() {
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { forms, stats, isLoading, refetch } = usePaymentForms();
+  const [merchantStatus, setMerchantStatus] = useState<'none' | 'pending' | 'approved'>('none');
+  const [pinVerified, setPinVerified] = useState(false);
+  const [isInstitution, setIsInstitution] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formFields, setFormFields] = useState<FormField[]>([]);
+  const [themeColor, setThemeColor] = useState("#0056D2");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [signatureUrl, setSignatureUrl] = useState("");
+  
+  useEffect(() => {
+    if (user) {
+      checkMerchantStatus();
+    }
+  }, [user]);
+  
+  const checkMerchantStatus = async () => {
+    if (!user) return;
+    
+    const { data: merchant } = await supabase
+      .from('merchants')
+      .select('verification_status, is_active')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (!merchant) {
+      setMerchantStatus('none');
+    } else if (merchant.verification_status === 'approved' && merchant.is_active) {
+      setMerchantStatus('approved');
+    } else {
+      setMerchantStatus('pending');
+    }
+  };
+  
+  if (merchantStatus === 'none') {
+    return <MerchantOnboarding onComplete={checkMerchantStatus} />;
+  }
+  
+  if (merchantStatus === 'approved' && !pinVerified) {
+    return <MerchantPinVerify onVerified={() => setPinVerified(true)} />;
+  }
+
   const { forms, stats, isLoading, refetch } = usePaymentForms();
   const [isInstitution, setIsInstitution] = useState(false);
   const [isCreating, setIsCreating] = useState(false);

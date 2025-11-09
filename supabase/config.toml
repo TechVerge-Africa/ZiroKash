@@ -58,3 +58,12 @@ verify_jwt = false
 
 [functions.form-payment-webhook]
 verify_jwt = false
+
+[functions.merchant-onboarding]
+verify_jwt = true
+
+[functions.verify-pin]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = false

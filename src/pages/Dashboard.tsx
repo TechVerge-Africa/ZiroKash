@@ -3,15 +3,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, Send, Wallet, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
-
 export default function Dashboard() {
-  const { wallets, transactions, loading, getWalletByType } = useWallet();
-  
+  const {
+    wallets,
+    transactions,
+    loading,
+    getWalletByType
+  } = useWallet();
   const mainWallet = getWalletByType('main');
   const balance = (mainWallet?.balance || 0) / 100;
-  
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-1">Welcome back to ZiroKash</p>
@@ -91,14 +92,8 @@ export default function Dashboard() {
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p className="text-center text-muted-foreground py-8">Loading...</p>
-          ) : transactions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No recent activity</p>
-          ) : (
-            <div className="space-y-3">
-              {transactions.slice(0, 5).map((tx) => (
-                <div key={tx.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-accent/50 transition-colors">
+          {loading ? <p className="text-center text-muted-foreground py-8">Loading...</p> : transactions.length === 0 ? <p className="text-center text-muted-foreground py-8">No recent activity</p> : <div className="space-y-3">
+              {transactions.slice(0, 5).map(tx => <div key={tx.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-accent/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                       <Wallet className="h-5 w-5" />
@@ -108,20 +103,13 @@ export default function Dashboard() {
                       <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <p className={`font-medium ${
-                    tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' 
-                      ? 'text-green-600 dark:text-green-500' 
-                      : 'text-red-600 dark:text-red-500'
-                  }`}>
+                  <p className={`font-medium ${tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                     {tx.transaction_type === 'deposit' || tx.transaction_type === 'receive' ? '+' : '-'}
                     ₵{(tx.amount / 100).toFixed(2)}
                   </p>
-                </div>
-              ))}
-            </div>
-          )}
+                </div>)}
+            </div>}
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }

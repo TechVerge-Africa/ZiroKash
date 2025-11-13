@@ -4,12 +4,22 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Wallet from "./pages/Wallet";
+import Transactions from "./pages/Transactions";
 import ZiroPay from "./pages/ZiroPay";
 import PaymentForm from "./pages/PaymentForm";
 import FormDetails from "./pages/FormDetails";
+import Savings from "./pages/Savings";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
+// Commented out features for future implementation
+// import Cards from "./pages/Cards";
+// import Credit from "./pages/Credit";
+// import Investments from "./pages/Investments";
+import MainLayout from "./components/layout/MainLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/use-theme";
@@ -28,10 +38,10 @@ function RootRedirect() {
     );
   }
   
-  return user ? <Navigate to="/ziropay" replace /> : <Navigate to="/auth" replace />;
+  return user ? <Navigate to="/dashboard" replace /> : <Landing />;
 }
 
-// App Routes component
+// App Routes component moved outside of main App component
 function AppRoutes() {
   return (
     <Routes>
@@ -39,24 +49,58 @@ function AppRoutes() {
       <Route path="/auth" element={<Auth />} />
       
       {/* Public payment form route */}
-      <Route path="/form/:formId" element={<PaymentForm />} />
+      <Route path="/pay/:formId" element={<PaymentForm />} />
+      
+      {/* Protected form details route */}
+      <Route path="/ziropay/:formId" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <FormDetails />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
       
       {/* Protected Routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Dashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/wallet" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Wallet />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/transactions" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <Transactions />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/ziropay" element={
         <ProtectedRoute>
-          <ZiroPay />
+          <MainLayout>
+            <ZiroPay />
+          </MainLayout>
         </ProtectedRoute>
       } />
-      
-      <Route path="/forms/:formId" element={
+      <Route path="/savings" element={
         <ProtectedRoute>
-          <FormDetails />
+          <MainLayout>
+            <Savings />
+          </MainLayout>
         </ProtectedRoute>
       } />
-      
       <Route path="/settings" element={
         <ProtectedRoute>
-          <Settings />
+          <MainLayout>
+            <Settings />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
@@ -65,7 +109,7 @@ function AppRoutes() {
   );
 }
 
-// Main App component
+// Main App component properly wrapped with providers
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>

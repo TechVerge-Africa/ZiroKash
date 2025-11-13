@@ -1,351 +1,385 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, Copy, ExternalLink, LogOut, Settings as SettingsIcon, DollarSign, FileText, Clock } from "lucide-react";
-import { MerchantOnboarding } from "@/components/ziropay/MerchantOnboarding";
-import { SettlementAccountForm } from "@/components/ziropay/SettlementAccountForm";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Link2, Eye, Download, DollarSign, Copy } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { formatGHS } from "@/lib/currency";
+import { FormBuilder } from "@/components/ziropay/FormBuilder";
+import { FormPreview } from "@/components/ziropay/FormPreview";
+import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
+import { ThemePicker } from "@/components/ziropay/ThemePicker";
+import { supabase } from "@/integrations/supabase/client";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
 
+interface FormField {
+  id: string;
+  type: "text" | "email" | "dropdown" | "amount";
+  label: string;
+  required: boolean;
+  options?: string[];
+  defaultValue?: string;
+}
+
+interface ReceiptTemplate {
+  headerText: string;
+  footerText: string;
+  showLogo: boolean;
+  showSignature: boolean;
+  showQRCode: boolean;
+  customFields: string[];
+}
+
 export default function ZiroPay() {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  
-  // DEV MODE: bypass merchant check
-  const DEV_MODE = true;
-  
-  const [hasMerchant, setHasMerchant] = useState(DEV_MODE);
-  const [merchant, setMerchant] = useState<any>(DEV_MODE ? { id: 'dev-merchant', business_name: 'Dev Merchant' } : null);
-  const [loading, setLoading] = useState(!DEV_MODE);
-  const [settlements, setSettlements] = useState<any[]>([]);
-  const [pendingAmount, setPendingAmount] = useState(0);
-  const [showSettlementForm, setShowSettlementForm] = useState(false);
+  const { forms, stats, isLoading, refetch } = usePaymentForms();
+  const [isInstitution, setIsInstitution] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formFields, setFormFields] = useState<FormField[]>([]);
+  const [themeColor, setThemeColor] = useState("#0056D2");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [signatureUrl, setSignatureUrl] = useState("");
+  const [receiptTemplate, setReceiptTemplate] = useState<ReceiptTemplate>({
+    headerText: "Official Payment Receipt",
+    footerText: "Thank you for your payment",
+    showLogo: true,
+    showSignature: true,
+    showQRCode: false,
+    customFields: [],
+  });
 
-  const { forms, stats, isLoading: formsLoading } = usePaymentForms();
+  // Calculate overall stats
+  const totalCollected = Object.values(stats).reduce((sum, s) => sum + s.totalCollected, 0);
+  const totalSubmissions = Object.values(stats).reduce((sum, s) => sum + s.totalSubmissions, 0);
+  const totalPaid = Object.values(stats).reduce((sum, s) => sum + s.paidSubmissions, 0);
+  const activeForms = forms.filter(f => f.is_active).length;
 
-  useEffect(() => {
-    if (user && !DEV_MODE) {
-      checkMerchantStatus();
+  const handleCreateForm = async () => {
+    if (!formTitle.trim()) {
+      toast.error("Please enter a form title");
+      return;
     }
-  }, [user]);
 
-  useEffect(() => {
-    if (merchant && !DEV_MODE) {
-      fetchSettlements();
+    if (formFields.length === 0) {
+      toast.error("Please add at least one field to your form");
+      return;
     }
-  }, [merchant]);
 
-  const checkMerchantStatus = async () => {
     try {
-      const { data, error } = await supabase
-        .from('merchants')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching merchant:', error);
-        setHasMerchant(false);
-      } else if (data) {
-        setMerchant(data);
-        setHasMerchant(true);
-      } else {
-        setHasMerchant(false);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to create forms");
+        return;
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setHasMerchant(false);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const fetchSettlements = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('settlements')
-        .select('*')
-        .eq('merchant_id', merchant.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      const { error } = await supabase.from("payment_forms").insert({
+        user_id: user.id,
+        title: formTitle,
+        description: formDescription || null,
+        fields: formFields as any,
+        theme_color: themeColor,
+        logo_url: logoUrl || null,
+        signature_url: signatureUrl || null,
+        receipt_template: receiptTemplate as any,
+      });
 
       if (error) throw error;
 
-      setSettlements(data || []);
+      toast.success("Payment form created! Share the link to start collecting.");
+      setIsCreating(false);
+      refetch();
       
-      // Calculate pending amount
-      const pending = (data || [])
-        .filter(s => s.status === 'pending')
-        .reduce((sum, s) => sum + s.amount, 0);
-      setPendingAmount(pending);
-    } catch (error) {
-      console.error('Error fetching settlements:', error);
+      // Reset form
+      setFormTitle("");
+      setFormDescription("");
+      setFormFields([]);
+      setThemeColor("#0056D2");
+      setLogoUrl("");
+      setSignatureUrl("");
+    } catch (error: any) {
+      console.error("Error creating form:", error);
+      toast.error(error.message || "Failed to create form");
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
+  const handleBecomeInstitution = () => {
+    setIsInstitution(true);
+    toast.success("Institution mode activated! You can now create payment forms.");
   };
 
-  const copyFormLink = (formId: string) => {
-    const link = `${window.location.origin}/form/${formId}`;
-    navigator.clipboard.writeText(link);
-    toast.success('Payment link copied to clipboard!');
-  };
-
-  if (loading) {
+  if (!isInstitution) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-[600px]">
+        <Card className="max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit">
+              <DollarSign className="h-12 w-12 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">ZiroPay - Institutional Payments</CardTitle>
+            <CardDescription>
+              Create payment forms, collect fees, and auto-generate receipts for your organization
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>✓ Create custom payment forms</p>
+              <p>✓ Collect payments from students, customers, or members</p>
+              <p>✓ Auto-generate branded receipts</p>
+              <p>✓ Track all payments in one dashboard</p>
+            </div>
+            <Button onClick={handleBecomeInstitution} className="w-full" size="lg">
+              Activate Institution Mode
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!hasMerchant) {
-    return <MerchantOnboarding onComplete={checkMerchantStatus} />;
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* DEV MODE Banner */}
-      {DEV_MODE && (
-        <div className="bg-yellow-500 text-black px-4 py-2 text-center font-semibold">
-          🚧 DEV MODE: Merchant onboarding bypassed for development 🚧
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">ZiroPay</h1>
+          <p className="text-muted-foreground mt-2">Collect payments with ease</p>
         </div>
-      )}
-      
-      {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">ZiroPay</h1>
-            <p className="text-sm text-muted-foreground">Payment Collection Platform</p>
-          </div>
-          <div className="flex gap-2">
-            {!DEV_MODE && (
-              <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
-                <SettingsIcon className="h-4 w-4 mr-2" />
-                Settlement
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+        
+        <Dialog open={isCreating} onOpenChange={setIsCreating}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create Payment Form
             </Button>
-          </div>
-        </div>
-      </header>
+          </DialogTrigger>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Payment Form</DialogTitle>
+              <DialogDescription>
+                Build a custom form with drag-and-drop fields, preview in real-time, and design branded receipts
+              </DialogDescription>
+            </DialogHeader>
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Collections</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatGHS(typeof stats?.totalCollected === 'number' ? stats.totalCollected : 0)}
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Left Panel - Builder */}
+              <div className="space-y-6">
+                <Tabs defaultValue="form" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="form">Form</TabsTrigger>
+                    <TabsTrigger value="design">Design</TabsTrigger>
+                    <TabsTrigger value="receipt">Receipt</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="form" className="space-y-4 mt-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Form Title *</Label>
+                        <Input
+                          value={formTitle}
+                          onChange={(e) => setFormTitle(e.target.value)}
+                          placeholder="e.g., School Fees Payment"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={formDescription}
+                          onChange={(e) => setFormDescription(e.target.value)}
+                          placeholder="Provide payment instructions or details..."
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <FormBuilder fields={formFields} onFieldsChange={setFormFields} />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="design" className="mt-4">
+                    <ThemePicker color={themeColor} onColorChange={setThemeColor} />
+                  </TabsContent>
+
+                  <TabsContent value="receipt" className="mt-4">
+                    <ReceiptDesigner
+                      template={receiptTemplate}
+                      onTemplateChange={setReceiptTemplate}
+                      logoUrl={logoUrl}
+                      signatureUrl={signatureUrl}
+                      onLogoUpload={setLogoUrl}
+                      onSignatureUpload={setSignatureUrl}
+                    />
+                  </TabsContent>
+                </Tabs>
+
+                <div className="flex gap-3">
+                  <Button onClick={handleCreateForm} className="flex-1">
+                    Save & Publish Form
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsCreating(false)}>
+                    Cancel
+                  </Button>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {typeof stats?.paidSubmissions === 'number' ? stats.paidSubmissions : 0} payments
-              </p>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Settlement</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatGHS(pendingAmount)}</div>
-              <p className="text-xs text-muted-foreground">Next payout: Daily 6 PM</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Forms</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{forms.length}</div>
-              <p className="text-xs text-muted-foreground">Payment forms</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Settlement Account */}
-        {!DEV_MODE && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Settlement Account</CardTitle>
-              <CardDescription>Where your payments are sent</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {merchant?.settlement_account && (
-                merchant.settlement_type === 'momo' ? (
+              {/* Right Panel - Live Preview */}
+              <div className="lg:sticky lg:top-6 h-fit">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{merchant.settlement_account.provider.toUpperCase()} Mobile Money</p>
-                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.phone}</p>
-                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_name}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
-                      Change
-                    </Button>
+                    <h3 className="text-sm font-medium text-muted-foreground">Live Preview</h3>
+                    <Badge variant="outline">Real-time</Badge>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{merchant.settlement_account.bank_name}</p>
-                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_number}</p>
-                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_name}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
-                      Change
-                    </Button>
+                  <div className="border rounded-lg p-6 bg-muted/20">
+                    <FormPreview
+                      title={formTitle}
+                      description={formDescription}
+                      fields={formFields}
+                      themeColor={themeColor}
+                      logoUrl={logoUrl}
+                    />
                   </div>
-                )
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Payment Forms */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Payment Forms</CardTitle>
-              <CardDescription>Create and manage your payment collection forms</CardDescription>
+                </div>
+              </div>
             </div>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Form
-            </Button>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {formsLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading forms...</div>
-            ) : forms.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No payment forms yet</p>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Form
-                </Button>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Form Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Submissions</TableHead>
-                    <TableHead>Collected</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {forms.map((form: any) => {
-                    return (
-                      <TableRow key={form.id}>
-                        <TableCell className="font-medium">{form.title}</TableCell>
-                        <TableCell>
-                          <Badge variant={form.is_active ? 'default' : 'secondary'}>
-                            {form.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>0</TableCell>
-                        <TableCell>{formatGHS(0)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyFormLink(form.id)}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate(`/forms/${form.id}`)}
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            )}
+            <div className="text-2xl font-bold">GHS {totalCollected.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              From {totalPaid} paid submissions
+            </p>
           </CardContent>
         </Card>
 
-        {/* Settlement History */}
         <Card>
-          <CardHeader>
-            <CardTitle>Settlement History</CardTitle>
-            <CardDescription>Recent payouts to your account</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Forms</CardTitle>
+            <Link2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {settlements.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">No settlements yet</div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Account</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {settlements.map((settlement) => (
-                    <TableRow key={settlement.id}>
-                      <TableCell>{new Date(settlement.initiated_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="font-medium">{formatGHS(settlement.amount)}</TableCell>
-                      <TableCell>
-                        {settlement.settlement_type === 'momo'
-                          ? settlement.settlement_account.phone
-                          : settlement.settlement_account.account_number}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            settlement.status === 'completed'
-                              ? 'default'
-                              : settlement.status === 'failed'
-                              ? 'destructive'
-                              : 'secondary'
-                          }
-                        >
-                          {settlement.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <div className="text-2xl font-bold">{activeForms}</div>
+            <p className="text-xs text-muted-foreground">
+              Currently accepting payments
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalSubmissions}</div>
+            <p className="text-xs text-muted-foreground">
+              Total submissions
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <Download className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalSubmissions - totalPaid}</div>
+            <p className="text-xs text-muted-foreground">
+              Pending payments
+            </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Forms List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Forms</CardTitle>
+          <CardDescription>Manage all your payment collection forms</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            </div>
+          ) : forms.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No payment forms yet. Create one to get started!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {forms.map((form) => {
+                const formStats = stats[form.id] || { totalSubmissions: 0, paidSubmissions: 0, totalCollected: 0 };
+                
+                return (
+                  <div 
+                    key={form.id} 
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{form.title}</h3>
+                        <Badge variant={form.is_active ? "default" : "secondary"} className="text-xs">
+                          {form.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{formStats.totalSubmissions} submissions</span>
+                        <span>•</span>
+                        <span>{formStats.paidSubmissions} paid</span>
+                        <span>•</span>
+                        <span className="font-semibold text-primary">
+                          GHS {formStats.totalCollected.toLocaleString()} collected
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-2"
+                        onClick={() => {
+                          const link = `${window.location.origin}/pay/${form.id}`;
+                          navigator.clipboard.writeText(link);
+                          toast.success('Payment link copied!');
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy Link
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-2"
+                        onClick={() => navigate(`/ziropay/${form.id}`)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

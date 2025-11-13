@@ -1,0 +1,72 @@
+
+import { Send, CreditCard, Wallet, Globe, Coins, PiggyBank } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+export default function QuickActions() {
+  const isMobile = useIsMobile();
+  
+  const quickLinks = [
+    { 
+      icon: <Send size={20} />, 
+      label: "Send", 
+      link: "/payments"
+    },
+    { 
+      icon: <CreditCard size={20} />, 
+      label: "Add Card", 
+      link: "/cards"
+    },
+    { 
+      icon: <Wallet size={20} />, 
+      label: "Deposit", 
+      link: "/wallet"
+    },
+    { 
+      icon: <Globe size={20} />, 
+      label: "Forex", 
+      link: "/wallet"
+    },
+    { 
+      icon: <PiggyBank size={20} />, 
+      label: "Save", 
+      link: "/wallet"
+    },
+    { 
+      icon: <Coins size={20} />, 
+      label: "Invest", 
+      link: "/investments"
+    },
+  ];
+
+  return (
+    <Card className="glass-card border-white/10">
+      <CardHeader className="pb-2 pt-4">
+        <CardTitle className="text-md font-medium">Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className={`grid ${isMobile ? 'grid-cols-3' : 'flex justify-between'} gap-2`}>
+          {quickLinks.map((action, index) => (
+            <Button
+              key={index}
+              variant="ghost"
+              className="flex flex-col items-center gap-2 h-auto p-2"
+              asChild
+            >
+              <Link to={action.link}>
+                <div className="flex flex-col items-center gap-2 h-auto p-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    {action.icon}
+                  </div>
+                  <span className="text-xs">{action.label}</span>
+                </div>
+              </Link>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

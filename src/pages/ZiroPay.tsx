@@ -18,7 +18,7 @@ import { usePaymentForms } from "@/hooks/usePaymentForms";
 export default function ZiroPay() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [merchantStatus, setMerchantStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
+  const [merchantStatus, setMerchantStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [merchant, setMerchant] = useState<any>(null);
   const [pinVerified, setPinVerified] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,9 @@ export default function ZiroPay() {
         setMerchantStatus('none');
       } else if (data) {
         setMerchant(data);
-        setMerchantStatus(data.verification_status);
+        // Handle legacy 'verified' status by treating it as 'approved'
+        const status = data.verification_status === 'verified' ? 'approved' : data.verification_status;
+        setMerchantStatus(status);
       } else {
         setMerchantStatus('none');
       }
@@ -107,7 +109,7 @@ export default function ZiroPay() {
     );
   }
 
-  if (merchantStatus === 'none') {
+  if (merchantStatus === 'none' || merchantStatus === 'pending') {
     return <MerchantOnboarding onComplete={checkMerchantStatus} />;
   }
 

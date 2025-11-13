@@ -76,7 +76,6 @@ Deno.serve(async (req) => {
         business_phone: validatedData.business_phone,
         contact_person: validatedData.contact_person,
         merchant_type: validatedData.merchant_type,
-        verification_status: 'verified',
         is_active: true,
         settlement_type: settlement_type,
         settlement_account: validatedSettlement,

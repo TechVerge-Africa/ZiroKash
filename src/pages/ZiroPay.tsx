@@ -17,9 +17,13 @@ import { usePaymentForms } from "@/hooks/usePaymentForms";
 export default function ZiroPay() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [hasMerchant, setHasMerchant] = useState(false);
-  const [merchant, setMerchant] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // DEV MODE: bypass merchant check
+  const DEV_MODE = true;
+  
+  const [hasMerchant, setHasMerchant] = useState(DEV_MODE);
+  const [merchant, setMerchant] = useState<any>(DEV_MODE ? { id: 'dev-merchant', business_name: 'Dev Merchant' } : null);
+  const [loading, setLoading] = useState(!DEV_MODE);
   const [settlements, setSettlements] = useState<any[]>([]);
   const [pendingAmount, setPendingAmount] = useState(0);
   const [showSettlementForm, setShowSettlementForm] = useState(false);
@@ -27,13 +31,13 @@ export default function ZiroPay() {
   const { forms, stats, isLoading: formsLoading } = usePaymentForms();
 
   useEffect(() => {
-    if (user) {
+    if (user && !DEV_MODE) {
       checkMerchantStatus();
     }
   }, [user]);
 
   useEffect(() => {
-    if (merchant) {
+    if (merchant && !DEV_MODE) {
       fetchSettlements();
     }
   }, [merchant]);
@@ -111,6 +115,13 @@ export default function ZiroPay() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* DEV MODE Banner */}
+      {DEV_MODE && (
+        <div className="bg-yellow-500 text-black px-4 py-2 text-center font-semibold">
+          🚧 DEV MODE: Merchant onboarding bypassed for development 🚧
+        </div>
+      )}
+      
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -119,10 +130,12 @@ export default function ZiroPay() {
             <p className="text-sm text-muted-foreground">Payment Collection Platform</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
-              <SettingsIcon className="h-4 w-4 mr-2" />
-              Settlement
-            </Button>
+            {!DEV_MODE && (
+              <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                Settlement
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
@@ -173,39 +186,41 @@ export default function ZiroPay() {
         </div>
 
         {/* Settlement Account */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Settlement Account</CardTitle>
-            <CardDescription>Where your payments are sent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {merchant?.settlement_account && (
-              merchant.settlement_type === 'momo' ? (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{merchant.settlement_account.provider.toUpperCase()} Mobile Money</p>
-                    <p className="text-sm text-muted-foreground">{merchant.settlement_account.phone}</p>
-                    <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_name}</p>
+        {!DEV_MODE && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Settlement Account</CardTitle>
+              <CardDescription>Where your payments are sent</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {merchant?.settlement_account && (
+                merchant.settlement_type === 'momo' ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{merchant.settlement_account.provider.toUpperCase()} Mobile Money</p>
+                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.phone}</p>
+                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_name}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
+                      Change
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
-                    Change
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{merchant.settlement_account.bank_name}</p>
-                    <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_number}</p>
-                    <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_name}</p>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{merchant.settlement_account.bank_name}</p>
+                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_number}</p>
+                      <p className="text-sm text-muted-foreground">{merchant.settlement_account.account_name}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
+                      Change
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
-                    Change
-                  </Button>
-                </div>
-              )
-            )}
-          </CardContent>
-        </Card>
+                )
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Payment Forms */}
         <Card>

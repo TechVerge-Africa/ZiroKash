@@ -14,56 +14,11 @@ jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 secure_nonce = true
 
-[functions.auth-api]
-verify_jwt = false
-
-[functions.wallet-transfer]
-verify_jwt = true
-
-[functions.merchant-payment]
-verify_jwt = true
-
-[functions.bill-payment]
-verify_jwt = true
-
-[functions.corporate-collections]
-verify_jwt = false
-
-[functions.deposit-momo]
-verify_jwt = true
-
-[functions.deposit-bank]
-verify_jwt = true
-
-[functions.deposit-webhook]
-verify_jwt = false
-
-[functions.withdraw-momo]
-verify_jwt = true
-
-[functions.withdraw-bank]
-verify_jwt = true
-
-[functions.detect-country]
-verify_jwt = true
-
-[functions.currency-rates]
-verify_jwt = false
-
-[functions.lookup-recipient]
-verify_jwt = true
-
-[functions.payment-form-submit]
-verify_jwt = false
-
-[functions.form-payment-webhook]
-verify_jwt = false
-
 [functions.merchant-onboarding]
 verify_jwt = true
 
-[functions.verify-pin]
-verify_jwt = true
+[functions.form-payment-webhook]
+verify_jwt = false
 
 [functions.send-notification]
 verify_jwt = false
@@ -76,3 +31,9 @@ verify_jwt = false
 
 [functions.update-settlement-account]
 verify_jwt = true
+
+[functions.currency-rates]
+verify_jwt = false
+
+[functions.payment-form-submit]
+verify_jwt = false

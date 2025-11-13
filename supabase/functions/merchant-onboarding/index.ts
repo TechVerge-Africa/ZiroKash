@@ -1,11 +1,6 @@
-/**
- * Merchant Onboarding Edge Function
- * Simplified 2-step merchant registration with auto-approval
- */
-
 import { corsHeaders, handleError, successResponse, ZiroPayError, ErrorCodes } from '../_shared/errors.ts';
-import { createSupabaseClient, getAuthUser, checkRateLimit } from '../_shared/db.ts';
-import { validateRequest, MerchantOnboardingSchema, PinSchema, SettlementAccountSchema } from '../_shared/validation.ts';
+import { createSupabaseClient } from '../_shared/db.ts';
+import { validateRequest, MerchantOnboardingSchema, SettlementAccountSchema } from '../_shared/validation.ts';
 
 interface OnboardingRequest {
   business_name: string;
@@ -13,7 +8,6 @@ interface OnboardingRequest {
   business_phone: string;
   contact_person: string;
   merchant_type: 'school' | 'church' | 'ngo' | 'association' | 'business' | 'other';
-  pin: string;
   settlement_type: 'momo' | 'bank';
   settlement_account: any;
 }
@@ -25,32 +19,43 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Get authenticated user
-    const user = await getAuthUser(req);
-    
-    // Check rate limit (10 requests per hour)
-    await checkRateLimit(user.id, 'merchant-onboarding', 10, 60);
-    
-    // Parse and validate request
+    // Parse request (no auth check for dev simplicity)
     const body = await req.json();
-    const { pin, settlement_type, settlement_account, ...merchantData } = body as OnboardingRequest;
+    const { settlement_type, settlement_account, ...merchantData } = body as OnboardingRequest;
     
     // Validate merchant data
     const validatedData = validateRequest(MerchantOnboardingSchema, merchantData);
-    
-    // Validate PIN
-    const validatedPin = validateRequest(PinSchema, pin);
     
     // Validate settlement account
     const validatedSettlement = validateRequest(SettlementAccountSchema, settlement_account);
     
     const supabase = createSupabaseClient();
     
+    // Get user from auth header (optional for dev)
+    const authHeader = req.headers.get('authorization');
+    let userId = null;
+    
+    if (authHeader) {
+      const jwt = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+      if (!authError && user) {
+        userId = user.id;
+      }
+    }
+    
+    if (!userId) {
+      throw new ZiroPayError(
+        ErrorCodes.UNAUTHORIZED,
+        'Authentication required',
+        401
+      );
+    }
+    
     // Check if merchant already exists
     const { data: existingMerchant } = await supabase
       .from('merchants')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
     
     if (existingMerchant) {
@@ -61,26 +66,18 @@ Deno.serve(async (req) => {
       );
     }
     
-    // Hash PIN using SHA-256
-    const encoder = new TextEncoder();
-    const data = encoder.encode(validatedPin);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const pin_hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    // Create merchant account with AUTO-APPROVAL and settlement account
+    // Create merchant account (auto-approved, no PIN needed for dev)
     const { data: merchant, error: merchantError } = await supabase
       .from('merchants')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         business_name: validatedData.business_name,
         business_email: validatedData.business_email,
         business_phone: validatedData.business_phone,
         contact_person: validatedData.contact_person,
         merchant_type: validatedData.merchant_type,
-        verification_status: 'verified', // Auto-approve (enum supports 'verified')
+        verification_status: 'verified',
         is_active: true,
-        requires_review: true, // Flag for later compliance review
         settlement_type: settlement_type,
         settlement_account: validatedSettlement,
         created_at: new Date().toISOString()
@@ -95,52 +92,6 @@ Deno.serve(async (req) => {
         500,
         merchantError
       );
-    }
-    
-    // Create or update PIN
-    const { error: pinError } = await supabase
-      .from('user_pins')
-      .upsert({
-        user_id: user.id,
-        pin_hash,
-        failed_attempts: 0,
-        is_locked: false,
-        locked_until: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-    
-    if (pinError) {
-      // Rollback merchant creation
-      await supabase
-        .from('merchants')
-        .delete()
-        .eq('id', merchant.id);
-      
-      throw new ZiroPayError(
-        ErrorCodes.DATABASE_ERROR,
-        'Failed to set up PIN',
-        500,
-        pinError
-      );
-    }
-    
-    // Send approval notification email
-    try {
-      await supabase.functions.invoke('send-notification', {
-        body: {
-          type: 'merchant_approved',
-          user_id: user.id,
-          merchant_id: merchant.id,
-          data: {
-            business_name: validatedData.business_name,
-            merchant_type: validatedData.merchant_type
-          }
-        }
-      });
-    } catch (emailError) {
-      console.error('Failed to send notification:', emailError);
-      // Don't fail the request if email fails
     }
     
     console.log(`[merchant-onboarding] Merchant created and auto-approved: ${merchant.id}`);

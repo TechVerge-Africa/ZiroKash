@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Copy, ExternalLink, LogOut, Settings as SettingsIcon, DollarSign, FileText, Clock } from "lucide-react";
 import { MerchantOnboarding } from "@/components/ziropay/MerchantOnboarding";
-import { MerchantPinVerify } from "@/components/ziropay/MerchantPinVerify";
 import { SettlementAccountForm } from "@/components/ziropay/SettlementAccountForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -18,9 +17,8 @@ import { usePaymentForms } from "@/hooks/usePaymentForms";
 export default function ZiroPay() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [merchantStatus, setMerchantStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
+  const [hasMerchant, setHasMerchant] = useState(false);
   const [merchant, setMerchant] = useState<any>(null);
-  const [pinVerified, setPinVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [settlements, setSettlements] = useState<any[]>([]);
   const [pendingAmount, setPendingAmount] = useState(0);
@@ -35,10 +33,10 @@ export default function ZiroPay() {
   }, [user]);
 
   useEffect(() => {
-    if (merchant && pinVerified) {
+    if (merchant) {
       fetchSettlements();
     }
-  }, [merchant, pinVerified]);
+  }, [merchant]);
 
   const checkMerchantStatus = async () => {
     try {
@@ -50,19 +48,16 @@ export default function ZiroPay() {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching merchant:', error);
-        setMerchantStatus('none');
+        setHasMerchant(false);
       } else if (data) {
         setMerchant(data);
-        // Normalize legacy 'approved' to 'verified'
-        const rawStatus = String((data as any).verification_status);
-        const status = (rawStatus === 'approved' ? 'verified' : rawStatus) as 'none' | 'pending' | 'verified' | 'rejected';
-        setMerchantStatus(status);
+        setHasMerchant(true);
       } else {
-        setMerchantStatus('none');
+        setHasMerchant(false);
       }
     } catch (error) {
       console.error('Error:', error);
-      setMerchantStatus('none');
+      setHasMerchant(false);
     } finally {
       setLoading(false);
     }
@@ -110,12 +105,8 @@ export default function ZiroPay() {
     );
   }
 
-  if (merchantStatus === 'none' || merchantStatus === 'pending') {
+  if (!hasMerchant) {
     return <MerchantOnboarding onComplete={checkMerchantStatus} />;
-  }
-
-  if (!pinVerified) {
-    return <MerchantPinVerify onVerified={() => setPinVerified(true)} />;
   }
 
   return (
@@ -128,23 +119,10 @@ export default function ZiroPay() {
             <p className="text-sm text-muted-foreground">Payment Collection Platform</p>
           </div>
           <div className="flex gap-2">
-            <Dialog open={showSettlementForm} onOpenChange={setShowSettlementForm}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <SettingsIcon className="h-4 w-4 mr-2" />
-                  Settlement Account
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <SettlementAccountForm 
-                  currentAccount={merchant?.settlement_account}
-                  onUpdate={() => {
-                    checkMerchantStatus();
-                    setShowSettlementForm(false);
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="sm" onClick={() => setShowSettlementForm(true)}>
+              <SettingsIcon className="h-4 w-4 mr-2" />
+              Settlement
+            </Button>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out

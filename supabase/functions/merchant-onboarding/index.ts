@@ -5,7 +5,7 @@
 
 import { corsHeaders, handleError, successResponse, ZiroPayError, ErrorCodes } from '../_shared/errors.ts';
 import { createSupabaseClient, getAuthUser, checkRateLimit } from '../_shared/db.ts';
-import { validateRequest, MerchantOnboardingSchema, PinSchema } from '../_shared/validation.ts';
+import { validateRequest, MerchantOnboardingSchema, PinSchema, SettlementAccountSchema } from '../_shared/validation.ts';
 
 interface OnboardingRequest {
   business_name: string;
@@ -14,6 +14,8 @@ interface OnboardingRequest {
   contact_person: string;
   merchant_type: 'school' | 'church' | 'ngo' | 'association' | 'business' | 'other';
   pin: string;
+  settlement_type: 'momo' | 'bank';
+  settlement_account: any;
 }
 
 Deno.serve(async (req) => {
@@ -31,13 +33,16 @@ Deno.serve(async (req) => {
     
     // Parse and validate request
     const body = await req.json();
-    const { pin, ...merchantData } = body as OnboardingRequest;
+    const { pin, settlement_type, settlement_account, ...merchantData } = body as OnboardingRequest;
     
     // Validate merchant data
     const validatedData = validateRequest(MerchantOnboardingSchema, merchantData);
     
     // Validate PIN
     const validatedPin = validateRequest(PinSchema, pin);
+    
+    // Validate settlement account
+    const validatedSettlement = validateRequest(SettlementAccountSchema, settlement_account);
     
     const supabase = createSupabaseClient();
     
@@ -63,7 +68,7 @@ Deno.serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const pin_hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     
-    // Create merchant account with AUTO-APPROVAL
+    // Create merchant account with AUTO-APPROVAL and settlement account
     const { data: merchant, error: merchantError } = await supabase
       .from('merchants')
       .insert({
@@ -76,6 +81,8 @@ Deno.serve(async (req) => {
         verification_status: 'verified', // Auto-approve for Ghana
         is_active: true,
         requires_review: true, // Flag for later compliance review
+        settlement_type: settlement_type,
+        settlement_account: validatedSettlement,
         created_at: new Date().toISOString()
       })
       .select()

@@ -83,41 +83,71 @@ Deno.serve(async (req) => {
         throw new ZiroPayError('DATABASE_ERROR', 'Failed to update submission', 500);
       }
       
-      // Get merchant's wallet
+      // Get merchant details and user info
       const merchantUserId = submission.payment_forms.user_id;
-      const { data: merchantWallet, error: walletError } = await supabase
-        .from('wallets')
+      const payerEmail = submission.payer_email;
+      const payerName = submission.payer_name;
+      const formTitle = submission.payment_forms.title || 'Payment Form';
+      
+      // Get merchant
+      const { data: merchant, error: merchantError } = await supabase
+        .from('merchants')
         .select('*')
         .eq('user_id', merchantUserId)
-        .eq('wallet_type', 'merchant')
         .eq('is_active', true)
         .single();
-      
-      if (walletError || !merchantWallet) {
-        console.error('[webhook] Merchant wallet not found for user:', merchantUserId);
-        throw new ZiroPayError('WALLET_NOT_FOUND', 'Merchant wallet not found', 404);
+
+      if (merchantError || !merchant) {
+        console.error('[webhook] Merchant not found:', merchantError);
+        throw new ZiroPayError('NOT_FOUND', 'Merchant not found', 404);
       }
-      
-      // Credit merchant wallet
-      await updateWalletBalance(merchantWallet.id, amount, 'credit');
-      
-      // Create transaction record
+
+      console.log(`[webhook] Creating settlement record for merchant: ${merchant.id}`);
+
+      // Create settlement record (pending)
+      const { data: settlement, error: settlementError } = await supabase
+        .from('settlements')
+        .insert({
+          merchant_id: merchant.id,
+          amount: amount,
+          settlement_type: merchant.settlement_type,
+          settlement_account: merchant.settlement_account,
+          status: 'pending',
+          metadata: {
+            form_id: submission.form_id,
+            submission_id: submission.id,
+            payment_reference: reference,
+            payer_email: payerEmail,
+            payer_name: payerName,
+          },
+        })
+        .select()
+        .single();
+
+      if (settlementError) {
+        console.error('[webhook] Failed to create settlement:', settlementError);
+        throw new ZiroPayError('DATABASE_ERROR', 'Failed to create settlement record', 500);
+      }
+
+      console.log(`[webhook] Settlement record created: ${settlement.id}`);
+
+      // Create transaction record for reporting (no balance change)
       await createTransaction({
         user_id: merchantUserId,
         transaction_type: 'payment_received',
         amount: amount,
         currency: 'GHS',
         status: 'completed',
-        to_wallet_id: merchantWallet.id,
-        description: `Payment for form: ${submission.form_id}`,
+        description: `Payment from ${payerEmail || 'customer'} via ${formTitle} - Pending settlement`,
         metadata: {
           form_id: submission.form_id,
           submission_id: submission.id,
-          payer_name: submission.payer_name,
-          payer_email: submission.payer_email
+          payer_email: payerEmail,
+          payer_name: payerName,
+          payment_reference: reference,
+          paystack_reference: reference,
+          settlement_id: settlement.id,
         },
-        external_reference: reference,
-        payment_method: 'paystack'
       });
       
       // Send receipt email

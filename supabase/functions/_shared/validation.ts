@@ -22,6 +22,29 @@ export const MerchantOnboardingSchema = z.object({
 });
 
 /**
+ * Settlement Account Schemas
+ */
+export const MomoSettlementSchema = z.object({
+  type: z.literal('momo'),
+  provider: z.enum(['mtn', 'vodafone', 'airteltigo']),
+  phone: z.string().regex(GHANA_PHONE_REGEX, 'Invalid Ghana phone number'),
+  account_name: z.string().min(2).max(200),
+});
+
+export const BankSettlementSchema = z.object({
+  type: z.literal('bank'),
+  bank_name: z.string().min(2).max(200),
+  account_number: z.string().min(5).max(50),
+  account_name: z.string().min(2).max(200),
+  branch: z.string().optional(),
+});
+
+export const SettlementAccountSchema = z.discriminatedUnion('type', [
+  MomoSettlementSchema,
+  BankSettlementSchema,
+]);
+
+/**
  * PIN schema (4 digits)
  */
 export const PinSchema = z.string().regex(/^\d{4}$/, 'PIN must be exactly 4 digits');

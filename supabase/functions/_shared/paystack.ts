@@ -171,6 +171,75 @@ export class PaystackService {
   }
   
   /**
+   * Transfer to Mobile Money
+   */
+  async transferToMobileMoney(params: {
+    amount: number;
+    recipient: string;
+    provider: string;
+    reference: string;
+    reason?: string;
+  }) {
+    const response = await fetch(`${this.baseUrl}/transfer`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        source: 'balance',
+        amount: params.amount,
+        recipient: params.recipient,
+        reason: params.reason || 'Settlement payment',
+        reference: params.reference,
+        currency: 'GHS'
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Paystack MoMo transfer failed: ${JSON.stringify(error)}`);
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Transfer to Bank Account
+   */
+  async transferToBank(params: {
+    amount: number;
+    account_number: string;
+    bank_code: string;
+    reference: string;
+    reason?: string;
+  }) {
+    const response = await fetch(`${this.baseUrl}/transfer`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        source: 'balance',
+        amount: params.amount,
+        account_number: params.account_number,
+        bank_code: params.bank_code,
+        reason: params.reason || 'Settlement payment',
+        reference: params.reference,
+        currency: 'GHS'
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Paystack bank transfer failed: ${JSON.stringify(error)}`);
+    }
+
+    return await response.json();
+  }
+  
+  /**
    * Verify webhook signature
    */
   verifyWebhookSignature(body: string, signature: string): boolean {

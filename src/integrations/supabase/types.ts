@@ -243,7 +243,11 @@ export type Database = {
           id: string
           is_active: boolean | null
           merchant_type: string | null
+          min_settlement_amount: number | null
           requires_review: boolean | null
+          settlement_account: Json | null
+          settlement_frequency: string | null
+          settlement_type: string | null
           updated_at: string | null
           user_id: string
           verification_status: Database["public"]["Enums"]["kyc_status"] | null
@@ -258,7 +262,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           merchant_type?: string | null
+          min_settlement_amount?: number | null
           requires_review?: boolean | null
+          settlement_account?: Json | null
+          settlement_frequency?: string | null
+          settlement_type?: string | null
           updated_at?: string | null
           user_id: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
@@ -273,7 +281,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           merchant_type?: string | null
+          min_settlement_amount?: number | null
           requires_review?: boolean | null
+          settlement_account?: Json | null
+          settlement_frequency?: string | null
+          settlement_type?: string | null
           updated_at?: string | null
           user_id?: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
@@ -471,6 +483,62 @@ export type Database = {
           wallet_address?: string | null
         }
         Relationships: []
+      }
+      settlements: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          initiated_at: string | null
+          merchant_id: string
+          metadata: Json | null
+          paystack_reference: string | null
+          settlement_account: Json
+          settlement_type: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          initiated_at?: string | null
+          merchant_id: string
+          metadata?: Json | null
+          paystack_reference?: string | null
+          settlement_account: Json
+          settlement_type: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          initiated_at?: string | null
+          merchant_id?: string
+          metadata?: Json | null
+          paystack_reference?: string | null
+          settlement_account?: Json
+          settlement_type?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settlements_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {

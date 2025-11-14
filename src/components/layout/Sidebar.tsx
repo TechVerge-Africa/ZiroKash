@@ -33,10 +33,8 @@ type NavItem = {
 
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
-  { name: "Wallet", href: "/wallet", icon: <Wallet size={20} /> },
+  { name: "My Forms", href: "/ziropay", icon: <DollarSign size={20} /> },
   { name: "Transactions", href: "/transactions", icon: <Send size={20} /> },
-  { name: "ZiroPay", href: "/ziropay", icon: <DollarSign size={20} /> },
-  { name: "Savings", href: "/savings", icon: <LineChart size={20} /> },
 ];
 
 // Commented out for future implementation
@@ -104,7 +102,7 @@ export default function Sidebar() {
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
               Z
             </div>
-            <span className="text-xl font-bold gradient-text">ZiroKash</span>
+            <span className="text-xl font-bold gradient-text">ZiroPay</span>
           </Link>
           {isMobile && (
             <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>

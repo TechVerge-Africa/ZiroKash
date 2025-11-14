@@ -15,9 +15,7 @@ import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/use-theme";
-import Wallet from "./pages/Wallet";
 import Transactions from "./pages/Transactions";
-import Savings from "./pages/Savings";
 import Profile from "./pages/Profile";
 import Security from "./pages/Security";
 import Support from "./pages/Support";
@@ -59,26 +57,10 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
 
-        <Route path="/wallet" element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Wallet />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-
         <Route path="/transactions" element={
           <ProtectedRoute>
             <MainLayout>
               <Transactions />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/savings" element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Savings />
             </MainLayout>
           </ProtectedRoute>
         } />

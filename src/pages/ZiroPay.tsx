@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Link2, Eye, Download, DollarSign, Copy } from "lucide-react";
@@ -37,9 +37,12 @@ interface ReceiptTemplate {
 
 export default function ZiroPay() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { forms, stats, isLoading, refetch } = usePaymentForms();
   const [isInstitution, setIsInstitution] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingFormId, setEditingFormId] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -60,6 +63,42 @@ export default function ZiroPay() {
   const totalSubmissions = Object.values(stats).reduce((sum, s) => sum + s.totalSubmissions, 0);
   const totalPaid = Object.values(stats).reduce((sum, s) => sum + s.paidSubmissions, 0);
   const activeForms = forms.filter(f => f.is_active).length;
+
+  // Check for edit parameter in URL
+  useEffect(() => {
+    const editFormId = searchParams.get("edit");
+    if (editFormId && forms.length > 0) {
+      const formToEdit = forms.find(f => f.id === editFormId);
+      if (formToEdit) {
+        setEditingFormId(formToEdit.id);
+        setFormTitle(formToEdit.title);
+        setFormDescription(formToEdit.description || "");
+        setFormFields(formToEdit.fields || []);
+        setThemeColor(formToEdit.theme_color || "#0056D2");
+        setLogoUrl(formToEdit.logo_url || "");
+        setSignatureUrl(formToEdit.signature_url || "");
+        setReceiptTemplate(formToEdit.receipt_template || {
+          headerText: "Official Payment Receipt",
+          footerText: "Thank you for your payment",
+          showLogo: true,
+          showSignature: true,
+          showQRCode: false,
+          customFields: [],
+          fieldMappings: [],
+          securityFeatures: {
+            showWatermark: false,
+            watermarkText: "OFFICIAL",
+            showSecurityBorder: true,
+            showBarcodeBottom: true,
+            enableNumbering: true,
+          },
+        });
+        setIsEditing(true);
+        // Clean up the URL
+        navigate("/ziropay", { replace: true });
+      }
+    }
+  }, [searchParams, forms, navigate]);
 
   const handleCreateForm = async () => {
     if (!formTitle.trim()) {
@@ -94,19 +133,99 @@ export default function ZiroPay() {
 
       toast.success("Payment form created! Share the link to start collecting.");
       setIsCreating(false);
+      resetFormState();
       refetch();
-      
-      // Reset form
-      setFormTitle("");
-      setFormDescription("");
-      setFormFields([]);
-      setThemeColor("#0056D2");
-      setLogoUrl("");
-      setSignatureUrl("");
     } catch (error: any) {
       console.error("Error creating form:", error);
       toast.error(error.message || "Failed to create form");
     }
+  };
+
+  const handleEditForm = async () => {
+    if (!editingFormId) return;
+    
+    if (!formTitle.trim()) {
+      toast.error("Please enter a form title");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("payment_forms")
+        .update({
+          title: formTitle,
+          description: formDescription || null,
+          fields: formFields as any,
+          theme_color: themeColor,
+          logo_url: logoUrl || null,
+          signature_url: signatureUrl || null,
+          receipt_template: receiptTemplate as any,
+        })
+        .eq("id", editingFormId);
+
+      if (error) throw error;
+
+      toast.success("Payment form updated successfully!");
+      setIsEditing(false);
+      resetFormState();
+      refetch();
+    } catch (error: any) {
+      console.error("Error updating form:", error);
+      toast.error(error.message || "Failed to update form");
+    }
+  };
+
+  const resetFormState = () => {
+    setFormTitle("");
+    setFormDescription("");
+    setFormFields([]);
+    setThemeColor("#0056D2");
+    setLogoUrl("");
+    setSignatureUrl("");
+    setEditingFormId(null);
+    setReceiptTemplate({
+      headerText: "Official Payment Receipt",
+      footerText: "Thank you for your payment",
+      showLogo: true,
+      showSignature: true,
+      showQRCode: false,
+      customFields: [],
+      fieldMappings: [],
+      securityFeatures: {
+        showWatermark: false,
+        watermarkText: "OFFICIAL",
+        showSecurityBorder: true,
+        showBarcodeBottom: true,
+        enableNumbering: true,
+      },
+    });
+  };
+
+  const openEditForm = (form: any) => {
+    setEditingFormId(form.id);
+    setFormTitle(form.title);
+    setFormDescription(form.description || "");
+    setFormFields(form.fields || []);
+    setThemeColor(form.theme_color || "#0056D2");
+    setLogoUrl(form.logo_url || "");
+    setSignatureUrl(form.signature_url || "");
+    setReceiptTemplate(form.receipt_template || {
+      headerText: "Official Payment Receipt",
+      footerText: "Thank you for your payment",
+      showLogo: true,
+      showSignature: true,
+      showQRCode: false,
+      customFields: [],
+      fieldMappings: [],
+      securityFeatures: {
+        showWatermark: false,
+        watermarkText: "OFFICIAL",
+        showSecurityBorder: true,
+        showBarcodeBottom: true,
+        enableNumbering: true,
+      },
+    });
+    setIsEditing(true);
   };
 
   const handleBecomeInstitution = () => {
@@ -151,18 +270,30 @@ export default function ZiroPay() {
           <p className="text-muted-foreground mt-2">Collect payments with ease</p>
         </div>
         
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
+        <Dialog open={isCreating || isEditing} onOpenChange={(open) => {
+          if (!open) {
+            setIsCreating(false);
+            setIsEditing(false);
+            resetFormState();
+          }
+        }}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => {
+              resetFormState();
+              setIsCreating(true);
+            }}>
               <Plus className="h-4 w-4" />
               Create Payment Form
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Payment Form</DialogTitle>
+              <DialogTitle>{isEditing ? "Edit Payment Form" : "Create New Payment Form"}</DialogTitle>
               <DialogDescription>
-                Build a custom form with drag-and-drop fields, preview in real-time, and design branded receipts
+                {isEditing 
+                  ? "Update your form fields, design, and receipt settings"
+                  : "Build a custom form with drag-and-drop fields, preview in real-time, and design branded receipts"
+                }
               </DialogDescription>
             </DialogHeader>
 
@@ -215,15 +346,23 @@ export default function ZiroPay() {
                       signatureUrl={signatureUrl}
                       onLogoUpload={setLogoUrl}
                       onSignatureUpload={setSignatureUrl}
+                      formFields={formFields}
                     />
                   </TabsContent>
                 </Tabs>
 
                 <div className="flex gap-3">
-                  <Button onClick={handleCreateForm} className="flex-1">
-                    Save & Publish Form
+                  <Button 
+                    onClick={isEditing ? handleEditForm : handleCreateForm} 
+                    className="flex-1"
+                  >
+                    {isEditing ? "Update Form" : "Save & Publish Form"}
                   </Button>
-                  <Button variant="outline" onClick={() => setIsCreating(false)}>
+                  <Button variant="outline" onClick={() => {
+                    setIsCreating(false);
+                    setIsEditing(false);
+                    resetFormState();
+                  }}>
                     Cancel
                   </Button>
                 </div>

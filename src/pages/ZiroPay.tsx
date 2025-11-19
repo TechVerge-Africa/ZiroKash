@@ -28,6 +28,12 @@ interface FormField {
   defaultValue?: string;
 }
 
+interface FieldMapping {
+  formFieldId: string;
+  receiptLabel: string;
+  showOnReceipt: boolean;
+}
+
 interface ReceiptTemplate {
   headerText: string;
   footerText: string;
@@ -35,6 +41,15 @@ interface ReceiptTemplate {
   showSignature: boolean;
   showQRCode: boolean;
   customFields: string[];
+  fieldMappings?: FieldMapping[];
+  securityFeatures?: {
+    showWatermark: boolean;
+    watermarkText: string;
+    showSecurityBorder: boolean;
+    showBarcodeBottom: boolean;
+    enableNumbering: boolean;
+    receiptNumberPrefix?: string;
+  };
 }
 
 // Quick start templates
@@ -109,6 +124,15 @@ export default function ZiroPay() {
     showSignature: true,
     showQRCode: false,
     customFields: [],
+    fieldMappings: [],
+    securityFeatures: {
+      showWatermark: false,
+      watermarkText: "OFFICIAL",
+      showSecurityBorder: true,
+      showBarcodeBottom: true,
+      enableNumbering: true,
+      receiptNumberPrefix: "REC",
+    },
   });
 
   // Calculate overall stats

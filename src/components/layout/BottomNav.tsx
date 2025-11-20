@@ -17,22 +17,17 @@ export function BottomNav() {
     {
       icon: Home,
       label: 'Home',
-      href: '/dashboard'
+      href: '/ziropay'
     },
     {
-      icon: Wallet,
-      label: 'Wallet',
-      href: '/wallet'
+      icon: DollarSign,
+      label: 'Forms',
+      href: '/ziropay'
     },
     {
       icon: Receipt,
       label: 'Transactions',
       href: '/transactions'
-    },
-    {
-      icon: DollarSign,
-      label: 'ZiroPay',
-      href: '/ziropay'
     },
     {
       icon: Settings,
@@ -45,7 +40,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-background border-t shadow-lg md:hidden dark:bg-background/80 dark:backdrop-blur-lg">
       <div 
         className={cn(
-          "grid h-full grid-cols-5 mx-auto max-w-md",
+          "grid h-full grid-cols-4 mx-auto max-w-md",
           "bg-white dark:bg-transparent",
           "shadow-[0_-4px_10px_rgba(0,0,0,0.03)] dark:shadow-none" // Subtle shadow in light mode
         )}

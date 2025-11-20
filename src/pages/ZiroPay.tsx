@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Link2, Eye, Download, DollarSign, Copy } from "lucide-react";
+import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
 import { ThemePicker } from "@/components/ziropay/ThemePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 
 interface FormField {
   id: string;
@@ -26,6 +28,12 @@ interface FormField {
   defaultValue?: string;
 }
 
+interface FieldMapping {
+  formFieldId: string;
+  receiptLabel: string;
+  showOnReceipt: boolean;
+}
+
 interface ReceiptTemplate {
   headerText: string;
   footerText: string;
@@ -33,13 +41,76 @@ interface ReceiptTemplate {
   showSignature: boolean;
   showQRCode: boolean;
   customFields: string[];
+  fieldMappings?: FieldMapping[];
+  securityFeatures?: {
+    showWatermark: boolean;
+    watermarkText: string;
+    showSecurityBorder: boolean;
+    showBarcodeBottom: boolean;
+    enableNumbering: boolean;
+    receiptNumberPrefix?: string;
+  };
 }
+
+// Quick start templates
+const QUICK_TEMPLATES = [
+  {
+    name: "School Fees",
+    icon: "🎓",
+    templateDescription: "Collect school fees from students",
+    fields: [
+      { type: "text" as const, label: "Student Name", required: true },
+      { type: "text" as const, label: "Student ID", required: true },
+      { type: "email" as const, label: "Email Address", required: true },
+      { type: "amount" as const, label: "Amount", required: true, defaultValue: "0" },
+    ],
+    title: "School Fees Payment",
+    formDescription: "Please fill in your details to complete the payment",
+  },
+  {
+    name: "Event Registration",
+    icon: "🎫",
+    templateDescription: "Collect payments for events",
+    fields: [
+      { type: "text" as const, label: "Full Name", required: true },
+      { type: "email" as const, label: "Email", required: true },
+      { type: "text" as const, label: "Phone Number", required: true },
+      { type: "dropdown" as const, label: "Ticket Type", required: true, options: ["VIP - ₵500", "Standard - ₵200", "Early Bird - ₵150"] },
+    ],
+    title: "Event Registration",
+    formDescription: "Register and pay for the event",
+  },
+  {
+    name: "Donation",
+    icon: "❤️",
+    templateDescription: "Collect donations",
+    fields: [
+      { type: "text" as const, label: "Donor Name", required: true },
+      { type: "email" as const, label: "Email", required: false },
+      { type: "amount" as const, label: "Donation Amount", required: true, defaultValue: "0" },
+    ],
+    title: "Make a Donation",
+    formDescription: "Your contribution makes a difference",
+  },
+  {
+    name: "Custom",
+    icon: "✨",
+    templateDescription: "Start from scratch",
+    fields: [],
+    title: "",
+    formDescription: "",
+  },
+];
 
 export default function ZiroPay() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { forms, stats, isLoading, refetch } = usePaymentForms();
-  const [isInstitution, setIsInstitution] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingFormId, setEditingFormId] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(1); // 1: Template, 2: Form, 3: Design, 4: Receipt
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -53,6 +124,15 @@ export default function ZiroPay() {
     showSignature: true,
     showQRCode: false,
     customFields: [],
+    fieldMappings: [],
+    securityFeatures: {
+      showWatermark: false,
+      watermarkText: "OFFICIAL",
+      showSecurityBorder: true,
+      showBarcodeBottom: true,
+      enableNumbering: true,
+      receiptNumberPrefix: "REC",
+    },
   });
 
   // Calculate overall stats
@@ -61,15 +141,69 @@ export default function ZiroPay() {
   const totalPaid = Object.values(stats).reduce((sum, s) => sum + s.paidSubmissions, 0);
   const activeForms = forms.filter(f => f.is_active).length;
 
+  // Check for edit parameter in URL
+  useEffect(() => {
+    const editFormId = searchParams.get("edit");
+    if (editFormId && forms.length > 0) {
+      const formToEdit = forms.find(f => f.id === editFormId);
+      if (formToEdit) {
+        setEditingFormId(formToEdit.id);
+        setFormTitle(formToEdit.title);
+        setFormDescription(formToEdit.description || "");
+        setFormFields(formToEdit.fields || []);
+        setThemeColor(formToEdit.theme_color || "#0056D2");
+        setLogoUrl(formToEdit.logo_url || "");
+        setSignatureUrl(formToEdit.signature_url || "");
+        setReceiptTemplate(formToEdit.receipt_template || {
+          headerText: "Official Payment Receipt",
+          footerText: "Thank you for your payment",
+          showLogo: true,
+          showSignature: true,
+          showQRCode: false,
+          customFields: [],
+          fieldMappings: [],
+          securityFeatures: {
+            showWatermark: false,
+            watermarkText: "OFFICIAL",
+            showSecurityBorder: true,
+            showBarcodeBottom: true,
+            enableNumbering: true,
+          },
+        });
+        setIsEditing(true);
+        // Clean up the URL
+        navigate("/ziropay", { replace: true });
+      }
+    }
+  }, [searchParams, forms, navigate]);
+
   const handleCreateForm = async () => {
     if (!formTitle.trim()) {
-      toast.error("Please enter a form title");
+      toast.error("Please enter a form title", {
+        description: "Your form needs a title so people know what they're paying for"
+      });
+      setCurrentStep(2);
       return;
     }
 
     if (formFields.length === 0) {
-      toast.error("Please add at least one field to your form");
+      toast.error("Please add at least one field to your form", {
+        description: "Add fields like Amount, Name, or Email to collect information"
+      });
+      setCurrentStep(2);
       return;
+    }
+
+    // Check if there's an amount field
+    const hasAmountField = formFields.some(f => f.type === "amount");
+    if (!hasAmountField) {
+      const confirm = window.confirm(
+        "You don't have an Amount field. Without it, you won't be able to collect payments. Would you like to add one now?"
+      );
+      if (confirm) {
+        setCurrentStep(2);
+        return;
+      }
     }
 
     try {
@@ -94,111 +228,406 @@ export default function ZiroPay() {
 
       toast.success("Payment form created! Share the link to start collecting.");
       setIsCreating(false);
+      resetFormState();
       refetch();
-      
-      // Reset form
-      setFormTitle("");
-      setFormDescription("");
-      setFormFields([]);
-      setThemeColor("#0056D2");
-      setLogoUrl("");
-      setSignatureUrl("");
     } catch (error: any) {
       console.error("Error creating form:", error);
       toast.error(error.message || "Failed to create form");
     }
   };
 
-  const handleBecomeInstitution = () => {
-    setIsInstitution(true);
-    toast.success("Institution mode activated! You can now create payment forms.");
+  const handleEditForm = async () => {
+    if (!editingFormId) return;
+    
+    if (!formTitle.trim()) {
+      toast.error("Please enter a form title");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("payment_forms")
+        .update({
+          title: formTitle,
+          description: formDescription || null,
+          fields: formFields as any,
+          theme_color: themeColor,
+          logo_url: logoUrl || null,
+          signature_url: signatureUrl || null,
+          receipt_template: receiptTemplate as any,
+        })
+        .eq("id", editingFormId);
+
+      if (error) throw error;
+
+      toast.success("Payment form updated successfully!");
+      setIsEditing(false);
+      resetFormState();
+      refetch();
+    } catch (error: any) {
+      console.error("Error updating form:", error);
+      toast.error(error.message || "Failed to update form");
+    }
   };
 
-  if (!isInstitution) {
-    return (
-      <div className="flex items-center justify-center min-h-[600px]">
-        <Card className="max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit">
-              <DollarSign className="h-12 w-12 text-primary" />
-            </div>
-            <CardTitle className="text-2xl">ZiroPay - Institutional Payments</CardTitle>
-            <CardDescription>
-              Create payment forms, collect fees, and auto-generate receipts for your organization
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>✓ Create custom payment forms</p>
-              <p>✓ Collect payments from students, customers, or members</p>
-              <p>✓ Auto-generate branded receipts</p>
-              <p>✓ Track all payments in one dashboard</p>
-            </div>
-            <Button onClick={handleBecomeInstitution} className="w-full" size="lg">
-              Activate Institution Mode
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const resetFormState = () => {
+    setFormTitle("");
+    setFormDescription("");
+    setFormFields([]);
+    setThemeColor("#0056D2");
+    setLogoUrl("");
+    setSignatureUrl("");
+    setEditingFormId(null);
+    setCurrentStep(1);
+    setSelectedTemplate(null);
+    setReceiptTemplate({
+      headerText: "Official Payment Receipt",
+      footerText: "Thank you for your payment",
+      showLogo: true,
+      showSignature: true,
+      showQRCode: false,
+      customFields: [],
+      fieldMappings: [],
+      securityFeatures: {
+        showWatermark: false,
+        watermarkText: "OFFICIAL",
+        showSecurityBorder: true,
+        showBarcodeBottom: true,
+        enableNumbering: true,
+      },
+    });
+  };
+
+  const applyTemplate = (template: typeof QUICK_TEMPLATES[0]) => {
+    if (template.name === "Custom") {
+      // Start with basic amount and email fields
+      setFormFields([
+        {
+          id: `field-${Date.now()}-1`,
+          type: "text",
+          label: "Full Name",
+          required: true,
+        },
+        {
+          id: `field-${Date.now()}-2`,
+          type: "email",
+          label: "Email Address",
+          required: true,
+        },
+        {
+          id: `field-${Date.now()}-3`,
+          type: "amount",
+          label: "Amount",
+          required: true,
+          defaultValue: "0",
+        },
+      ]);
+    } else {
+      setFormTitle(template.title);
+      setFormDescription(template.formDescription || "");
+      setFormFields(
+        template.fields.map((field, index) => ({
+          id: `field-${Date.now()}-${index}`,
+          ...field,
+          options: field.type === "dropdown" ? (field.options || []) : undefined,
+        }))
+      );
+    }
+    setSelectedTemplate(template.name);
+    setCurrentStep(2);
+  };
+
+  const getStepProgress = () => {
+    if (isEditing) return 100;
+    return (currentStep / 4) * 100;
+  };
+
+  const canProceedToNextStep = () => {
+    switch (currentStep) {
+      case 1:
+        return selectedTemplate !== null;
+      case 2:
+        return formTitle.trim() !== "" && formFields.length > 0;
+      case 3:
+        return true; // Design is optional
+      case 4:
+        return true; // Receipt is optional
+      default:
+        return false;
+    }
+  };
+
+  const openEditForm = (form: any) => {
+    setEditingFormId(form.id);
+    setFormTitle(form.title);
+    setFormDescription(form.description || "");
+    setFormFields(form.fields || []);
+    setThemeColor(form.theme_color || "#0056D2");
+    setLogoUrl(form.logo_url || "");
+    setSignatureUrl(form.signature_url || "");
+    setReceiptTemplate(form.receipt_template || {
+      headerText: "Official Payment Receipt",
+      footerText: "Thank you for your payment",
+      showLogo: true,
+      showSignature: true,
+      showQRCode: false,
+      customFields: [],
+      fieldMappings: [],
+      securityFeatures: {
+        showWatermark: false,
+        watermarkText: "OFFICIAL",
+        showSecurityBorder: true,
+        showBarcodeBottom: true,
+        enableNumbering: true,
+      },
+    });
+    setIsEditing(true);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">ZiroPay</h1>
-          <p className="text-muted-foreground mt-2">Collect payments with ease</p>
+          <h1 className="text-3xl font-bold">Payment Forms</h1>
+          <p className="text-muted-foreground mt-2">Create forms, collect payments, and generate receipts</p>
         </div>
         
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
+        <Dialog open={isCreating || isEditing} onOpenChange={(open) => {
+          if (!open) {
+            setIsCreating(false);
+            setIsEditing(false);
+            resetFormState();
+          }
+        }}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => {
+              resetFormState();
+              setIsCreating(true);
+            }}>
               <Plus className="h-4 w-4" />
               Create Payment Form
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Payment Form</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                {isEditing ? "Edit Payment Form" : "Create Payment Form"}
+                {!isEditing && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">Follow the steps to create your payment form. You can customize everything or use a quick template!</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </DialogTitle>
               <DialogDescription>
-                Build a custom form with drag-and-drop fields, preview in real-time, and design branded receipts
+                {isEditing 
+                  ? "Update your form fields, design, and receipt settings"
+                  : "Create a payment form in minutes. Choose a template or build your own."
+                }
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Left Panel - Builder */}
+            {!isEditing && (
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Step {currentStep} of 4</span>
+                  <span className="text-muted-foreground">{Math.round(getStepProgress())}% Complete</span>
+                </div>
+                <Progress value={getStepProgress()} className="h-2" />
+                <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                  <span className={currentStep >= 1 ? "text-primary font-medium" : ""}>Template</span>
+                  <span className={currentStep >= 2 ? "text-primary font-medium" : ""}>Form Fields</span>
+                  <span className={currentStep >= 3 ? "text-primary font-medium" : ""}>Design</span>
+                  <span className={currentStep >= 4 ? "text-primary font-medium" : ""}>Receipt</span>
+                </div>
+              </div>
+            )}
+
+            {!isEditing && currentStep === 1 ? (
+              // Step 1: Template Selection
               <div className="space-y-6">
-                <Tabs defaultValue="form" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="form">Form</TabsTrigger>
-                    <TabsTrigger value="design">Design</TabsTrigger>
-                    <TabsTrigger value="receipt">Receipt</TabsTrigger>
-                  </TabsList>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Choose a Quick Start Template</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Select a template to get started quickly, or choose Custom to build from scratch
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {QUICK_TEMPLATES.map((template) => (
+                    <Card
+                      key={template.name}
+                      className={`cursor-pointer transition-all hover:border-primary ${
+                        selectedTemplate === template.name ? "border-primary border-2" : ""
+                      }`}
+                      onClick={() => applyTemplate(template)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="text-4xl">{template.icon}</div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold mb-1">{template.name}</h4>
+                            <p className="text-sm text-muted-foreground mb-3">{template.templateDescription}</p>
+                            {template.fields.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {template.fields.slice(0, 3).map((field, idx) => (
+                                  <Badge key={idx} variant="secondary" className="text-xs">
+                                    {field.label}
+                                  </Badge>
+                                ))}
+                                {template.fields.length > 3 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{template.fields.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {selectedTemplate === template.name && (
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={() => setCurrentStep(2)} 
+                    disabled={!canProceedToNextStep()}
+                    className="gap-2"
+                  >
+                    Continue
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Left Panel - Builder */}
+                <div className="space-y-6">
+                  {!isEditing && (
+                    <div className="flex items-center justify-between">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                        disabled={currentStep === 1}
+                        className="gap-2"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                      </Button>
+                      <Badge variant="outline" className="gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        Step {currentStep} of 4
+                      </Badge>
+                    </div>
+                  )}
+                  <Tabs 
+                    value={isEditing ? undefined : (currentStep === 2 ? "form" : currentStep === 3 ? "design" : "receipt")}
+                    className="w-full"
+                  >
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger 
+                        value="form"
+                        onClick={() => !isEditing && setCurrentStep(2)}
+                        className={!isEditing && currentStep === 2 ? "ring-2 ring-primary" : ""}
+                      >
+                        Form
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="design"
+                        onClick={() => !isEditing && setCurrentStep(3)}
+                        className={!isEditing && currentStep === 3 ? "ring-2 ring-primary" : ""}
+                      >
+                        Design
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="receipt"
+                        onClick={() => !isEditing && setCurrentStep(4)}
+                        className={!isEditing && currentStep === 4 ? "ring-2 ring-primary" : ""}
+                      >
+                        Receipt
+                      </TabsTrigger>
+                    </TabsList>
 
                   <TabsContent value="form" className="space-y-4 mt-4">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label>Form Title *</Label>
+                        <div className="flex items-center gap-2">
+                          <Label>Form Title *</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Give your form a clear, descriptive title that tells users what they're paying for</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                         <Input
                           value={formTitle}
                           onChange={(e) => setFormTitle(e.target.value)}
                           placeholder="e.g., School Fees Payment"
+                          className="text-base"
                         />
+                        {formTitle.trim() === "" && (
+                          <p className="text-xs text-muted-foreground">This will be displayed at the top of your payment form</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Description</Label>
+                        <div className="flex items-center gap-2">
+                          <Label>Description (Optional)</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Add instructions or additional information about the payment</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                         <Textarea
                           value={formDescription}
                           onChange={(e) => setFormDescription(e.target.value)}
-                          placeholder="Provide payment instructions or details..."
-                          rows={2}
+                          placeholder="e.g., Please fill in your details to complete the payment. Payment confirmation will be sent to your email."
+                          rows={3}
                         />
                       </div>
                     </div>
 
                     <div className="border-t pt-4">
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-base">Form Fields</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Add fields to collect information from payers. Drag to reorder.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        {formFields.length === 0 && (
+                          <p className="text-sm text-muted-foreground mb-4">
+                            💡 Tip: Start with an Amount field to collect payments. Add Name and Email fields to identify payers.
+                          </p>
+                        )}
+                      </div>
                       <FormBuilder fields={formFields} onFieldsChange={setFormFields} />
                     </div>
                   </TabsContent>
@@ -215,17 +644,56 @@ export default function ZiroPay() {
                       signatureUrl={signatureUrl}
                       onLogoUpload={setLogoUrl}
                       onSignatureUpload={setSignatureUrl}
+                      formFields={formFields}
                     />
                   </TabsContent>
                 </Tabs>
 
-                <div className="flex gap-3">
-                  <Button onClick={handleCreateForm} className="flex-1">
-                    Save & Publish Form
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsCreating(false)}>
-                    Cancel
-                  </Button>
+                <div className="flex gap-3 pt-4 border-t">
+                  {!isEditing && currentStep < 4 ? (
+                    <>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                        disabled={currentStep === 1}
+                        className="gap-2"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          if (currentStep < 4) {
+                            setCurrentStep(currentStep + 1);
+                          } else {
+                            handleCreateForm();
+                          }
+                        }}
+                        disabled={!canProceedToNextStep()}
+                        className="flex-1 gap-2"
+                      >
+                        {currentStep === 4 ? "Save & Publish Form" : "Continue"}
+                        {currentStep < 4 && <ArrowRight className="h-4 w-4" />}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={isEditing ? handleEditForm : handleCreateForm} 
+                        className="flex-1"
+                        disabled={!formTitle.trim() || formFields.length === 0}
+                      >
+                        {isEditing ? "Update Form" : "Save & Publish Form"}
+                      </Button>
+                      <Button variant="outline" onClick={() => {
+                        setIsCreating(false);
+                        setIsEditing(false);
+                        resetFormState();
+                      }}>
+                        Cancel
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -248,70 +716,16 @@ export default function ZiroPay() {
                 </div>
               </div>
             </div>
+            )}
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">GHS {totalCollected.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              From {totalPaid} paid submissions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Forms</CardTitle>
-            <Link2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeForms}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently accepting payments
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSubmissions}</div>
-            <p className="text-xs text-muted-foreground">
-              Total submissions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Download className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSubmissions - totalPaid}</div>
-            <p className="text-xs text-muted-foreground">
-              Pending payments
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Payment Forms List */}
       <Card>
         <CardHeader>
-          <CardTitle>Payment Forms</CardTitle>
-          <CardDescription>Manage all your payment collection forms</CardDescription>
+          <CardTitle>Your Payment Forms</CardTitle>
+          <CardDescription>Manage and track all your payment collection forms</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -320,7 +734,18 @@ export default function ZiroPay() {
             </div>
           ) : forms.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No payment forms yet. Create one to get started!</p>
+              <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit">
+                <DollarSign className="h-12 w-12 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No payment forms yet</h3>
+              <p className="text-muted-foreground mb-6">Create your first payment form to start collecting payments</p>
+              <Button onClick={() => {
+                resetFormState();
+                setIsCreating(true);
+              }} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create Your First Form
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">

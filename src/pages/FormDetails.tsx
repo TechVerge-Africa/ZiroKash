@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Copy, Link2, Eye, EyeOff, Trash2, Download } from "lucide-react";
+import { ArrowLeft, Copy, Link2, Eye, EyeOff, Trash2, Download, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import FormAnalytics from "@/components/ziropay/FormAnalytics";
 import FormEmbedCode from "@/components/ziropay/FormEmbedCode";
@@ -175,6 +175,10 @@ export default function FormDetails() {
           <Button variant="outline" size="sm" onClick={handleToggleStatus}>
             {form.is_active ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
             {form.is_active ? 'Deactivate' : 'Activate'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/ziropay?edit=${formId}`)}>
+            <Edit2 className="h-4 w-4 mr-2" />
+            Edit Form
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>

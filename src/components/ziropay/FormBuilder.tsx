@@ -120,9 +120,20 @@ export function FormBuilder({ fields, onFieldsChange }: FormBuilderProps) {
               className="space-y-3"
             >
               {fields.length === 0 ? (
-                <Card className="border-dashed">
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <p>No fields yet. Add fields using the buttons above.</p>
+                <Card className="border-dashed border-2">
+                  <CardContent className="py-12 text-center">
+                    <div className="space-y-3">
+                      <div className="text-4xl mb-4">📝</div>
+                      <p className="text-muted-foreground font-medium">No fields yet</p>
+                      <p className="text-sm text-muted-foreground">
+                        Click the buttons above to add fields to your form
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-2 mt-4">
+                        <Badge variant="outline" className="text-xs">💡 Tip: Start with Amount field</Badge>
+                        <Badge variant="outline" className="text-xs">📧 Add Email to send receipts</Badge>
+                        <Badge variant="outline" className="text-xs">👤 Add Name to identify payers</Badge>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ) : (

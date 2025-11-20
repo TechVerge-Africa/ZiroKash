@@ -1,41 +1,44 @@
 import { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  CreditCard, 
-  Send, 
-  LineChart, 
-  Wallet, 
-  Shield, 
-  ShieldCheck, 
-  Settings, 
-  Menu, 
-  X,
-  DollarSign,
-  Gift,
-  User,
-  HelpCircle,
-  Info,
-  Building,
-  Phone,
-  Car,
-  CheckCircle
-} from "lucide-react";
+import { Home, CreditCard, Send, LineChart, Wallet, Shield, ShieldCheck, Settings, Menu, X, DollarSign, Gift, User, HelpCircle, Info, Building, Phone, Car, CheckCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-
 type NavItem = {
   name: string;
   href: string;
   icon: React.ReactNode;
 };
+<<<<<<< HEAD
 
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
   { name: "My Forms", href: "/ziropay", icon: <DollarSign size={20} /> },
   { name: "Transactions", href: "/transactions", icon: <Send size={20} /> },
 ];
+=======
+const mainNavItems: NavItem[] = [{
+  name: "Dashboard",
+  href: "/dashboard",
+  icon: <Home size={20} />
+}, {
+  name: "Wallet",
+  href: "/wallet",
+  icon: <Wallet size={20} />
+}, {
+  name: "Transactions",
+  href: "/transactions",
+  icon: <Send size={20} />
+}, {
+  name: "ZiroPay",
+  href: "/ziropay",
+  icon: <DollarSign size={20} />
+}, {
+  name: "Savings",
+  href: "/savings",
+  icon: <LineChart size={20} />
+}];
+>>>>>>> 166a6eaa3b2a86911f9317c885b92c9d5b184417
 
 // Commented out for future implementation
 // const additionalNavItems: NavItem[] = [
@@ -45,22 +48,32 @@ const mainNavItems: NavItem[] = [
 //   { name: "Offline/USSD", href: "/offline", icon: <Phone size={20} /> },
 // ];
 
-const accountNavItems: NavItem[] = [
-  { name: "Profile", href: "/profile", icon: <User size={20} /> },
-  { name: "Security", href: "/security", icon: <ShieldCheck size={20} /> },
-  { name: "Settings", href: "/settings", icon: <Settings size={20} /> },
-];
-
-const supportNavItems: NavItem[] = [
-  { name: "Support", href: "/support", icon: <HelpCircle size={20} /> },
-  { name: "About", href: "/about", icon: <Info size={20} /> },
-];
-
+const accountNavItems: NavItem[] = [{
+  name: "Profile",
+  href: "/profile",
+  icon: <User size={20} />
+}, {
+  name: "Security",
+  href: "/security",
+  icon: <ShieldCheck size={20} />
+}, {
+  name: "Settings",
+  href: "/settings",
+  icon: <Settings size={20} />
+}];
+const supportNavItems: NavItem[] = [{
+  name: "Support",
+  href: "/support",
+  icon: <HelpCircle size={20} />
+}, {
+  name: "About",
+  href: "/about",
+  icon: <Info size={20} />
+}];
 export default function Sidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   // Listen for toggle events from bottom nav
@@ -69,32 +82,19 @@ export default function Sidebar() {
     document.addEventListener('toggle-sidebar', handleToggle);
     return () => document.removeEventListener('toggle-sidebar', handleToggle);
   }, []);
-
-  const NavLink = ({ item }: { item: NavItem }) => {
+  const NavLink = ({
+    item
+  }: {
+    item: NavItem;
+  }) => {
     const isActive = location.pathname === item.href;
-    
-    return (
-      <Link
-        to={item.href}
-        className={cn(
-          "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all",
-          isActive 
-            ? "bg-sidebar-accent text-primary font-medium" 
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
-        )}
-        onClick={() => isMobile && setIsOpen(false)}
-      >
+    return <Link to={item.href} className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all", isActive ? "bg-sidebar-accent text-primary font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground")} onClick={() => isMobile && setIsOpen(false)}>
         {item.icon}
         <span>{item.name}</span>
-        {isActive && (
-          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
-        )}
-      </Link>
-    );
+        {isActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+      </Link>;
   };
-
-  const sidebarContent = (
-    <div className="flex flex-col h-full">
+  const sidebarContent = <div className="flex flex-col h-full">
       {/* Fixed Header */}
       <div className="flex-shrink-0">
         <div className="flex items-center gap-2 px-3 py-4">
@@ -104,11 +104,9 @@ export default function Sidebar() {
             </div>
             <span className="text-xl font-bold gradient-text">ZiroPay</span>
           </Link>
-          {isMobile && (
-            <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
+          {isMobile && <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
               <X size={20} />
-            </Button>
-          )}
+            </Button>}
         </div>
       </div>
 
@@ -116,13 +114,9 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-sidebar-accent scrollbar-track-transparent">
         <div className="px-3 py-2">
           {/* Only show main nav items on desktop */}
-          {!isMobile && (
-            <div className="space-y-1">
-              {mainNavItems.map((item) => (
-                <NavLink key={item.name} item={item} />
-              ))}
-            </div>
-          )}
+          {!isMobile && <div className="space-y-1">
+              {mainNavItems.map(item => <NavLink key={item.name} item={item} />)}
+            </div>}
           
           {/* Additional services commented out for now */}
           {/* <div className={cn("space-y-1", !isMobile && "mt-6")}>
@@ -130,22 +124,18 @@ export default function Sidebar() {
             {additionalNavItems.map((item) => (
               <NavLink key={item.name} item={item} />
             ))}
-          </div> */}
+           </div> */}
           
           {/* Show account settings on both */}
           <div className="mt-6 space-y-1">
             <p className="text-xs font-medium text-muted-foreground px-3 mb-2">ACCOUNT</p>
-            {accountNavItems.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
+            {accountNavItems.map(item => <NavLink key={item.name} item={item} />)}
           </div>
           
           {/* Show support links on both */}
           <div className="mt-6 space-y-1">
             <p className="text-xs font-medium text-muted-foreground px-3 mb-2">HELP</p>
-            {supportNavItems.map((item) => (
-              <NavLink key={item.name} item={item} />
-            ))}
+            {supportNavItems.map(item => <NavLink key={item.name} item={item} />)}
           </div>
         </div>
       </div>
@@ -160,38 +150,15 @@ export default function Sidebar() {
           </Button>
         </div>
       </div>
-    </div>
-  );
-
-  const menuButton = isMobile && (
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
-      onClick={toggleSidebar}
-    >
+    </div>;
+  const menuButton = isMobile && <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm" onClick={toggleSidebar}>
       <Menu size={20} />
-    </Button>
-  );
-
-  return (
-    <>
+    </Button>;
+  return <>
       {menuButton}
-      <aside
-        className={cn(
-          "flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-50 border-r border-sidebar-border transition-transform duration-300",
-          "w-64",
-          isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
-        )}
-      >
+      <aside className={cn("flex flex-col h-screen bg-sidebar fixed inset-y-0 left-0 z-50 border-r border-sidebar-border transition-transform duration-300", "w-64", isMobile ? isOpen ? "translate-x-0" : "-translate-x-full" : "translate-x-0")}>
         {sidebarContent}
       </aside>
-      {isMobile && isOpen && (
-        <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </>
-  );
+      {isMobile && isOpen && <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40" onClick={() => setIsOpen(false)} />}
+    </>;
 }

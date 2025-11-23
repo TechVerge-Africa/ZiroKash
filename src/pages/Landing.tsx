@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap, Smartphone, DollarSign, Send, TrendingUp, Menu, User } from "lucide-react";
+import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap, Smartphone, DollarSign, Send, TrendingUp, Menu, User, Wallet } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import {
   DropdownMenu,
@@ -64,7 +64,7 @@ export default function Landing() {
                   Z
                 </div>
               </div>
-              <span className="text-2xl font-bold gradient-text tracking-tight">ZiroKash</span>
+              <span className="text-2xl font-bold gradient-text tracking-tight">ZiroPay</span>
             </div>
             
             {/* Desktop Navigation */}
@@ -206,27 +206,27 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-hero-title">
-                Africa's First Borderless Digital Wallet
+                Accept Payments Like a Pro
               </h1>
               <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto animate-hero-subtitle">
-                Making cash obsolete with instant borderless transfers, unified digital currency, and seamless financial solutions for a truly cashless African economy.
+                Create beautiful payment forms, collect payments instantly, and manage your business finances all in one place. Perfect for schools, churches, NGOs, and businesses.
               </p>            {/* Key Features Preview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-2xl mx-auto">
               <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
-                <Smartphone className="h-6 w-6 text-primary mb-2" />
-                <span className="text-sm font-medium">Mobile Money</span>
-              </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
-                <CreditCard className="h-6 w-6 text-primary mb-2" />
-                <span className="text-sm font-medium">Virtual Cards</span>
-              </div>
-              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
                 <DollarSign className="h-6 w-6 text-primary mb-2" />
-                <span className="text-sm font-medium">Bill Payments</span>
+                <span className="text-sm font-medium">Payment Forms</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
+                <Wallet className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm font-medium">Digital Wallet</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
+                <Send className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm font-medium">Send & Receive</span>
               </div>
               <div className="flex flex-col items-center p-3 rounded-lg bg-white/5 backdrop-blur-sm">
                 <TrendingUp className="h-6 w-6 text-primary mb-2" />
-                <span className="text-sm font-medium">Investments</span>
+                <span className="text-sm font-medium">Analytics</span>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up-delayed">
@@ -255,9 +255,9 @@ export default function Landing() {
                     <div className="cube-face bottom"></div>
                   </div>
                 </div>
-                <img 
+                  <img 
                   src="/images/hero.png" 
-                  alt="ZiroKash Dashboard" 
+                  alt="ZiroPay Dashboard" 
                   className="w-full max-w-4xl mx-auto rounded-lg shadow-2xl border border-white/10 glow animate-float"
                 />
               </div>
@@ -281,10 +281,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 parallax-element">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              One Africa, One Currency
+              Everything You Need to Collect Payments
             </h2>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              ZiroKash leverages cloud-native infrastructure and AI-driven technology to eliminate barriers of cash, banking limits, and forex exchange.
+              ZiroPay makes it easy for businesses, schools, churches, and organizations to accept payments online with customizable forms, instant notifications, and detailed analytics.
             </p>
           </div>
           
@@ -292,33 +292,33 @@ export default function Landing() {
             {/* Feature 1 */}
             <div className="p-6 rounded-xl glass-card transform-card parallax-element">
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Send className="h-6 w-6 text-white" />
+                <DollarSign className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Send & Receive Money</h3>
+              <h3 className="text-xl font-bold mb-2">Custom Payment Forms</h3>
               <p className="text-foreground/70">
-                Send and receive money instantly across borders with our unified digital currency system.
+                Create beautiful, customizable payment forms with drag-and-drop fields. Perfect for school fees, event tickets, donations, and more.
               </p>
             </div>
             
             {/* Feature 2 */}
             <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-100">
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <DollarSign className="h-6 w-6 text-white" />
+                <Wallet className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Bill & Utility Payments</h3>
+              <h3 className="text-xl font-bold mb-2">Digital Wallet</h3>
               <p className="text-foreground/70">
-                Pay for airtime, water, electricity, and internet services seamlessly from your wallet.
+                Manage your finances with a secure digital wallet. Send and receive money instantly, track transactions, and view your balance.
               </p>
             </div>
             
             {/* Feature 3 */}
             <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-200">
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <CreditCard className="h-6 w-6 text-white" />
+                <Send className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Virtual Cards</h3>
+              <h3 className="text-xl font-bold mb-2">Send & Receive Money</h3>
               <p className="text-foreground/70">
-                Access virtual cards for online shopping, subscriptions, and secure transactions worldwide.
+                Transfer money to friends, family, or businesses instantly. Support for mobile money and bank transfers.
               </p>
             </div>
             
@@ -327,9 +327,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Corporate Collections</h3>
+              <h3 className="text-xl font-bold mb-2">Payment Analytics</h3>
               <p className="text-foreground/70">
-                Utilize our APIs and SDKs for businesses to receive payments and manage transactions efficiently.
+                Track your payment collections with detailed analytics. See total collected, active forms, and submission statistics.
               </p>
             </div>
             
@@ -338,9 +338,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <Globe className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Merchant Solutions</h3>
+              <h3 className="text-xl font-bold mb-2">Bill Payments</h3>
               <p className="text-foreground/70">
-                Enable QR code payments and in-app checkout for seamless merchant transactions.
+                Pay for airtime, data, electricity, water, and other utilities directly from your wallet. Quick and convenient.
               </p>
             </div>
             
@@ -349,53 +349,9 @@ export default function Landing() {
               <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
                 <Smartphone className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Unified Digital Currency</h3>
+              <h3 className="text-xl font-bold mb-2">Instant Notifications</h3>
               <p className="text-foreground/70">
-                Experience borderless transactions with our unified digital currency system.
-              </p>
-            </div>
-            
-            {/* Feature 3 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-200">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <CreditCard className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Virtual & Physical Cards</h3>
-              <p className="text-foreground/70">
-                Get instant virtual cards for online shopping and order physical cards for everyday use.
-              </p>
-            </div>
-            
-            {/* Feature 4 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-300">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Invest & Save</h3>
-              <p className="text-foreground/70">
-                Grow your money with savings plans, investments, and build your credit score digitally.
-              </p>
-            </div>
-            
-            {/* Feature 5 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-400">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Globe className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Merchant Payments</h3>
-              <p className="text-foreground/70">
-                Accept payments from customers with QR codes, payment links, and POS integration.
-              </p>
-            </div>
-            
-            {/* Feature 6 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-500">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Smartphone className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">USSD & Offline</h3>
-              <p className="text-foreground/70">
-                Access your wallet even without internet using USSD codes and offline payment methods.
+                Get notified instantly when payments are received. Email receipts and real-time transaction updates.
               </p>
             </div>
           </div>
@@ -408,10 +364,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 parallax-element">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              Building a Cashless African Economy
+              Perfect for Every Business
             </h2>
             <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              Leveraging advanced technology to create a seamless, borderless financial ecosystem.
+              Whether you're a school collecting fees, a church accepting donations, or a business selling products, ZiroPay makes payment collection simple.
             </p>
           </div>
           
@@ -423,9 +379,9 @@ export default function Landing() {
                   <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-1">Cloud-Native Infrastructure</h3>
+                  <h3 className="text-lg font-medium mb-1">Easy Setup</h3>
                   <p className="text-foreground/70">
-                    Built on modern cloud infrastructure for maximum reliability and scalability across borders.
+                    Get started in minutes. Create your first payment form with our intuitive form builder - no coding required.
                   </p>
                 </div>
               </div>
@@ -436,9 +392,9 @@ export default function Landing() {
                   <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-1">AI-Driven Security</h3>
+                  <h3 className="text-lg font-medium mb-1">Secure Payments</h3>
                     <p className="text-foreground/70">
-                      Advanced fraud detection and security systems powered by artificial intelligence.
+                      All payments are processed securely through trusted payment gateways. Your customers' data is always protected.
                     </p>
                 </div>
               </div>
@@ -449,9 +405,9 @@ export default function Landing() {
                   <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium mb-1">Blockchain-Ready Architecture</h3>
+                  <h3 className="text-lg font-medium mb-1">Real-Time Tracking</h3>
                     <p className="text-foreground/70">
-                      Built with future-proof technology to support seamless integration with blockchain systems.
+                      Monitor all your payments in real-time. Get instant notifications and detailed transaction history.
                     </p>
                 </div>
               </div>
@@ -467,19 +423,19 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="parallax-element slide-up">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 gradient-text">
-                Secure Infrastructure for a Cashless Future
+                Secure & Reliable Payment Processing
               </h2>
               <p className="text-lg text-foreground/70 mb-8">
-                Built on cutting-edge technology with AI-driven security to protect your digital assets across borders.
+                Your payments are protected with industry-standard encryption and security measures. We take your security seriously.
               </p>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3 security-feature">
                   <Shield className="h-6 w-6 text-primary flex-shrink-0" />
                   <div>
-                    <h3 className="font-medium">Multi-Factor Authentication</h3>
+                    <h3 className="font-medium">Secure Payment Processing</h3>
                     <p className="text-sm text-foreground/70">
-                      Protect your account with email, SMS, and biometric verification.
+                      All transactions are processed through secure payment gateways with PCI DSS compliance.
                     </p>
                   </div>
                 </div>
@@ -487,9 +443,9 @@ export default function Landing() {
                 <div className="flex items-start gap-3 security-feature delay-100">
                   <Shield className="h-6 w-6 text-primary flex-shrink-0" />
                   <div>
-                    <h3 className="font-medium">Encrypted Data Storage</h3>
+                    <h3 className="font-medium">Data Protection</h3>
                     <p className="text-sm text-foreground/70">
-                      Your sensitive information is encrypted using military-grade AES-256 encryption.
+                      Your data is encrypted and stored securely. We never share your information with third parties.
                     </p>
                   </div>
                 </div>
@@ -497,9 +453,9 @@ export default function Landing() {
                 <div className="flex items-start gap-3 security-feature delay-200">
                   <Shield className="h-6 w-6 text-primary flex-shrink-0" />
                   <div>
-                    <h3 className="font-medium">Smart Contract Auditing</h3>
+                    <h3 className="font-medium">PIN Protection</h3>
                     <p className="text-sm text-foreground/70">
-                      All systems are regularly audited by independent security firms to ensure maximum safety.
+                      Your account is protected with a secure PIN. Failed attempts are automatically locked for your safety.
                     </p>
                   </div>
                 </div>
@@ -515,7 +471,7 @@ export default function Landing() {
                     Your Security is Our Priority
                   </h3>
                   <p className="text-center text-foreground/70">
-                    ZiroKash employs a dedicated security team and regular security audits to maintain the highest levels of protection.
+                    ZiroPay uses industry-standard security practices to protect your payments and personal information.
                   </p>
                 </div>
               </div>
@@ -530,10 +486,10 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text parallax-element zoom-in">
-              Join the Cashless Revolution
+              Start Collecting Payments Today
             </h2>
             <p className="text-lg text-foreground/70 mb-8 max-w-2xl mx-auto parallax-element zoom-in delay-100">
-              Be part of Africa's digital transformation with ZiroKash's borderless financial ecosystem.
+              Join thousands of businesses, schools, and organizations using ZiroPay to accept payments online.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 parallax-element zoom-in delay-200">
               <Link to="/auth">
@@ -554,7 +510,7 @@ export default function Landing() {
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
                 Z
               </div>
-              <span className="text-2xl font-bold gradient-text">ZiroKash</span>
+              <span className="text-2xl font-bold gradient-text">ZiroPay</span>
             </div>
             
             <div className="flex gap-8">
@@ -571,8 +527,8 @@ export default function Landing() {
           </div>
           
           <div className="text-center text-sm text-foreground/50">
-            <p>© 2025 ZiroKash. All rights reserved.</p>
-            <p className="mt-1">ZiroKash is a financial technology platform, not a bank.</p>
+            <p>© 2025 ZiroPay. All rights reserved.</p>
+            <p className="mt-1">ZiroPay is a financial technology platform, not a bank.</p>
           </div>
         </div>
       </footer>

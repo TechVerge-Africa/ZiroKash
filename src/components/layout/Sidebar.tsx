@@ -9,27 +9,11 @@ type NavItem = {
   href: string;
   icon: React.ReactNode;
 };
-const mainNavItems: NavItem[] = [{
-  name: "Dashboard",
-  href: "/dashboard",
-  icon: <Home size={20} />
-}, {
-  name: "Wallet",
-  href: "/wallet",
-  icon: <Wallet size={20} />
-}, {
-  name: "Transactions",
-  href: "/transactions",
-  icon: <Send size={20} />
-}, {
-  name: "ZiroPay",
-  href: "/ziropay",
-  icon: <DollarSign size={20} />
-}, {
-  name: "Savings",
-  href: "/savings",
-  icon: <LineChart size={20} />
-}];
+const mainNavItems: NavItem[] = [
+  { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
+  { name: "My Forms", href: "/ziropay", icon: <DollarSign size={20} /> },
+  { name: "Transactions", href: "/transactions", icon: <Send size={20} /> },
+];
 
 // Commented out for future implementation
 // const additionalNavItems: NavItem[] = [

@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 interface FormField {
   id: string;
@@ -385,11 +386,11 @@ export default function ZiroPay() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Payment Forms</h1>
-          <p className="text-muted-foreground mt-2">Create forms, collect payments, and generate receipts</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Payment Forms</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">Create forms, collect payments, and generate receipts</p>
         </div>
         
         <Dialog open={isCreating || isEditing} onOpenChange={(open) => {
@@ -400,15 +401,16 @@ export default function ZiroPay() {
           }
         }}>
           <DialogTrigger asChild>
-            <Button className="gap-2" onClick={() => {
+            <Button className="gap-2 w-full sm:w-auto" onClick={() => {
               resetFormState();
               setIsCreating(true);
             }}>
               <Plus className="h-4 w-4" />
-              Create Payment Form
+              <span className="hidden sm:inline">Create Payment Form</span>
+              <span className="sm:hidden">Create Form</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-3xl lg:max-w-5xl xl:max-w-7xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {isEditing ? "Edit Payment Form" : "Create Payment Form"}
@@ -451,14 +453,14 @@ export default function ZiroPay() {
 
             {!isEditing && currentStep === 1 ? (
               // Step 1: Template Selection
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Choose a Quick Start Template</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Choose a Quick Start Template</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                     Select a template to get started quickly, or choose Custom to build from scratch
                   </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {QUICK_TEMPLATES.map((template) => (
                     <Card
                       key={template.name}
@@ -467,12 +469,12 @@ export default function ZiroPay() {
                       }`}
                       onClick={() => applyTemplate(template)}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                          <div className="text-4xl">{template.icon}</div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold mb-1">{template.name}</h4>
-                            <p className="text-sm text-muted-foreground mb-3">{template.templateDescription}</p>
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          <div className="text-3xl sm:text-4xl flex-shrink-0">{template.icon}</div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold mb-1 text-sm sm:text-base">{template.name}</h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-3">{template.templateDescription}</p>
                             {template.fields.length > 0 && (
                               <div className="flex flex-wrap gap-1">
                                 {template.fields.slice(0, 3).map((field, idx) => (
@@ -508,9 +510,9 @@ export default function ZiroPay() {
                 </div>
               </div>
             ) : (
-              <div className="grid lg:grid-cols-2 gap-6">
+              <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Left Panel - Builder */}
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {!isEditing && (
                     <div className="flex items-center justify-between">
                       <Button
@@ -533,25 +535,34 @@ export default function ZiroPay() {
                     value={isEditing ? undefined : (currentStep === 2 ? "form" : currentStep === 3 ? "design" : "receipt")}
                     className="w-full"
                   >
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-3 h-auto">
                       <TabsTrigger 
                         value="form"
                         onClick={() => !isEditing && setCurrentStep(2)}
-                        className={!isEditing && currentStep === 2 ? "ring-2 ring-primary" : ""}
+                        className={cn(
+                          !isEditing && currentStep === 2 ? "ring-2 ring-primary" : "",
+                          "text-xs sm:text-sm py-2 sm:py-2.5"
+                        )}
                       >
                         Form
                       </TabsTrigger>
                       <TabsTrigger 
                         value="design"
                         onClick={() => !isEditing && setCurrentStep(3)}
-                        className={!isEditing && currentStep === 3 ? "ring-2 ring-primary" : ""}
+                        className={cn(
+                          !isEditing && currentStep === 3 ? "ring-2 ring-primary" : "",
+                          "text-xs sm:text-sm py-2 sm:py-2.5"
+                        )}
                       >
                         Design
                       </TabsTrigger>
                       <TabsTrigger 
                         value="receipt"
                         onClick={() => !isEditing && setCurrentStep(4)}
-                        className={!isEditing && currentStep === 4 ? "ring-2 ring-primary" : ""}
+                        className={cn(
+                          !isEditing && currentStep === 4 ? "ring-2 ring-primary" : "",
+                          "text-xs sm:text-sm py-2 sm:py-2.5"
+                        )}
                       >
                         Receipt
                       </TabsTrigger>
@@ -649,14 +660,14 @@ export default function ZiroPay() {
                   </TabsContent>
                 </Tabs>
 
-                <div className="flex gap-3 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
                   {!isEditing && currentStep < 4 ? (
                     <>
                       <Button 
                         variant="outline"
                         onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
                         disabled={currentStep === 1}
-                        className="gap-2"
+                        className="gap-2 order-2 sm:order-1"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         Back
@@ -670,9 +681,10 @@ export default function ZiroPay() {
                           }
                         }}
                         disabled={!canProceedToNextStep()}
-                        className="flex-1 gap-2"
+                        className="flex-1 gap-2 order-1 sm:order-2"
                       >
-                        {currentStep === 4 ? "Save & Publish Form" : "Continue"}
+                        <span className="hidden sm:inline">{currentStep === 4 ? "Save & Publish Form" : "Continue"}</span>
+                        <span className="sm:hidden">{currentStep === 4 ? "Save" : "Next"}</span>
                         {currentStep < 4 && <ArrowRight className="h-4 w-4" />}
                       </Button>
                     </>
@@ -680,16 +692,17 @@ export default function ZiroPay() {
                     <>
                       <Button 
                         onClick={isEditing ? handleEditForm : handleCreateForm} 
-                        className="flex-1"
+                        className="flex-1 order-1 sm:order-1"
                         disabled={!formTitle.trim() || formFields.length === 0}
                       >
-                        {isEditing ? "Update Form" : "Save & Publish Form"}
+                        <span className="hidden sm:inline">{isEditing ? "Update Form" : "Save & Publish Form"}</span>
+                        <span className="sm:hidden">{isEditing ? "Update" : "Save"}</span>
                       </Button>
                       <Button variant="outline" onClick={() => {
                         setIsCreating(false);
                         setIsEditing(false);
                         resetFormState();
-                      }}>
+                      }} className="order-2 sm:order-2">
                         Cancel
                       </Button>
                     </>
@@ -701,10 +714,10 @@ export default function ZiroPay() {
               <div className="lg:sticky lg:top-6 h-fit">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-muted-foreground">Live Preview</h3>
-                    <Badge variant="outline">Real-time</Badge>
+                    <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Live Preview</h3>
+                    <Badge variant="outline" className="text-xs">Real-time</Badge>
                   </div>
-                  <div className="border rounded-lg p-6 bg-muted/20">
+                  <div className="border rounded-lg p-4 sm:p-6 bg-muted/20">
                     <FormPreview
                       title={formTitle}
                       description={formDescription}
@@ -755,30 +768,30 @@ export default function ZiroPay() {
                 return (
                   <div 
                     key={form.id} 
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{form.title}</h3>
-                        <Badge variant={form.is_active ? "default" : "secondary"} className="text-xs">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-medium text-sm sm:text-base truncate">{form.title}</h3>
+                        <Badge variant={form.is_active ? "default" : "secondary"} className="text-xs flex-shrink-0">
                           {form.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                         <span>{formStats.totalSubmissions} submissions</span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>{formStats.paidSubmissions} paid</span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span className="font-semibold text-primary">
                           GHS {formStats.totalCollected.toLocaleString()} collected
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="gap-2"
+                        className="gap-2 flex-1 sm:flex-initial"
                         onClick={() => {
                           const link = `${window.location.origin}/pay/${form.id}`;
                           navigator.clipboard.writeText(link);
@@ -786,16 +799,18 @@ export default function ZiroPay() {
                         }}
                       >
                         <Copy className="h-4 w-4" />
-                        Copy Link
+                        <span className="hidden sm:inline">Copy Link</span>
+                        <span className="sm:hidden">Copy</span>
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="gap-2"
+                        className="gap-2 flex-1 sm:flex-initial"
                         onClick={() => navigate(`/ziropay/${form.id}`)}
                       >
                         <Eye className="h-4 w-4" />
-                        View
+                        <span className="hidden sm:inline">View</span>
+                        <span className="sm:hidden">View</span>
                       </Button>
                     </div>
                   </div>

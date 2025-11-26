@@ -115,11 +115,11 @@ export default function PaymentForm() {
 
   if (!form) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Form Not Found</CardTitle>
-            <CardDescription>This payment form is not available</CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Form Not Found</CardTitle>
+            <CardDescription className="text-sm sm:text-base">This payment form is not available</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -128,12 +128,12 @@ export default function PaymentForm() {
 
   if (paymentSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md">
-          <CardHeader className="text-center">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <CardTitle>Payment Successful!</CardTitle>
-            <CardDescription>Your payment has been processed successfully</CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center p-4 sm:p-6">
+            <CheckCircle2 className="h-12 sm:h-16 text-green-500 mx-auto mb-4" />
+            <CardTitle className="text-lg sm:text-xl">Payment Successful!</CardTitle>
+            <CardDescription className="text-sm sm:text-base">Your payment has been processed successfully</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -141,21 +141,23 @@ export default function PaymentForm() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <div className="min-h-screen bg-background py-6 sm:py-12 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto">
         <Card>
-          <CardHeader className="text-center">
+          <CardHeader className="text-center p-4 sm:p-6">
             {form.logo_url && (
-              <img src={form.logo_url} alt="Logo" className="h-16 mx-auto mb-4" />
+              <img src={form.logo_url} alt="Logo" className="h-12 sm:h-16 mx-auto mb-4" />
             )}
-            <CardTitle className="text-2xl">{form.title}</CardTitle>
-            {form.description && <CardDescription>{form.description}</CardDescription>}
+            <CardTitle className="text-xl sm:text-2xl">{form.title}</CardTitle>
+            {form.description && (
+              <CardDescription className="text-sm sm:text-base mt-2">{form.description}</CardDescription>
+            )}
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="p-4 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {form.fields.map((field, index) => (
                 <div key={index} className="space-y-2">
-                  <Label htmlFor={field.label}>
+                  <Label htmlFor={field.label} className="text-sm sm:text-base">
                     {field.label}
                     {field.required && <span className="text-destructive ml-1">*</span>}
                   </Label>
@@ -167,24 +169,25 @@ export default function PaymentForm() {
                       required={field.required}
                       value={formData[field.label] || ''}
                       onChange={(e) => setFormData({ ...formData, [field.label]: e.target.value })}
+                      className="text-sm sm:text-base"
                     />
                   ) : field.type === 'dropdown' ? (
                     <Select
                       value={formData[field.label] || ''}
                       onValueChange={(value) => setFormData({ ...formData, [field.label]: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm sm:text-base">
                         <SelectValue placeholder={`Select ${field.label}`} />
                       </SelectTrigger>
                       <SelectContent>
                         {field.options?.map((option, i) => (
-                          <SelectItem key={i} value={option}>{option}</SelectItem>
+                          <SelectItem key={i} value={option} className="text-sm sm:text-base">{option}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   ) : field.type === 'amount' ? (
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
                         GHS
                       </span>
                       <Input
@@ -193,7 +196,7 @@ export default function PaymentForm() {
                         step="0.01"
                         min="0"
                         required={field.required}
-                        className="pl-16"
+                        className="pl-12 sm:pl-16 text-sm sm:text-base"
                         value={formData[field.label] || ''}
                         onChange={(e) => setFormData({ ...formData, [field.label]: e.target.value })}
                       />
@@ -204,7 +207,7 @@ export default function PaymentForm() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full text-sm sm:text-base h-10 sm:h-11"
                 style={{ backgroundColor: form.theme_color }}
                 disabled={submitting}
               >

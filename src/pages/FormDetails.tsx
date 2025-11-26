@@ -148,66 +148,70 @@ export default function FormDetails() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/ziropay')}>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/ziropay')} className="flex-shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold">{form.title}</h1>
-              <Badge variant={form.is_active ? "default" : "secondary"}>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{form.title}</h1>
+              <Badge variant={form.is_active ? "default" : "secondary"} className="flex-shrink-0">
                 {form.is_active ? "Active" : "Inactive"}
               </Badge>
             </div>
             {form.description && (
-              <p className="text-muted-foreground mt-1">{form.description}</p>
+              <p className="text-sm sm:text-base text-muted-foreground mt-1 line-clamp-2">{form.description}</p>
             )}
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={copyPaymentLink}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copy Link
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+          <Button variant="outline" size="sm" onClick={copyPaymentLink} className="flex-1 sm:flex-initial">
+            <Copy className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Copy Link</span>
+            <span className="sm:hidden">Copy</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={handleToggleStatus}>
-            {form.is_active ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-            {form.is_active ? 'Deactivate' : 'Activate'}
+          <Button variant="outline" size="sm" onClick={handleToggleStatus} className="flex-1 sm:flex-initial">
+            {form.is_active ? <EyeOff className="h-4 w-4 sm:mr-2" /> : <Eye className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{form.is_active ? 'Deactivate' : 'Activate'}</span>
+            <span className="sm:hidden">{form.is_active ? 'Off' : 'On'}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate(`/ziropay?edit=${formId}`)}>
-            <Edit2 className="h-4 w-4 mr-2" />
-            Edit Form
+          <Button variant="outline" size="sm" onClick={() => navigate(`/ziropay?edit=${formId}`)} className="flex-1 sm:flex-initial">
+            <Edit2 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Edit Form</span>
+            <span className="sm:hidden">Edit</span>
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-initial">
+                <Trash2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Delete</span>
+                <span className="sm:hidden">Del</span>
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="max-w-[95vw] sm:max-w-md">
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Form?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This will permanently delete this form and all associated submissions. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto">Delete</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </div>
       </div>
 
-      <Tabs defaultValue="analytics" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="submissions">Submissions</TabsTrigger>
-          <TabsTrigger value="share">Share & Embed</TabsTrigger>
+      <Tabs defaultValue="analytics" className="space-y-4 sm:space-y-6">
+        <TabsList className="w-full sm:w-auto grid grid-cols-3 h-auto">
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm py-2 sm:py-2.5">Analytics</TabsTrigger>
+          <TabsTrigger value="submissions" className="text-xs sm:text-sm py-2 sm:py-2.5">Submissions</TabsTrigger>
+          <TabsTrigger value="share" className="text-xs sm:text-sm py-2 sm:py-2.5">Share & Embed</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -217,14 +221,15 @@ export default function FormDetails() {
         <TabsContent value="submissions">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <CardTitle>Submissions</CardTitle>
-                  <CardDescription>All payment submissions for this form</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Submissions</CardTitle>
+                  <CardDescription className="text-sm">All payment submissions for this form</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" onClick={exportSubmissions}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
+                <Button variant="outline" size="sm" onClick={exportSubmissions} className="w-full sm:w-auto">
+                  <Download className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Export CSV</span>
+                  <span className="sm:hidden">Export</span>
                 </Button>
               </div>
             </CardHeader>
@@ -234,32 +239,36 @@ export default function FormDetails() {
                   <p className="text-muted-foreground">No submissions yet</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {submissions.map((submission) => (
-                      <TableRow key={submission.id}>
-                        <TableCell>{submission.payer_name}</TableCell>
-                        <TableCell>{submission.payer_email}</TableCell>
-                        <TableCell>GHS {(submission.amount / 100).toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Badge variant={submission.status === 'paid' ? 'default' : 'secondary'}>
-                            {submission.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{new Date(submission.created_at).toLocaleDateString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs sm:text-sm">Name</TableHead>
+                          <TableHead className="text-xs sm:text-sm">Email</TableHead>
+                          <TableHead className="text-xs sm:text-sm">Amount</TableHead>
+                          <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                          <TableHead className="text-xs sm:text-sm">Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {submissions.map((submission) => (
+                          <TableRow key={submission.id}>
+                            <TableCell className="text-xs sm:text-sm">{submission.payer_name}</TableCell>
+                            <TableCell className="text-xs sm:text-sm break-all">{submission.payer_email}</TableCell>
+                            <TableCell className="text-xs sm:text-sm">GHS {(submission.amount / 100).toFixed(2)}</TableCell>
+                            <TableCell className="text-xs sm:text-sm">
+                              <Badge variant={submission.status === 'paid' ? 'default' : 'secondary'} className="text-xs">
+                                {submission.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs sm:text-sm">{new Date(submission.created_at).toLocaleDateString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

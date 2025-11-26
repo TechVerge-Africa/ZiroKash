@@ -11,6 +11,7 @@ import PaymentForm from "./pages/PaymentForm";
 import FormDetails from "./pages/FormDetails";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
@@ -35,7 +36,7 @@ function RootRedirect() {
     );
   }
   
-  return user ? <Navigate to="/ziropay" replace /> : <Navigate to="/auth" replace />;
+  return user ? <Navigate to="/ziropay" replace /> : <Navigate to="/landing" replace />;
 }
 
 // App Routes component
@@ -43,10 +44,11 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />
+      <Route path="/landing" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       
       {/* Public payment form route */}
-      <Route path="/form/:formId" element={<PaymentForm />} />
+      <Route path="/pay/:formId" element={<PaymentForm />} />
       
       {/* Protected Routes */}
         <Route path="/ziropay" element={

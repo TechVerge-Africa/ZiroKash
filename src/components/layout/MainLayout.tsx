@@ -22,7 +22,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Header />
         <main className={cn(
           "flex-1 overflow-auto scrollbar-none",
-          isMobile ? "px-4 pt-3 pb-24" : "p-6" // Added extra bottom padding (pb-24) on mobile
+          isMobile ? "px-3 sm:px-4 pt-3 pb-20 sm:pb-24" : "p-4 sm:p-6" // Responsive padding
         )}>
           {children}
         </main>

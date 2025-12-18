@@ -1,78 +1,161 @@
-# ZiroKash
+# ZiroPay
 
-ZiroKash is a next-generation pan-African digital payment platform that enables **seamless money transfer, bill payments, merchant transactions, and organizational payment integration** without the need for currency exchange.  
+**The easiest way to get paid** — Create payment forms as simple as Google Forms, share a link, and collect payments with customizable receipts.
 
 ---
 
-## 🚀 Features
-- Send & receive payments instantly (peer-to-peer & cross-border).
-- Pay bills (airtime, data, electricity, water, etc.).
-- Merchant payments (QR code, POS, in-app checkout).
-- Corporate payment gateway (Paystack-style API for organizations).
-- Secure authentication & user management powered by **Supabase**.
-- Scalable cloud-native architecture (Supabase Cloud + Vercel).
+## 🎯 What is ZiroPay?
+
+ZiroPay enables anyone to collect payments without needing technical expertise or complex payment gateway integrations. Think of it as "Google Forms for Payments":
+
+1. **Create** → Build a payment form with a drag-and-drop builder
+2. **Share** → Get a link or embed code for your website
+3. **Collect** → Receive payments via Mobile Money or Card
+4. **Receipt** → Automatically generate branded receipts
+
+---
+
+## ✨ Key Features
+
+### Payment Form Builder
+- Drag-and-drop form field builder
+- Custom branding (logo, colors, signature)
+- Flexible field types: text, email, phone, dropdown, amount
+- Preview before publishing
+
+### Receipt Designer
+- Customizable receipt templates
+- Add institution logo and signature
+- Professional PDF generation
+- Automatic email delivery
+
+### Analytics Dashboard
+- Real-time payment tracking
+- Submission analytics
+- Revenue reports
+- Export to CSV
+
+### Payment Integration
+- Mobile Money (MTN MoMo, Vodafone Cash, AirtelTigo)
+- Card payments via Paystack
+- Instant webhook notifications
 
 ---
 
 ## 🛠️ Tech Stack
-- **Frontend (Web):** React + Next.js (deployed on Vercel).  
-- **Mobile App:** React Native (future-ready).  
-- **Backend / APIs:** Custom APIs with Supabase (Postgres DB, Auth, Realtime).  
-- **Admin Dashboard:** Web-based React app for compliance, reporting, and support.  
-- **Deployment:** Supabase Cloud + Vercel.  
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18 + TypeScript |
+| Styling | Tailwind CSS + shadcn/ui |
+| State | TanStack Query (React Query) |
+| Backend | Supabase (Postgres + Edge Functions) |
+| Payments | Paystack |
+| Hosting | Vercel (Frontend) + Supabase Cloud |
 
 ---
 
 ## 📂 Project Structure
+
 ```
-/docs        → Detailed developer documentation  
-/web         → React (Next.js) web app  
-/mobile      → React Native mobile app  
-/admin       → React admin dashboard  
-/api         → Supabase custom functions & APIs  
+/
+├── src/
+│   ├── components/      # Reusable UI components
+│   │   ├── ui/          # shadcn/ui base components
+│   │   ├── layout/      # Header, Sidebar, Navigation
+│   │   ├── ziropay/     # Payment form builder components
+│   │   └── ...
+│   ├── hooks/           # Custom React hooks
+│   ├── pages/           # Route pages
+│   ├── services/        # API service classes
+│   ├── types/           # TypeScript types
+│   └── integrations/    # Supabase client setup
+│
+├── supabase/
+│   ├── functions/       # Edge Functions (serverless)
+│   │   ├── payment-form-submit/    # Handle form submissions
+│   │   ├── form-payment-webhook/   # Paystack webhook handler
+│   │   └── ...
+│   └── config.toml      # Supabase configuration
+│
+├── docs/                # Developer documentation
+└── public/              # Static assets
 ```
 
 ---
 
-## ⚡ Getting Started
-1. Clone the repo:  
-   ```bash
-   git clone https://github.com/your-org/zirokash.git
-   cd zirokash
-   ```
+## 🚀 Quick Start
 
-2. Install dependencies (example for web):  
-   ```bash
-   cd web
-   npm install
-   npm run dev
-   ```
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Supabase account (for backend)
+- Paystack account (for payments)
 
-3. Set up **Supabase Project**  
-   - Go to [Supabase](https://supabase.com/).  
-   - Create a project.  
-   - Copy your API keys into `.env.local`.  
+### 1. Clone & Install
 
-4. Deploy web app:  
-   ```bash
-   vercel --prod
-   ```
+```bash
+git clone https://github.com/your-org/ziropay.git
+cd ziropay
+npm install
+```
+
+### 2. Environment Setup
+
+Create a `.env` file in the root:
+
+```env
+VITE_SUPABASE_URL=https://kbhyqypwwmkvssrcbfdb.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
 ## 📖 Documentation
-See [docs.md](./docs/docs.md) for **detailed setup & contribution guidelines**.
+
+| Document | Description |
+|----------|-------------|
+| [Architecture](./docs/ARCHITECTURE.md) | System design, database schema, data flow |
+| [Developer Guide](./docs/DEVELOPER_GUIDE.md) | Setup, conventions, contribution workflow |
+| [Features](./docs/FEATURES.md) | Detailed feature documentation |
+| [Roadmap](./docs/ROADMAP.md) | Current status and planned features |
+
+---
+
+## 🔐 Key Environment Variables
+
+### Supabase Edge Function Secrets
+
+These secrets must be set in Supabase Dashboard → Settings → Edge Functions:
+
+| Secret | Description |
+|--------|-------------|
+| `PAYSTACK_SECRET_KEY` | Paystack secret key for payment processing |
+| `RESEND_API_KEY` | Resend API key for email notifications |
 
 ---
 
 ## 👥 Team
-- CEO / Founder – Sulley Abdul Latif  
-- Engineering Team – Core developers contributing to frontend, backend, and mobile.  
+
+- **CEO / Founder** — Sulley Abdul Latif
+- **Engineering Team** — Core developers
 
 ---
 
 ## 💡 Vision
-**One Africa, One Currency (Digital).**  
-ZiroKash eliminates the need for forex bureaus and unifies African transactions into a single, borderless payment ecosystem.  
+
+Make payment collection as easy as creating a Google Form. No code, no complex integrations — just create, share, and get paid.
 
 ---
+
+## 📄 License
+
+MIT License — See [LICENSE](./LICENSE) for details.

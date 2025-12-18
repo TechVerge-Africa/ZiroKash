@@ -175,7 +175,6 @@ export default function Dashboard() {
             <div className="space-y-3">
               {transactions
                 .filter(tx => 
-                  tx.transaction_type === 'corporate_collection' || 
                   tx.transaction_type === 'receive' ||
                   tx.description?.toLowerCase().includes('form') ||
                   tx.description?.toLowerCase().includes('payment')
@@ -206,7 +205,6 @@ export default function Dashboard() {
                   </div>
                 ))}
               {transactions.filter(tx => 
-                tx.transaction_type === 'corporate_collection' || 
                 tx.transaction_type === 'receive' ||
                 tx.description?.toLowerCase().includes('form') ||
                 tx.description?.toLowerCase().includes('payment')

@@ -115,11 +115,7 @@ export default function TransactionsList({ className }: TransactionsListProps) {
                     {transaction.transaction_type.charAt(0).toUpperCase() + transaction.transaction_type.slice(1)}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {transaction.description || 
-                     (transaction.recipient_address && `To: ${transaction.recipient_address}`) ||
-                     (transaction.sender_address && `From: ${transaction.sender_address}`) ||
-                     'No description'
-                    }
+                    {transaction.description || 'No description'}
                   </p>
                 </div>
                 

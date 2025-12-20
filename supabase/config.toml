@@ -58,3 +58,12 @@ verify_jwt = false
 
 [functions.form-payment-webhook]
 verify_jwt = false
+
+[functions.list-banks]
+verify_jwt = false
+
+[functions.verify-bank-account]
+verify_jwt = false
+
+[functions.create-paystack-subaccount]
+verify_jwt = true

@@ -110,7 +110,11 @@ export type Database = {
           id: string
           is_active: boolean | null
           merchant_type: string | null
+          paystack_subaccount_code: string | null
           settlement_account: Json | null
+          settlement_account_name: string | null
+          settlement_account_number: string | null
+          settlement_bank_code: string | null
           settlement_type: string | null
           updated_at: string | null
           user_id: string
@@ -126,7 +130,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           merchant_type?: string | null
+          paystack_subaccount_code?: string | null
           settlement_account?: Json | null
+          settlement_account_name?: string | null
+          settlement_account_number?: string | null
+          settlement_bank_code?: string | null
           settlement_type?: string | null
           updated_at?: string | null
           user_id: string
@@ -142,7 +150,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           merchant_type?: string | null
+          paystack_subaccount_code?: string | null
           settlement_account?: Json | null
+          settlement_account_name?: string | null
+          settlement_account_number?: string | null
+          settlement_bank_code?: string | null
           settlement_type?: string | null
           updated_at?: string | null
           user_id?: string

@@ -16,23 +16,40 @@ serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify form exists and is active
+    // Verify form exists and is active, also get merchant subaccount if exists
     const { data: form, error: formError } = await supabase
       .from('payment_forms')
-      .select('*')
+      .select('*, merchants!inner(paystack_subaccount_code)')
       .eq('id', formId)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (formError || !form) {
+    if (formError) {
+      console.error('Form query error:', formError);
+      return new Response(
+        JSON.stringify({ error: 'Error fetching form' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!form) {
       return new Response(
         JSON.stringify({ error: 'Form not found or inactive' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Try to get merchant subaccount via user_id
+    const { data: merchant } = await supabase
+      .from('merchants')
+      .select('paystack_subaccount_code')
+      .eq('user_id', form.user_id)
+      .maybeSingle();
+
+    console.log(`Processing payment for form: ${formId}, merchant subaccount: ${merchant?.paystack_subaccount_code || 'none'}`);
 
     // Create submission
     const { data: submission, error: submissionError } = await supabase
@@ -56,25 +73,38 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Paystack payment
+    // Initialize Paystack payment with split configuration
     const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
+    
+    // Build payment payload
+    const paymentPayload: Record<string, any> = {
+      email: payerEmail,
+      amount: amount * 100, // Paystack expects amount in kobo/pesewas
+      reference: submission.id,
+      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/form-payment-webhook`,
+      metadata: {
+        form_id: formId,
+        submission_id: submission.id,
+        payer_name: payerName,
+      }
+    };
+
+    // Add split payment if merchant has subaccount
+    if (merchant?.paystack_subaccount_code) {
+      paymentPayload.subaccount = merchant.paystack_subaccount_code;
+      // The bearer determines who pays the Paystack transaction fee
+      // 'subaccount' means merchant pays, 'account' means ZiroPay pays
+      paymentPayload.bearer = 'subaccount';
+      console.log(`Using subaccount: ${merchant.paystack_subaccount_code}`);
+    }
+
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${paystackKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email: payerEmail,
-        amount: amount * 100, // Paystack expects amount in kobo/pesewas
-        reference: submission.id,
-        callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/form-payment-webhook`,
-        metadata: {
-          form_id: formId,
-          submission_id: submission.id,
-          payer_name: payerName,
-        }
-      })
+      body: JSON.stringify(paymentPayload)
     });
 
     const paystackData = await paystackResponse.json();
@@ -82,10 +112,12 @@ serve(async (req) => {
     if (!paystackData.status) {
       console.error('Paystack error:', paystackData);
       return new Response(
-        JSON.stringify({ error: 'Payment initialization failed' }),
+        JSON.stringify({ error: 'Payment initialization failed', details: paystackData.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`Payment initialized: ${paystackData.data.reference}`);
 
     return new Response(
       JSON.stringify({

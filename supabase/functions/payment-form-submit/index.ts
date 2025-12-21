@@ -19,10 +19,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify form exists and is active, also get merchant subaccount if exists
+    // Verify form exists and is active
     const { data: form, error: formError } = await supabase
       .from('payment_forms')
-      .select('*, merchants!inner(paystack_subaccount_code)')
+      .select('*')
       .eq('id', formId)
       .eq('is_active', true)
       .maybeSingle();
@@ -42,7 +42,7 @@ serve(async (req) => {
       );
     }
 
-    // Try to get merchant subaccount via user_id
+    // Get merchant subaccount via user_id (separate query to avoid join issues)
     const { data: merchant } = await supabase
       .from('merchants')
       .select('paystack_subaccount_code')
@@ -76,12 +76,13 @@ serve(async (req) => {
     // Initialize Paystack payment with split configuration
     const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
     
-    // Build payment payload
+    // Build payment payload - amount in pesewas (GHS smallest unit, 1 GHS = 100 pesewas)
+    const appBaseUrl = 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
     const paymentPayload: Record<string, any> = {
       email: payerEmail,
-      amount: amount * 100, // Paystack expects amount in kobo/pesewas
+      amount: Math.round(amount * 100), // Convert GHS to pesewas
       reference: submission.id,
-      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/form-payment-webhook`,
+      callback_url: `${appBaseUrl}/pay/${formId}/success?reference=${submission.id}`,
       metadata: {
         form_id: formId,
         submission_id: submission.id,

@@ -8,6 +8,7 @@ import ZiroPay from "./pages/ZiroPay";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "@/components/layout/MainLayout";
 import PaymentForm from "./pages/PaymentForm";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import FormDetails from "./pages/FormDetails";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -47,8 +48,9 @@ function AppRoutes() {
       <Route path="/landing" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       
-      {/* Public payment form route */}
+      {/* Public payment form routes */}
       <Route path="/pay/:formId" element={<PaymentForm />} />
+      <Route path="/pay/:formId/success" element={<PaymentSuccess />} />
       
       {/* Protected Routes */}
         <Route path="/ziropay" element={

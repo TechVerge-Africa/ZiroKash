@@ -81,26 +81,61 @@ export default function PaymentForm() {
         return;
       }
 
+      // Get email field
+      const emailField = form?.fields.find(f => f.type === 'email');
+      const payerEmail = emailField ? formData[emailField.label] : '';
+
+      if (!payerEmail) {
+        toast.error('Email address is required for payment');
+        setSubmitting(false);
+        return;
+      }
+
+      // Get name field
+      const nameField = form?.fields.find(f => 
+        f.label.toLowerCase().includes('name') || 
+        f.label.toLowerCase().includes('full name')
+      );
+      const payerName = nameField ? formData[nameField.label] : 'Anonymous';
+
+      console.log('Submitting payment form:', {
+        formId: form?.id,
+        amount,
+        payerEmail,
+        payerName
+      });
+
       // Submit to edge function
       const { data, error } = await supabase.functions.invoke('payment-form-submit', {
         body: {
           formId: form?.id,
           submissionData: formData,
           amount: amount,
-          payerName: formData['Name'] || formData['Full Name'] || 'Anonymous',
-          payerEmail: formData['Email'] || formData['Email Address'] || ''
+          payerName: payerName,
+          payerEmail: payerEmail
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      console.log('Payment form submission response:', data);
 
       // Redirect to Paystack
-      if (data.payment_url) {
+      if (data?.payment_url) {
+        console.log('Redirecting to Paystack:', data.payment_url);
         window.location.href = data.payment_url;
+      } else {
+        throw new Error('No payment URL received from server');
       }
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Failed to process payment');
+    } catch (error: any) {
+      console.error('Payment submission error:', error);
+      const errorMessage = error?.message || 'Failed to process payment';
+      toast.error(errorMessage, {
+        description: 'Please check your details and try again'
+      });
       setSubmitting(false);
     }
   };

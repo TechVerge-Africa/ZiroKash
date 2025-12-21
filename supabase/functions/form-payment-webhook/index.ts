@@ -15,13 +15,15 @@ serve(async (req) => {
   try {
     const signature = req.headers.get('x-paystack-signature');
     const body = await req.text();
-    
+
+    console.log('[Form Payment Webhook] Received webhook request');
+
     // Verify Paystack signature
     const secret = Deno.env.get('PAYSTACK_SECRET_KEY') ?? '';
     const encoder = new TextEncoder();
     const data = encoder.encode(body);
     const key = encoder.encode(secret);
-    
+
     const hmac = await crypto.subtle.importKey(
       'raw',
       key,
@@ -29,19 +31,19 @@ serve(async (req) => {
       false,
       ['sign']
     );
-    
+
     const signatureBytes = await crypto.subtle.sign('HMAC', hmac, data);
     const hash = Array.from(new Uint8Array(signatureBytes))
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
     if (hash !== signature) {
-      console.error('Invalid signature');
+      console.error('[Form Payment Webhook] Invalid signature');
       return new Response('Invalid signature', { status: 401 });
     }
 
     const event = JSON.parse(body);
-    console.log('Webhook event:', event.event);
+    console.log(`[Form Payment Webhook] Event type: ${event.event}`);
 
     if (event.event === 'charge.success') {
       const supabase = createClient(
@@ -49,8 +51,11 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      const { reference, metadata } = event.data;
-      const submissionId = metadata.submission_id;
+      const { reference, metadata, amount, status } = event.data;
+      const submissionId = metadata?.submission_id || reference;
+
+      console.log(`[Form Payment Webhook] Processing successful payment for submission: ${submissionId}`);
+      console.log(`[Form Payment Webhook] Amount: ${amount} pesewas, Status: ${status}`);
 
       // Update submission status
       const { error: updateError } = await supabase
@@ -62,11 +67,16 @@ serve(async (req) => {
         .eq('id', submissionId);
 
       if (updateError) {
-        console.error('Update error:', updateError);
-        return new Response('Error updating submission', { status: 500 });
+        console.error('[Form Payment Webhook] Update error:', updateError);
+        return new Response(
+          JSON.stringify({ error: 'Error updating submission', details: updateError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      console.log(`Submission ${submissionId} marked as paid`);
+      console.log(`[Form Payment Webhook] Submission ${submissionId} marked as paid`);
+    } else {
+      console.log(`[Form Payment Webhook] Ignoring event type: ${event.event}`);
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -74,9 +84,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('[Form Payment Webhook] Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Webhook processing failed', details: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

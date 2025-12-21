@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, MonitorSmartphone } from "lucide-react";
+import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, MonitorSmartphone, Building2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "@/hooks/use-theme";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useEffect, useState } from "react";
+import { MerchantOnboarding } from "@/components/merchant/MerchantOnboarding";
+import { MerchantWallet } from "@/components/merchant/MerchantWallet";
+import { useMerchant } from "@/hooks/useMerchant";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { hasSubaccount } = useMerchant();
 
   // We'll hold the initial theme to detect changes for visual feedback
   const [initialTheme, setInitialTheme] = useState(theme);
@@ -38,10 +42,14 @@ export default function Settings() {
       </div>
       
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-6 mb-6">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="business">
+            <Building2 className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Business</span>
           </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="mr-2 h-4 w-4" />
@@ -162,6 +170,13 @@ export default function Settings() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="business">
+          <div className="space-y-6">
+            <MerchantOnboarding />
+            {hasSubaccount && <MerchantWallet />}
           </div>
         </TabsContent>
         

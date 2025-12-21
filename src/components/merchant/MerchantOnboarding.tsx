@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMerchant, Bank } from "@/hooks/useMerchant";
 import { toast } from "sonner";
-import { Loader2, Building2, CheckCircle2, Banknote, UserCheck } from "lucide-react";
+import { Loader2, Banknote, UserCheck, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-type Step = 'business' | 'bank' | 'verify' | 'complete';
+type Step = 'bank' | 'verify' | 'complete';
 
 export function MerchantOnboarding() {
   const { user } = useAuth();
@@ -24,15 +24,9 @@ export function MerchantOnboarding() {
     setupPaystackSubaccount 
   } = useMerchant();
 
-  const [step, setStep] = useState<Step>('business');
+  const [step, setStep] = useState<Step>('bank');
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
-
-  // Business form
-  const [businessName, setBusinessName] = useState('');
-  const [businessEmail, setBusinessEmail] = useState('');
-  const [businessPhone, setBusinessPhone] = useState('');
-  const [businessAddress, setBusinessAddress] = useState('');
 
   // Bank form
   const [selectedBank, setSelectedBank] = useState('');
@@ -41,18 +35,11 @@ export function MerchantOnboarding() {
   const [accountVerified, setAccountVerified] = useState(false);
 
   useEffect(() => {
-    if (user?.email) {
-      setBusinessEmail(user.email);
-    }
-  }, [user]);
-
-  useEffect(() => {
     if (merchant) {
       if (merchant.paystack_subaccount_code) {
         setStep('complete');
       } else {
         setStep('bank');
-        setBusinessName(merchant.business_name);
       }
     }
   }, [merchant]);
@@ -62,29 +49,6 @@ export function MerchantOnboarding() {
       fetchBanks();
     }
   }, [step]);
-
-  const handleBusinessSubmit = async () => {
-    if (!businessName || !businessEmail) {
-      toast.error('Please fill in required fields');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createMerchant({
-        businessName,
-        businessEmail,
-        businessPhone,
-        businessAddress,
-      });
-      toast.success('Business details saved');
-      setStep('bank');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save business details');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleVerifyAccount = async () => {
     if (!accountNumber || !selectedBank) {
@@ -113,7 +77,22 @@ export function MerchantOnboarding() {
   const handleCompleteSetup = async () => {
     setSubmitting(true);
     try {
-      await setupPaystackSubaccount(businessName, selectedBank, accountNumber, accountName);
+      // Create merchant if it doesn't exist
+      if (!merchant) {
+        await createMerchant({
+          businessName: user?.email || 'ZiroPay Merchant',
+          businessEmail: user?.email || '',
+        });
+      }
+
+      // Setup Paystack subaccount
+      await setupPaystackSubaccount(
+        user?.email || 'ZiroPay Merchant',
+        selectedBank,
+        accountNumber,
+        accountName
+      );
+      
       toast.success('Merchant setup complete! You can now receive payments.');
       setStep('complete');
     } catch (error: any) {
@@ -133,7 +112,6 @@ export function MerchantOnboarding() {
 
   // Step indicators
   const steps = [
-    { id: 'business', label: 'Business', icon: Building2 },
     { id: 'bank', label: 'Bank', icon: Banknote },
     { id: 'verify', label: 'Verify', icon: UserCheck },
     { id: 'complete', label: 'Done', icon: CheckCircle2 },
@@ -169,65 +147,14 @@ export function MerchantOnboarding() {
         })}
       </div>
 
-      {step === 'business' && (
-        <Card className="glass-card border-white/10">
-          <CardHeader>
-            <CardTitle>Business Details</CardTitle>
-            <CardDescription>Tell us about your business to start accepting payments</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Business Name *</Label>
-                <Input
-                  id="businessName"
-                  placeholder="Your business name"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessEmail">Business Email *</Label>
-                <Input
-                  id="businessEmail"
-                  type="email"
-                  placeholder="business@example.com"
-                  value={businessEmail}
-                  onChange={(e) => setBusinessEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessPhone">Phone Number</Label>
-                <Input
-                  id="businessPhone"
-                  placeholder="+233 XX XXX XXXX"
-                  value={businessPhone}
-                  onChange={(e) => setBusinessPhone(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessAddress">Business Address</Label>
-                <Input
-                  id="businessAddress"
-                  placeholder="Your business address"
-                  value={businessAddress}
-                  onChange={(e) => setBusinessAddress(e.target.value)}
-                />
-              </div>
-            </div>
-            <Button onClick={handleBusinessSubmit} disabled={submitting} className="w-full mt-4">
-              {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Continue to Bank Setup
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {step === 'bank' && (
         <Card className="glass-card border-white/10">
           <CardHeader>
             <CardTitle>Settlement Bank Account</CardTitle>
-            <CardDescription>Add your bank account to receive payments</CardDescription>
+            <CardDescription>
+              Add your bank account to receive payments from your payment forms.
+              You can create multiple forms for different businesses without needing to add business details here.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -279,10 +206,6 @@ export function MerchantOnboarding() {
           <CardContent className="space-y-4">
             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Business Name</span>
-                <span className="font-medium">{businessName}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-muted-foreground">Bank</span>
                 <span className="font-medium">
                   {banks.find(b => b.code === selectedBank)?.name}
@@ -325,10 +248,6 @@ export function MerchantOnboarding() {
           <CardContent>
             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Business</span>
-                <span className="font-medium">{merchant.business_name}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-muted-foreground">Settlement Account</span>
                 <span className="font-mono text-sm">
                   {merchant.settlement_account_name} - {merchant.settlement_account_number?.slice(-4).padStart(10, '•')}
@@ -338,6 +257,11 @@ export function MerchantOnboarding() {
                 <span className="text-muted-foreground">Status</span>
                 <span className="text-green-600 font-medium">Active</span>
               </div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                💡 Tip: Create payment forms in the ZiroPay section. Each form can have its own business name and branding.
+              </p>
             </div>
           </CardContent>
         </Card>

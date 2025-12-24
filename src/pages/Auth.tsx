@@ -65,7 +65,7 @@ export default function Auth() {
       </div>
 
       {/* Close Button */}
-      <Link to="/landing" className="absolute top-6 right-6 z-50 group">
+      <Link to="/" className="absolute top-6 right-6 z-50 group">
         <Button variant="ghost" size="icon" className="rounded-full bg-background/20 backdrop-blur-md border border-white/10 hover:bg-background/40 hover:scale-110 transition-all duration-300">
           <X className="h-5 w-5 group-hover:rotate-90 transition-transform" />
         </Button>

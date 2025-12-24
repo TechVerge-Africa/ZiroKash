@@ -23,10 +23,11 @@ import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
-// Root redirect component
-function RootRedirect() {
+
+// App Routes component
+function AppRoutes() {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -34,17 +35,15 @@ function RootRedirect() {
       </div>
     );
   }
-  
-  return user ? <Navigate to="/ziropay" replace /> : <Navigate to="/landing" replace />;
-}
 
-// App Routes component
-function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<RootRedirect />} />
-      <Route path="/landing" element={<Landing />} />
+      {/* Landing page is now at the root */}
+      <Route path="/" element={user ? <Navigate to="/ziropay" replace /> : <Landing />} />
       <Route path="/auth" element={<Auth />} />
+      
+      {/* Fallback for legacy /landing links */}
+      <Route path="/landing" element={<Navigate to="/" replace />} />
       
       {/* Public payment form routes */}
       <Route path="/pay/:formId" element={<PaymentForm />} />

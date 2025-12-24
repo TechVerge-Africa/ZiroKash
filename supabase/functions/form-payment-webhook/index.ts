@@ -75,6 +75,47 @@ serve(async (req) => {
       }
 
       console.log(`[Form Payment Webhook] Submission ${submissionId} marked as paid`);
+
+      // Trigger notification
+      try {
+        const { data: sub } = await supabase
+          .from('form_submissions')
+          .select('payer_name, payer_email, amount')
+          .eq('id', submissionId)
+          .single();
+
+        if (sub?.payer_email) {
+          console.log(`[Form Payment Webhook] Triggering notification for ${sub.payer_email}`);
+
+          const notifyResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            },
+            body: JSON.stringify({
+              type: 'email',
+              template: 'transaction-success',
+              recipient: {
+                email: sub.payer_email,
+                name: sub.payer_name || 'Valued Payer',
+              },
+              data: {
+                transactionType: 'Form Payment',
+                amount: (sub.amount / 100).toFixed(2),
+                currency: 'GHS',
+                reference: submissionId,
+                date: new Date().toLocaleString(),
+              },
+            }),
+          });
+
+          const notifyResult = await notifyResponse.json();
+          console.log('[Form Payment Webhook] Notification result:', notifyResult);
+        }
+      } catch (notifyError) {
+        console.error('[Form Payment Webhook] Notification error:', notifyError);
+      }
     } else {
       console.log(`[Form Payment Webhook] Ignoring event type: ${event.event}`);
     }

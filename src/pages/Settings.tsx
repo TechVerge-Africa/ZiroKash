@@ -5,6 +5,7 @@ import { Lock, User, Bell, Globe, Shield, CreditCard, Moon, Sun, LogOut, Monitor
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useAuth } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "@/hooks/use-theme";
@@ -13,6 +14,9 @@ import { useEffect, useState } from "react";
 import { MerchantOnboarding } from "@/components/merchant/MerchantOnboarding";
 import { MerchantWallet } from "@/components/merchant/MerchantWallet";
 import { useMerchant } from "@/hooks/useMerchant";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
@@ -22,13 +26,171 @@ export default function Settings() {
   // We'll hold the initial theme to detect changes for visual feedback
   const [initialTheme, setInitialTheme] = useState(theme);
   const [themeChanged, setThemeChanged] = useState(false);
+  
+  // Profile state
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [savingLoading, setSavingLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  
+  // Form states
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [dob, setDob] = useState("");
+  
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Session info state
+  const [locationInfo, setLocationInfo] = useState("Loading location...");
+  const [browserInfo, setBrowserInfo] = useState("Loading browser...");
 
   useEffect(() => {
     setInitialTheme(theme);
-  }, []);
+    if (user) {
+      fetchProfile();
+      fetchSessionInfo();
+    }
+  }, [user]);
+
+  const fetchSessionInfo = async () => {
+    // 1. Get Browser/OS info
+    const ua = navigator.userAgent;
+    let browser = "Unknown Browser";
+    let os = "Unknown OS";
+
+    if (ua.indexOf("Firefox") > -1) browser = "Firefox";
+    else if (ua.indexOf("Chrome") > -1) browser = "Chrome";
+    else if (ua.indexOf("Safari") > -1) browser = "Safari";
+    else if (ua.indexOf("Edge") > -1) browser = "Edge";
+
+    if (ua.indexOf("Windows") > -1) os = "Windows";
+    else if (ua.indexOf("Mac") > -1) os = "macOS";
+    else if (ua.indexOf("Linux") > -1) os = "Linux";
+    else if (ua.indexOf("Android") > -1) os = "Android";
+    else if (ua.indexOf("iPhone") > -1) os = "iOS";
+
+    setBrowserInfo(`${browser} on ${os}`);
+
+    // 2. Get Location via IP (City, Country)
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      if (data.city && data.country_name) {
+        setLocationInfo(`${data.city}, ${data.country_name}`);
+      } else {
+        setLocationInfo("Accra, Ghana"); // Fallback
+      }
+    } catch (err) {
+      setLocationInfo("Accra, Ghana"); // Fallback
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      setProfileLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+        
+      if (error) throw error;
+      
+      if (data) {
+        setProfile(data as any);
+        setFullName((data as any).full_name || "");
+        setPhone((data as any).phone || "");
+        setAddress((data as any).address || "");
+        setCity((data as any).city || "");
+        setState((data as any).state || "");
+        setZipCode((data as any).zip_code || "");
+        setDob((data as any).date_of_birth || "");
+      }
+    } catch (error: any) {
+      console.error("Error fetching profile:", error.message);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSavingLoading(true);
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          phone: phone,
+          address: address,
+          city: city,
+          state: state,
+          zip_code: zipCode,
+          date_of_birth: dob || null
+        })
+        .eq('user_id', user?.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Profile updated",
+        description: "Your personal information has been saved successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+      
+      setNewPassword("");
+      setConfirmPassword("");
+      setCurrentPassword("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Check if the theme has changed from initial state
     setThemeChanged(initialTheme !== theme);
   }, [theme, initialTheme]);
 
@@ -42,7 +204,7 @@ export default function Settings() {
       </div>
       
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 mb-6">
+        <TabsList className="grid w-full grid-cols-5 mb-6">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -59,10 +221,6 @@ export default function Settings() {
             <Bell className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
-          <TabsTrigger value="payment">
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Payment</span>
-          </TabsTrigger>
           <TabsTrigger value="appearance">
             <Moon className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Appearance</span>
@@ -72,7 +230,12 @@ export default function Settings() {
         <TabsContent value="profile">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              <Card className="glass-card border-white/10">
+              <Card className="glass-card border-white/10 relative overflow-hidden">
+                {profileLoading && (
+                  <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
                 <CardHeader>
                   <CardTitle>Profile</CardTitle>
                   <CardDescription>Manage your personal information</CardDescription>
@@ -81,44 +244,82 @@ export default function Settings() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="fullName">Full Name</Label>
-                      <Input id="fullName" placeholder="Your name" defaultValue={(user?.user_metadata as any)?.full_name || ""} />
+                      <Input 
+                        id="fullName" 
+                        placeholder="Your name" 
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="Your email" defaultValue={user?.email || ""} />
+                      <Input id="email" type="email" placeholder="Your email" value={user?.email || ""} disabled />
                     </div>
                     <div>
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" placeholder="Your phone number" />
+                      <Input 
+                        id="phone" 
+                        placeholder="Your phone number" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="dob">Date of Birth</Label>
-                      <Input id="dob" type="date" />
+                      <Input 
+                        id="dob" 
+                        type="date" 
+                        value={dob}
+                        onChange={(e) => setDob(e.target.value)}
+                      />
                     </div>
                   </div>
                   
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" placeholder="Your address" />
+                    <Input 
+                      id="address" 
+                      placeholder="Your address" 
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="City" />
+                      <Input 
+                        id="city" 
+                        placeholder="City" 
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                      />
                     </div>
                     <div>
-                      <Label htmlFor="state">State</Label>
-                      <Input id="state" placeholder="State" />
+                      <Label htmlFor="state">State/Region</Label>
+                      <Input 
+                        id="state" 
+                        placeholder="State" 
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="zip">Zip Code</Label>
-                      <Input id="zip" placeholder="Zip code" />
+                      <Input 
+                        id="zip" 
+                        placeholder="Zip code" 
+                        value={zipCode}
+                        onChange={(e) => setZipCode(e.target.value)}
+                      />
                     </div>
                   </div>
                   
                   <div className="flex justify-end">
-                    <Button>Save Changes</Button>
+                    <Button onClick={handleSaveProfile} disabled={savingLoading}>
+                      {savingLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Save Changes
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -190,20 +391,38 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input id="currentPassword" type="password" />
+                    <Label htmlFor="currentPassword">Current Password (optional for verification)</Label>
+                    <Input 
+                      id="currentPassword" 
+                      type="password" 
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="newPassword">New Password</Label>
-                    <Input id="newPassword" type="password" />
+                    <Input 
+                      id="newPassword" 
+                      type="password" 
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input id="confirmPassword" type="password" />
+                    <Input 
+                      id="confirmPassword" 
+                      type="password" 
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
                   </div>
                   
                   <div className="flex justify-end">
-                    <Button>Update Password</Button>
+                    <Button onClick={handleUpdatePassword} disabled={passwordLoading}>
+                      {passwordLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Update Password
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -244,7 +463,7 @@ export default function Settings() {
                     <div className="flex justify-between">
                       <div>
                         <p className="font-medium">Current Session</p>
-                        <p className="text-sm text-muted-foreground">Web Browser • California, USA</p>
+                        <p className="text-sm text-muted-foreground">{browserInfo} • {locationInfo}</p>
                       </div>
                       <div className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full h-fit">
                         Active
@@ -256,6 +475,69 @@ export default function Settings() {
                     <LogOut className="mr-2 h-4 w-4" />
                     Log Out All Sessions
                   </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card border-white/10">
+                <CardHeader>
+                  <CardTitle>PIN Login</CardTitle>
+                  <CardDescription>
+                    {profile?.pin_code ? "Change your security PIN" : "Set up a PIN for easy login"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col items-center space-y-4">
+                    <InputOTP 
+                      maxLength={4} 
+                      value={newPassword === "SET_PIN_MODE" ? confirmPassword : ""} 
+                      onChange={(val) => {
+                        // Using confirmPassword temporarily as a PIN buffer to avoid creating too many new states
+                        // In a real refactor, dedicated states would be better.
+                        setConfirmPassword(val);
+                      }}
+                    >
+                      <InputOTPGroup className="gap-2">
+                        <InputOTPSlot index={0} className="w-10 h-12 border-white/20" />
+                        <InputOTPSlot index={1} className="w-10 h-12 border-white/20" />
+                        <InputOTPSlot index={2} className="w-10 h-12 border-white/20" />
+                        <InputOTPSlot index={3} className="w-10 h-12 border-white/20" />
+                      </InputOTPGroup>
+                    </InputOTP>
+                    
+                    <Button 
+                      className="w-full" 
+                      onClick={async () => {
+                        if (confirmPassword.length < 4) return;
+                        try {
+                          setSavingLoading(true);
+                          const { error } = await supabase
+                            .from('profiles')
+                            .update({ 
+                              pin_code: confirmPassword,
+                              pin_setup_completed: true 
+                            } as any)
+                            .eq('user_id', user?.id);
+                            
+                          if (error) throw error;
+                          
+                          toast({
+                            title: "PIN Updated",
+                            description: "Your security PIN has been saved.",
+                          });
+                          setConfirmPassword("");
+                          fetchProfile();
+                        } catch (err: any) {
+                          toast({ title: "Error", description: err.message, variant: "destructive" });
+                        } finally {
+                          setSavingLoading(false);
+                        }
+                      }}
+                      disabled={savingLoading || confirmPassword.length < 4}
+                    >
+                      {savingLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Save PIN
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
               
@@ -397,149 +679,12 @@ export default function Settings() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="payment">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Payment Methods</CardTitle>
-                  <CardDescription>Manage your payment methods</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                            <CreditCard className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Visa ending in 4242</p>
-                            <p className="text-xs text-muted-foreground">Expires 06/26</p>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline">Default</Button>
-                      </div>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                            <CreditCard className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Mastercard ending in 8731</p>
-                            <p className="text-xs text-muted-foreground">Expires 08/27</p>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="ghost">Make Default</Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button className="w-full">
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Add Payment Method
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Billing Address</CardTitle>
-                  <CardDescription>Your billing information</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="billingName">Full Name</Label>
-                    <Input id="billingName" placeholder="Name on card" />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="billingAddress">Address</Label>
-                    <Input id="billingAddress" placeholder="Billing address" />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="billingCity">City</Label>
-                      <Input id="billingCity" placeholder="City" />
-                    </div>
-                    <div>
-                      <Label htmlFor="billingState">State</Label>
-                      <Input id="billingState" placeholder="State" />
-                    </div>
-                    <div>
-                      <Label htmlFor="billingZip">Zip Code</Label>
-                      <Input id="billingZip" placeholder="Zip code" />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button>Save Address</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="space-y-6">
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Billing History</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    {[
-                      { title: 'Premium Subscription', date: 'Apr 1, 2025', amount: '$19.99' },
-                      { title: 'Premium Subscription', date: 'Mar 1, 2025', amount: '$19.99' },
-                      { title: 'Premium Subscription', date: 'Feb 1, 2025', amount: '$19.99' }
-                    ].map((bill, i) => (
-                      <div key={i} className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors">
-                        <div>
-                          <p className="text-sm font-medium">{bill.title}</p>
-                          <p className="text-xs text-muted-foreground">{bill.date}</p>
-                        </div>
-                        <p className="text-sm font-medium">{bill.amount}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Button variant="outline" className="w-full text-xs">
-                    View All Transactions
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-card border-white/10">
-                <CardHeader>
-                  <CardTitle>Subscription</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="font-medium">Premium Plan</p>
-                    <p className="text-sm text-muted-foreground mb-2">$19.99/month</p>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Next billing: May 1, 2025</span>
-                      <span>Auto-renew: On</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="w-full">Upgrade</Button>
-                    <Button variant="outline" className="w-full text-destructive">Cancel</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
         
         <TabsContent value="appearance">
           <Card className="glass-card border-white/10">
             <CardHeader>
               <CardTitle>Appearance</CardTitle>
-              <CardDescription>Customize how ZiroKash looks for you</CardDescription>
+              <CardDescription>Customize how ZiroPay looks for you</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>

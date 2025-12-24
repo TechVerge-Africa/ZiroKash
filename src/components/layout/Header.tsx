@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, ChevronDown, User, LogOut, Settings as SettingsIcon, Menu } from "lucide-react";
+import { Bell, ChevronDown, User, LogOut, Settings as SettingsIcon, Menu, Lock as LockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
@@ -70,72 +70,100 @@ export default function Header(): JSX.Element {
 
         {/* Right side - Notifications & User menu */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Notifications */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className={cn(
-              "relative",
-              isMobile ? "h-8 w-8" : "h-9 w-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90"
-            )}
-          >
-            <Bell size={isMobile ? 20 : 18} className="text-foreground/80" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background"></span>
-          </Button>
-          
-          {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          {user ? (
+            <>
+              {/* Notifications */}
               <Button 
                 variant="ghost" 
+                size="icon" 
                 className={cn(
-                  "gap-2",
-                  isMobile ? "h-8 w-8 p-0" : "h-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90 px-2"
+                  "relative",
+                  isMobile ? "h-8 w-8" : "h-9 w-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90"
                 )}
               >
-                <Avatar className={isMobile ? "h-8 w-8" : "h-7 w-7"}>
-                  <AvatarFallback className="bg-gradient-to-br from-primary/10 to-secondary/10 text-primary text-xs">
-                    {getUserInitials()}
-                  </AvatarFallback>
-                </Avatar>
-                {!isMobile && (
-                  <>
-                    <div className="flex flex-col items-start text-xs">
-                      <span className="font-medium text-foreground">{firstName}</span>
-                      <span className="text-foreground/60 text-[10px]">Premium</span>
-                    </div>
-                    <ChevronDown size={14} className="text-foreground/60" />
-                  </>
-                )}
+                <Bell size={isMobile ? 20 : 18} className="text-foreground/80" />
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background"></span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
-              className="w-56 bg-background/95 backdrop-blur-lg border border-white/10"
-            >
-              <DropdownMenuItem className="hover:bg-foreground/5">
-                <User className="mr-2 h-4 w-4 text-primary" />
-                <span>My Account</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-foreground/10" />
-              <DropdownMenuItem className="hover:bg-foreground/5">
-                <SettingsIcon className="mr-2 h-4 w-4 text-primary" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-foreground/5">
-                <Bell className="mr-2 h-4 w-4 text-primary" />
-                <span>Notifications</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-foreground/10" />
-              <DropdownMenuItem 
-                className="hover:bg-destructive/10 hover:text-destructive" 
-                onClick={() => signOut()}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className={cn(
+                      "gap-2",
+                      isMobile ? "h-8 w-8 p-0" : "h-9 rounded-lg bg-background/80 backdrop-blur-sm border border-white/10 hover:bg-background/90 px-2"
+                    )}
+                  >
+                    <Avatar className={isMobile ? "h-8 w-8" : "h-7 w-7"}>
+                      <AvatarFallback className="bg-gradient-to-br from-primary/10 to-secondary/10 text-primary text-xs">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {!isMobile && (
+                      <>
+                        <div className="flex flex-col items-start text-xs">
+                          <span className="font-medium text-foreground">{firstName}</span>
+                          <span className="text-foreground/60 text-[10px]">Premium</span>
+                        </div>
+                        <ChevronDown size={14} className="text-foreground/60" />
+                      </>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-56 bg-background/95 backdrop-blur-lg border border-white/10"
+                >
+                  <DropdownMenuItem className="hover:bg-foreground/5" asChild>
+                    <Link to="/settings" className="w-full flex items-center">
+                      <User className="mr-2 h-4 w-4 text-primary" />
+                      <span>My Account</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-foreground/10" />
+                  <DropdownMenuItem className="hover:bg-foreground/5" asChild>
+                    <Link to="/settings" className="w-full flex items-center">
+                      <SettingsIcon className="mr-2 h-4 w-4 text-primary" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-foreground/5" asChild>
+                    <Link to="/settings" className="w-full flex items-center">
+                      <Bell className="mr-2 h-4 w-4 text-primary" />
+                      <span>Notifications</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-foreground/10" />
+                  <DropdownMenuItem 
+                    className="hover:bg-foreground/5 cursor-pointer" 
+                    onClick={() => {
+                      if (user) {
+                        sessionStorage.removeItem(`ziropay_unlocked_${user.id}`);
+                        window.location.reload();
+                      }
+                    }}
+                  >
+                    <LockIcon className="mr-2 h-4 w-4 text-primary" />
+                    <span>Lock System</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="hover:bg-destructive/10 hover:text-destructive cursor-pointer" 
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Link to="/auth">
+              <Button size="sm" className="h-9 font-bold bg-primary hover:bg-primary/90">
+                Sign In
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

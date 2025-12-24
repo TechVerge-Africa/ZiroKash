@@ -98,83 +98,107 @@ export default function Support() {
       <div>
         <h1 className="text-3xl font-bold">Help & Support</h1>
         <p className="text-muted-foreground mt-2">
-          Get help with your ZiroKash account and find answers to common questions
+          Get help with your ZiroPay account and find answers to common questions
         </p>
       </div>
 
       {/* Contact Options */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <Card className="glass-card border-white/10 hover:shadow-lg transition-shadow cursor-pointer group">
           <CardContent className="p-6 text-center">
-            <MessageCircle className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <MessageCircle className="h-12 w-12 mx-auto mb-4 text-primary group-hover:scale-110 transition-transform" />
             <h3 className="font-semibold mb-2">Live Chat</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Chat with our support team in real-time
+              Chat with our merchant specialists
             </p>
-            <Badge variant="default">Online</Badge>
+            <Badge variant="default" className="bg-green-500/20 text-green-500 border-green-500/20">Online</Badge>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <Card className="glass-card border-white/10 hover:shadow-lg transition-shadow cursor-pointer group">
           <CardContent className="p-6 text-center">
-            <Phone className="h-12 w-12 mx-auto mb-4 text-primary" />
-            <h3 className="font-semibold mb-2">Phone Support</h3>
+            <Phone className="h-12 w-12 mx-auto mb-4 text-primary group-hover:scale-110 transition-transform" />
+            <h3 className="font-semibold mb-2">Priority Call</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Call us for immediate assistance
+              Available for premium accounts
             </p>
-            <p className="font-mono text-sm">+234 800 ZIROKASH</p>
+            <p className="font-mono text-sm font-bold text-primary">+233 24 000 ZIRO</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <Card className="glass-card border-white/10 hover:shadow-lg transition-shadow cursor-pointer group">
           <CardContent className="p-6 text-center">
-            <Mail className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <Mail className="h-12 w-12 mx-auto mb-4 text-primary group-hover:scale-110 transition-transform" />
             <h3 className="font-semibold mb-2">Email Support</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Send us an email for detailed help
+              Typical response under 2 hours
             </p>
-            <p className="text-sm">support@zirokash.com</p>
+            <p className="text-sm font-bold">support@ziropay.com</p>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="faq" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
           <TabsTrigger value="faq">FAQ</TabsTrigger>
-          <TabsTrigger value="tickets">My Tickets</TabsTrigger>
-          <TabsTrigger value="guides">Guides</TabsTrigger>
-          <TabsTrigger value="contact">Contact Us</TabsTrigger>
+          <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
+          <TabsTrigger value="guides">Developer Guides</TabsTrigger>
+          <TabsTrigger value="contact">New Request</TabsTrigger>
         </TabsList>
 
         <TabsContent value="faq">
-          <Card>
+          <Card className="glass-card border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <HelpCircle className="h-5 w-5" />
+                <HelpCircle className="h-5 w-5 text-primary" />
                 <span>Frequently Asked Questions</span>
               </CardTitle>
               <CardDescription>
-                Find quick answers to common questions
+                Everything you need to know about ZiroPay
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search FAQ..."
+                  placeholder="Search merchant help center..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-white/5 border-white/10"
                 />
               </div>
 
               <div className="space-y-4">
-                {filteredFAQ.map((item, index) => (
-                  <Card key={index} className="border-l-4 border-l-primary">
+                {[
+                  {
+                    question: "How long do merchant settlements take?",
+                    answer: "ZiroPay offers T+0 (instant) settlements for verified premium merchants and T+1 for standard business accounts across Ghana.",
+                    category: "Settlements"
+                  },
+                  {
+                    question: "Can I accept international payments?",
+                    answer: "Yes, ZiroPay supports multi-currency collections, allowing your customers to pay in USD, GBP, and EUR which are settled to your local GHS wallet.",
+                    category: "International"
+                  },
+                  {
+                    question: "Are there any hidden fees?",
+                    answer: "No. ZiroPay maintains a transparent fee structure of 1.5% for local transactions, capped at GH₵50.",
+                    category: "Fees"
+                  },
+                  {
+                    question: "How do I secure my API keys?",
+                    answer: "Always use environment variables for your Secret Keys. Never expose them in client-side code. You can regenerate keys in Settings > Business.",
+                    category: "Security"
+                  }
+                ].filter(item => 
+                  item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.answer.toLowerCase().includes(searchQuery.toLowerCase())
+                ).map((item, index) => (
+                  <Card key={index} className="border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold">{item.question}</h3>
-                        <Badge variant="outline">{item.category}</Badge>
+                        <h3 className="font-semibold text-foreground">{item.question}</h3>
+                        <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{item.category}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{item.answer}</p>
                     </CardContent>

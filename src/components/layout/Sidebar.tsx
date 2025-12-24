@@ -24,14 +24,6 @@ const mainNavItems: NavItem[] = [
 // ];
 
 const accountNavItems: NavItem[] = [{
-  name: "Profile",
-  href: "/profile",
-  icon: <User size={20} />
-}, {
-  name: "Security",
-  href: "/security",
-  icon: <ShieldCheck size={20} />
-}, {
   name: "Settings",
   href: "/settings",
   icon: <Settings size={20} />

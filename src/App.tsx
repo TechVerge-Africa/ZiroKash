@@ -18,8 +18,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/use-theme";
 import Transactions from "./pages/Transactions";
-import Profile from "./pages/Profile";
-import Security from "./pages/Security";
 import Support from "./pages/Support";
 import About from "./pages/About";
 
@@ -101,36 +99,16 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Profile />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
-      <Route path="/security" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Security />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-
       <Route path="/support" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Support />
-          </MainLayout>
-        </ProtectedRoute>
+        <MainLayout>
+          <Support />
+        </MainLayout>
       } />
 
       <Route path="/about" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <About />
-          </MainLayout>
-        </ProtectedRoute>
+        <MainLayout>
+          <About />
+        </MainLayout>
       } />
       
       <Route path="*" element={<NotFound />} />

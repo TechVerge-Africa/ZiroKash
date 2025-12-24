@@ -717,17 +717,17 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold mb-4 text-sm sm:text-base">Company</h4>
               <ul className="space-y-2 text-sm text-foreground/70">
-                <li><Link to="#" className="hover:text-foreground transition-colors">About</Link></li>
-                <li><Link to="#" className="hover:text-foreground transition-colors">Contact</Link></li>
-                <li><Link to="#" className="hover:text-foreground transition-colors">FAQ</Link></li>
+                <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
+                <li><Link to="/support" className="hover:text-foreground transition-colors">Contact</Link></li>
+                <li><Link to="/support" className="hover:text-foreground transition-colors">FAQ</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-sm sm:text-base">Legal</h4>
               <ul className="space-y-2 text-sm text-foreground/70">
-                <li><Link to="#" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
-                <li><Link to="#" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link to="/about" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/about" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>

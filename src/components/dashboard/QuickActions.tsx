@@ -1,5 +1,5 @@
 
-import { Send, CreditCard, Wallet, Globe, Coins, PiggyBank } from "lucide-react";
+import { DollarSign, Receipt, Link2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -10,34 +10,24 @@ export default function QuickActions() {
   
   const quickLinks = [
     { 
-      icon: <Send size={20} />, 
-      label: "Send", 
-      link: "/payments"
+      icon: <DollarSign size={20} />, 
+      label: "Create Form", 
+      link: "/ziropay"
     },
     { 
-      icon: <CreditCard size={20} />, 
-      label: "Add Card", 
-      link: "/cards"
+      icon: <Receipt size={20} />, 
+      label: "Transactions", 
+      link: "/transactions"
     },
     { 
-      icon: <Wallet size={20} />, 
-      label: "Deposit", 
-      link: "/wallet"
+      icon: <Link2 size={20} />, 
+      label: "My Forms", 
+      link: "/ziropay"
     },
     { 
-      icon: <Globe size={20} />, 
-      label: "Forex", 
-      link: "/wallet"
-    },
-    { 
-      icon: <PiggyBank size={20} />, 
-      label: "Save", 
-      link: "/wallet"
-    },
-    { 
-      icon: <Coins size={20} />, 
-      label: "Invest", 
-      link: "/investments"
+      icon: <Eye size={20} />, 
+      label: "Analytics", 
+      link: "/ziropay"
     },
   ];
 

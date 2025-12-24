@@ -87,11 +87,7 @@ export function TransactionHistory() {
                        transaction.transaction_type.charAt(0).toUpperCase() + transaction.transaction_type.slice(1)}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {transaction.description || 
-                       (transaction.recipient_address && `To: ${transaction.recipient_address.slice(0, 10)}...`) ||
-                       (transaction.sender_address && `From: ${transaction.sender_address.slice(0, 10)}...`) ||
-                       'No description'
-                      }
+                      {transaction.description || 'No description'}
                     </p>
                   </div>
                 </div>
@@ -101,7 +97,7 @@ export function TransactionHistory() {
                     <span className={`font-medium ${
                       transaction.transaction_type === 'send' ? 'text-red-600' : 'text-green-600'
                     }`}>
-                      {transaction.transaction_type === 'send' ? '-' : '+'}${transaction.amount}
+                      {transaction.transaction_type === 'send' ? '-' : '+'}${(transaction.amount / 100).toFixed(2)}
                     </span>
                     {getStatusIcon(transaction.status)}
                   </div>

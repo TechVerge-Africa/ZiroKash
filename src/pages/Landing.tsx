@@ -1,361 +1,739 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle, Shield, Globe, CreditCard, Zap } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { 
+  ArrowRight, 
+  CheckCircle, 
+  Menu,
+  X,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Globe
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AnimatedCounter } from "@/components/landing/AnimatedCounter";
+import {
+  stats,
+  howItWorksSteps,
+  features,
+  useCases,
+  testimonials,
+  pricingPlans,
+  trustBadges,
+  ANIMATION_CONFIG
+} from "@/data/landingData";
 
+/**
+ * Landing page component for ZiroPay
+ * Premium design with animated sections and interactive elements
+ */
 export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
-  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [statsVisible, setStatsVisible] = useState(false);
+  const statsRef = useRef<HTMLDivElement>(null);
+
+  // Handle scroll for header background
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    
+    const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
-    initParallaxElements();
-    
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const initParallaxElements = () => {
-    const parallaxElements = document.querySelectorAll('.parallax-element');
-    
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+  // Intersection observer for stats animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
+          setStatsVisible(true);
         }
-      });
-    }, { threshold: 0.1 });
-    
-    parallaxElements.forEach(el => {
-      observer.observe(el);
-    });
+      },
+      { threshold: ANIMATION_CONFIG.STATS_THRESHOLD }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, ANIMATION_CONFIG.TESTIMONIAL_INTERVAL);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 }
+  };
+
+  const staggerContainer = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Header/Navigation */}
-      <header className="border-b border-white/10 backdrop-blur-lg fixed w-full z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
-              Z
-            </div>
-            <span className="text-2xl font-bold gradient-text">ZiroKash</span>
-          </div>
-          
-          <nav className="hidden md:flex items-center gap-8">
-            <Link to="#features" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hover-scale">
-              Features
-            </Link>
-            <Link to="#benefits" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hover-scale">
-              Benefits
-            </Link>
-            <Link to="#security" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hover-scale">
-              Security
-            </Link>
-          </nav>
-          
-          <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="hover-scale">
-                Login
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 hover-scale">
-                Sign Up
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-      
-      {/* Hero Section */}
-      <section ref={heroRef} className="pt-32 pb-20 md:pt-40 md:pb-32 grid-pattern relative">
-        <div className="hero-glow absolute inset-0 opacity-40"></div>
-        <div className="hero-particles absolute inset-0"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text animate-hero-title">
-              African Fintech Revolution for Everyone
-            </h1>
-            <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto animate-hero-subtitle">
-              Experience seamless mobile money, instant payments, and digital banking with ZiroKash's modern financial platform designed for Africa.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up-delayed">
-              <Link to="/register">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 pulse-subtle">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button variant="outline" size="lg" className="animate-pulse-subtle">
-                  Login to Dashboard
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="mt-16 relative">
-              <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none h-full"></div>
-              <div className="dashboard-showcase" style={{ transform: `translateY(${scrollY * 0.1}px)` }}>
-                <div className="cube-wrapper">
-                  <div className="cube">
-                    <div className="cube-face front"></div>
-                    <div className="cube-face back"></div>
-                    <div className="cube-face right"></div>
-                    <div className="cube-face left"></div>
-                    <div className="cube-face top"></div>
-                    <div className="cube-face bottom"></div>
-                  </div>
-                </div>
-                <img 
-                  src="/images/hero.png" 
-                  alt="ZiroKash Dashboard" 
-                  className="w-full max-w-4xl mx-auto rounded-lg shadow-2xl border border-white/10 glow animate-float"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden">
-          <svg className="relative block w-full h-[60px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" className="shape-fill"></path>
-          </svg>
-        </div>
-      </section>
-      
-      {/* Features Section */}
-      <section id="features" ref={featuresRef} className="py-20 md:py-32 bg-card relative overflow-hidden">
-        <div className="floating-elements">
-          <div className="floating-element element-1"></div>
-          <div className="floating-element element-2"></div>
-          <div className="floating-element element-3"></div>
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16 parallax-element">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              Revolutionary Financial Features
-            </h2>
-            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              ZiroKash combines the convenience of mobile money with modern digital banking to create a seamless African financial experience.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Globe className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Mobile Money</h3>
-              <p className="text-foreground/70">
-                Send money across Africa instantly with minimal fees using our mobile money network integration.
-              </p>
-            </div>
-            
-            {/* Feature 2 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-100">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <CreditCard className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Virtual Cards</h3>
-              <p className="text-foreground/70">
-                Access virtual and physical cards for secure online and offline spending with instant controls.
-              </p>
-            </div>
-            
-            {/* Feature 3 */}
-            <div className="p-6 rounded-xl glass-card transform-card parallax-element delay-200">
-              <div className="bg-gradient-to-br from-primary to-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4 icon-pulse">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Digital Credit</h3>
-              <p className="text-foreground/70">
-                Build your credit score digitally and access microloans with transparent terms and instant approvals.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Benefits Section */}
-      <section id="benefits" className="py-20 md:py-32 grid-pattern relative">
-        <div className="moving-gradient"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16 parallax-element">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
-              Why Choose ZiroKash
-            </h2>
-            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-              Experience the future of African finance with benefits that traditional banks simply can't offer.
-            </p>
-          </div>
-          
-          <div className="max-w-3xl mx-auto">
-            <div className="grid gap-6">
-              {/* Benefit 1 */}
-              <div className="flex items-start gap-4 p-4 rounded-lg glass-card parallax-element slide-right">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium mb-1">Lower Transaction Fees</h3>
-                  <p className="text-foreground/70">
-                    Save up to 90% on cross-border payments compared to traditional banks and payment processors.
-                  </p>
-                </div>
-              </div>
-              
-              {/* Benefit 2 */}
-              <div className="flex items-start gap-4 p-4 rounded-lg glass-card parallax-element slide-right delay-100">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium mb-1">Instant Settlements</h3>
-                    <p className="text-foreground/70">
-                      No more waiting days for transactions to clear. ZiroKash settlements happen in seconds, not days.
-                    </p>
-                </div>
-              </div>
-              
-              {/* Benefit 3 */}
-              <div className="flex items-start gap-4 p-4 rounded-lg glass-card parallax-element slide-right delay-200">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium mb-1">Full Transparency</h3>
-                    <p className="text-foreground/70">
-                      Every transaction is recorded digitally, providing full transparency and real-time tracking.
-                    </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Security Section */}
-      <section id="security" className="py-20 md:py-32 bg-card relative overflow-hidden">
-        <div className="security-glow absolute"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="parallax-element slide-up">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 gradient-text">
-                Bank-Level Security with Digital Innovation
-              </h2>
-              <p className="text-lg text-foreground/70 mb-8">
-                ZiroKash combines cutting-edge security practices with modern digital banking to keep your assets safe.
-              </p>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 security-feature">
-                  <Shield className="h-6 w-6 text-primary flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium">Multi-Factor Authentication</h3>
-                    <p className="text-sm text-foreground/70">
-                      Protect your account with email, SMS, and biometric verification.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3 security-feature delay-100">
-                  <Shield className="h-6 w-6 text-primary flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium">Encrypted Data Storage</h3>
-                    <p className="text-sm text-foreground/70">
-                      Your sensitive information is encrypted using military-grade AES-256 encryption.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3 security-feature delay-200">
-                  <Shield className="h-6 w-6 text-primary flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium">Smart Contract Auditing</h3>
-                    <p className="text-sm text-foreground/70">
-                      All systems are regularly audited by independent security firms to ensure maximum safety.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center parallax-element slide-up delay-200">
-              <div className="security-shield-container">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-full blur-xl opacity-50 animate-pulse-slow"></div>
-                <div className="relative bg-card border border-white/10 p-6 rounded-xl security-shield-card">
-                  <Shield className="h-24 w-24 mx-auto mb-6 text-primary opacity-80 security-shield" />
-                  <h3 className="text-xl font-bold text-center mb-2">
-                    Your Security is Our Priority
-                  </h3>
-                  <p className="text-center text-foreground/70">
-                    ZiroKash employs a dedicated security team and regular security audits to maintain the highest levels of protection.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="py-20 md:py-32 grid-pattern relative">
-        <div className="cta-rays"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 gradient-text parallax-element zoom-in">
-              Ready to Experience the Future of Finance?
-            </h2>
-            <p className="text-lg text-foreground/70 mb-8 max-w-2xl mx-auto parallax-element zoom-in delay-100">
-              Join thousands of users who have already made the switch to ZiroKash's modern financial platform.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 parallax-element zoom-in delay-200">
-              <Link to="/register">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 pulse-subtle">
-                  Create Your Free Account <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Footer */}
-      <footer className="bg-card py-12 border-t border-white/10">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl animate-float">
+      {/* Header */}
+      <motion.header 
+        className="fixed w-full z-50 transition-all duration-300"
+        style={{ 
+          backgroundColor: scrollY > 50 ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
+          backdropFilter: scrollY > 50 ? 'blur(12px)' : 'none',
+          borderBottom: scrollY > 50 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none'
+        }}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg sm:text-xl">
                 Z
               </div>
-              <span className="text-2xl font-bold gradient-text">ZiroKash</span>
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                ZiroPay
+              </span>
+            </Link>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+              <a href="#features" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+                Features
+              </a>
+              <a href="#how-it-works" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+                How It Works
+              </a>
+              <a href="#pricing" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+                Pricing
+              </a>
+            </nav>
+            
+            {/* Auth Buttons */}
+            <div className="hidden md:flex items-center gap-3">
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button size="sm" className="bg-gradient-to-r from-primary to-secondary cta-button">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t bg-background/95 backdrop-blur-lg"
+          >
+            <div className="container mx-auto px-4 py-4 space-y-3">
+              <a href="#features" className="block py-2 text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                Features
+              </a>
+              <a href="#how-it-works" className="block py-2 text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                How It Works
+              </a>
+              <a href="#pricing" className="block py-2 text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                Pricing
+              </a>
+              <div className="pt-2 space-y-2">
+                <Link to="/auth" className="block">
+                  <Button variant="ghost" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full bg-gradient-to-r from-primary to-secondary">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </motion.header>
+
+      {/* Hero Section */}
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-24 relative overflow-hidden">
+        {/* Animated gradient mesh background */}
+        <div className="absolute inset-0 gradient-mesh" aria-hidden="true"></div>
+        
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          {[...Array(ANIMATION_CONFIG.PARTICLE_COUNT)].map((_, i) => (
+            <div
+              key={i}
+              className="particle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 8}s`,
+                animationDuration: `${8 + Math.random() * 4}s`
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div 
+            className="max-w-4xl mx-auto text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6"
+            >
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Trusted by 10,000+ businesses across Africa</span>
+            </motion.div>
+
+            <motion.h1 
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <span className="gradient-shimmer">Create. Share. Get Paid</span>
+            </motion.h1>
+            <motion.p 
+              className="text-lg sm:text-xl md:text-2xl text-foreground/70 mb-8 sm:mb-12 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Create custom payment forms, share payment links, and get paid instantly through MoMo or bank. No technical setup required.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            >
+              <Link to="/auth">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8 py-6 sm:py-7 cta-button glow-pulse"
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="text-base sm:text-lg px-6 sm:px-8 py-6 sm:py-7"
+              >
+                <Globe className="mr-2 h-5 w-5" />
+                Watch Demo
+              </Button>
+            </motion.div>
+
+            {/* Trust badges */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="mt-12 flex flex-wrap justify-center items-center gap-6 text-sm text-foreground/60"
+            >
+              {trustBadges.map((badge, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <badge.icon className="h-4 w-4 text-green-500" />
+                  <span>{badge.text}</span>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section ref={statsRef} className="py-12 sm:py-16 bg-muted/30 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-50" aria-hidden="true">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5"></div>
+        </div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={statsVisible ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="stats-card border-2 hover:border-primary/50 transition-all">
+                  <CardContent className="p-6 text-center">
+                    <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${stat.color} mb-4 mx-auto`}>
+                      <stat.icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                    </div>
+                    <AnimatedCounter value={stat.value} isVisible={statsVisible} />
+                    <p className="text-sm sm:text-base text-foreground/70 mt-2">{stat.label}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+              Get started in three simple steps
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto relative"
+          >
+            {/* Connecting arrows for desktop */}
+            <div className="hidden md:block absolute top-1/3 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-primary via-secondary to-primary opacity-30" aria-hidden="true" />
+            
+            {howItWorksSteps.map((step, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                className="relative"
+              >
+                <Card className="h-full border-2 hover:border-primary/50 transition-all card-3d feature-card">
+                  <CardContent className="p-6 sm:p-8 text-center card-3d-content">
+                    <motion.div
+                      className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary mb-4 sm:mb-6 mx-auto icon-bounce"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <step.icon className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+                    </motion.div>
+                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
+                      {step.title}
+                    </h3>
+                    <p className="text-foreground/70 text-sm sm:text-base">
+                      {step.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Key Features */}
+      <section id="features" className="py-16 sm:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Key Features
+            </h2>
+            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+              Everything you need to collect payments seamlessly
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto"
+          >
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-background hover:bg-muted border-2 border-transparent hover:border-primary/20 transition-all feature-card cursor-pointer"
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                  <feature.icon className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-sm sm:text-base font-medium">{feature.text}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Who Is It For */}
+      <section className="py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Perfect for
+            </h2>
+            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+              Trusted by organizations of all sizes
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto"
+          >
+            {useCases.map((useCase, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                whileHover={{ y: -5 }}
+                className="group"
+              >
+                <Card className="h-full border-2 hover:border-primary/50 transition-all cursor-pointer card-3d">
+                  <CardContent className="p-6 text-center">
+                    <motion.div
+                      className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${useCase.color} mb-4 mx-auto`}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <useCase.icon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                    </motion.div>
+                    <h3 className="font-semibold text-sm sm:text-base">{useCase.title}</h3>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Carousel */}
+      <section className="py-16 sm:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-lg text-foreground/70">
+              Join thousands of satisfied users
+            </p>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTestimonial}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="border-2 hover:border-primary/50 transition-all testimonial-card">
+                  <CardContent className="p-8 sm:p-12">
+                    <div className="flex flex-col items-center text-center">
+                      {/* Avatar */}
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl sm:text-2xl mb-6">
+                        {testimonials[currentTestimonial].avatar}
+                      </div>
+                      
+                      {/* Stars */}
+                      <div className="flex gap-1 mb-6" aria-label={`Rating: ${testimonials[currentTestimonial].rating} out of 5 stars`}>
+                        {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
+                          <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      
+                      {/* Content */}
+                      <p className="text-lg sm:text-xl text-foreground/80 mb-6 italic max-w-2xl">
+                        "{testimonials[currentTestimonial].content}"
+                      </p>
+                      
+                      {/* Author */}
+                      <div>
+                        <p className="font-semibold text-lg">{testimonials[currentTestimonial].name}</p>
+                        <p className="text-sm text-foreground/60">{testimonials[currentTestimonial].role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation */}
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <button
+                onClick={() => setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)}
+                className="p-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              
+              {/* Dots */}
+              <div className="flex gap-2">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentTestimonial(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentTestimonial 
+                        ? 'bg-primary w-8' 
+                        : 'bg-primary/30 hover:bg-primary/50'
+                    }`}
+                    aria-label={`Go to testimonial ${index + 1}`}
+                  />
+                ))}
+              </div>
+              
+              <button
+                onClick={() => setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)}
+                className="p-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12 sm:mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+              No hidden fees. Pay only when you get paid.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8"
+          >
+            {pricingPlans.map((plan, index) => (
+              <Card 
+                key={index}
+                className={`border-2 card-3d relative overflow-hidden ${
+                  plan.isPopular ? 'border-primary' : ''
+                }`}
+              >
+                {plan.isPopular && (
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-primary">Popular</Badge>
+                  </div>
+                )}
+                <CardContent className="p-6 sm:p-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                    <p className="text-3xl sm:text-4xl font-bold text-primary mb-2">{plan.price}</p>
+                    <p className="text-foreground/70 text-sm">{plan.description}</p>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to="/auth" className="block">
+                    <Button 
+                      className={`w-full ${
+                        plan.ctaVariant === 'default' 
+                          ? 'bg-gradient-to-r from-primary to-secondary cta-button' 
+                          : ''
+                      }`}
+                      variant={plan.ctaVariant}
+                    >
+                      {plan.ctaText}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Block */}
+      <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-mesh opacity-50" aria-hidden="true"></div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl mx-auto text-center"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+              Start collecting payments in minutes — no coding needed.
+            </h2>
+            <p className="text-lg text-foreground/70 mb-8 sm:mb-12">
+              Join thousands of organizations already using ZiroPay to streamline their payment collection.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/auth">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 cta-button glow-pulse"
+                >
+                  Activate ZiroPay
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </div>
             
-            <div className="flex gap-8">
-              <Link to="#" className="text-sm text-foreground/70 hover:text-foreground transition-colors story-link">
-                Terms of Service
-              </Link>
-              <Link to="#" className="text-sm text-foreground/70 hover:text-foreground transition-colors story-link">
-                Privacy Policy
-              </Link>
-              <Link to="#" className="text-sm text-foreground/70 hover:text-foreground transition-colors story-link">
-                Contact Us
-              </Link>
+            {/* Urgency element */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="mt-6 text-sm text-foreground/60"
+            >
+              🔥 Over 1,000 businesses joined this month
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-muted/50 py-12 sm:py-16 border-t">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                  Z
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  ZiroPay
+                </span>
+              </div>
+              <p className="text-sm text-foreground/70 mb-4">
+                The easiest way to collect payments online. Trusted by schools, churches, and businesses across Africa.
+              </p>
+              
+              {/* Newsletter */}
+              <div className="mt-4">
+                <p className="text-sm font-semibold mb-2">Stay updated</p>
+                <div className="flex gap-2">
+                  <input 
+                    type="email" 
+                    placeholder="Your email" 
+                    className="flex-1 px-3 py-2 text-sm rounded-lg border bg-background"
+                    aria-label="Email for newsletter"
+                  />
+                  <Button size="sm" className="bg-primary">
+                    Subscribe
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4 text-sm sm:text-base">Product</h4>
+              <ul className="space-y-2 text-sm text-foreground/70">
+                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4 text-sm sm:text-base">Company</h4>
+              <ul className="space-y-2 text-sm text-foreground/70">
+                <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
+                <li><Link to="/support" className="hover:text-foreground transition-colors">Contact</Link></li>
+                <li><Link to="/support" className="hover:text-foreground transition-colors">FAQ</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4 text-sm sm:text-base">Legal</h4>
+              <ul className="space-y-2 text-sm text-foreground/70">
+                <li><Link to="/about" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/about" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+              </ul>
             </div>
           </div>
           
-          <div className="text-center text-sm text-foreground/50">
-            <p>© 2025 ZiroKash. All rights reserved.</p>
-            <p className="mt-1">ZiroKash is a financial technology platform, not a bank.</p>
+          <div className="pt-8 border-t text-center text-sm text-foreground/60">
+            <p>© 2025 ZiroPay. All rights reserved.</p>
           </div>
         </div>
       </footer>

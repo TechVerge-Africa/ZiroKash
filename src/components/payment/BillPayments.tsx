@@ -22,7 +22,7 @@ const billCategories: BillCategory[] = [
     icon: <Phone className="h-4 w-4" />,
     providers: [
       { id: "mtn", name: "MTN", logo: "📱" },
-      { id: "vodacom", name: "Vodacom", logo: "📲" },
+      { id: "telecel", name: "Telecel", logo: "📲" },
       { id: "cell-c", name: "Cell C", logo: "📞" },
       { id: "telkom", name: "Telkom", logo: "☎️" },
     ]
@@ -44,6 +44,7 @@ const billCategories: BillCategory[] = [
     providers: [
       { id: "joburg-water", name: "Johannesburg Water", logo: "💧" },
       { id: "rand-water", name: "Rand Water", logo: "🌊" },
+      { id: "ghana-water", name: "Ghana Water", logo: "🌊" },
     ]
   },
   {

@@ -20,9 +20,10 @@ import {
   Download,
   Banknote
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useWallet } from "@/hooks/useWallet";
 import { useCredit } from "@/hooks/useCredit";
+import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import CreditCardComponent from "@/components/cards/CreditCardComponent";
@@ -71,9 +72,10 @@ interface RecentTransactionProps {
   currency: string;
   date: string;
   status: 'completed' | 'pending' | 'failed';
+  formattedAmount: string;
 }
 
-function RecentTransaction({ type, title, amount, currency, date, status }: RecentTransactionProps) {
+function RecentTransaction({ type, title, amount, currency, date, status, formattedAmount }: RecentTransactionProps) {
   const getIcon = () => {
     switch (type) {
       case 'send': return <ArrowUpRight className="h-4 w-4 text-red-500" />;
@@ -100,7 +102,7 @@ function RecentTransaction({ type, title, amount, currency, date, status }: Rece
           "font-medium text-sm",
           type === 'receive' ? "text-green-500" : "text-foreground"
         )}>
-          {type === 'receive' ? '+' : '-'}${amount.toFixed(2)}
+          {type === 'receive' ? '+' : '-'}{formattedAmount}
         </p>
         <Badge 
           variant={status === 'completed' ? "default" : status === 'pending' ? "secondary" : "destructive"}
@@ -115,38 +117,55 @@ function RecentTransaction({ type, title, amount, currency, date, status }: Rece
 
 export default function EnhancedDashboard() {
   const { user } = useAuth();
+  const fullName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name;
+  const firstName = fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   const { wallets, transactions, loading: walletLoading, getTotalBalance } = useWallet();
   const { creditCards, loading: creditLoading } = useCredit();
+  const { formatAmount, convertAmount, loading: currencyLoading } = useCurrency();
   const [hideBalance, setHideBalance] = useState(false);
 
   const stats = useMemo(() => {
-    const totalBalance = getTotalBalance();
-    const totalCredit = creditCards.reduce((sum, card) => sum + card.credit_limit, 0);
-    const monthlySpend = transactions
+    const totalBalanceUSD = getTotalBalance();
+    const totalBalance = convertAmount(totalBalanceUSD, 'USD');
+    
+    const totalCreditUSD = creditCards.reduce((sum, card) => sum + card.credit_limit, 0);
+    const totalCredit = convertAmount(totalCreditUSD / 100, 'USD');
+    
+    const monthlySpendUSD = transactions
       .filter(t => new Date(t.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
-      .reduce((sum, t) => sum + (t.transaction_type === 'send' ? t.amount : 0), 0);
+      .reduce((sum, t) => sum + (t.transaction_type === 'send' ? (t.amount / 100) : 0), 0);
+    const monthlySpend = convertAmount(monthlySpendUSD, 'USD');
+    
+    const savingsBalanceUSD = (wallets.find(w => w.wallet_type === 'savings')?.balance || 0) / 100;
+    const savingsBalance = convertAmount(savingsBalanceUSD, 'USD');
 
     return {
       totalBalance,
       totalCredit,
       monthlySpend,
-      savingsBalance: wallets.find(w => w.wallet_type === 'savings')?.balance || 0
+      savingsBalance
     };
-  }, [wallets, creditCards, transactions, getTotalBalance]);
+  }, [wallets, creditCards, transactions, getTotalBalance, convertAmount]);
 
   const recentTransactions: RecentTransactionProps[] = useMemo(() => {
-    return transactions.slice(0, 5).map(t => ({
-      id: t.id,
-      type: t.transaction_type === 'receive' ? 'receive' : 'send',
-      title: t.description || `${t.transaction_type} Transaction`,
-      amount: t.amount,
-      currency: t.currency,
-      date: new Date(t.created_at).toLocaleDateString(),
-      status: t.status === 'pending' ? 'pending' : t.status === 'failed' ? 'failed' : 'completed'
-    }));
-  }, [transactions]);
+    return transactions.slice(0, 5).map(t => {
+      const amountUSD = t.amount / 100;
+      const convertedAmount = convertAmount(amountUSD, 'USD');
+      
+      return {
+        id: t.id,
+        type: t.transaction_type === 'receive' ? 'receive' : 'send',
+        title: t.description || `${t.transaction_type} Transaction`,
+        amount: convertedAmount,
+        currency: t.currency,
+        date: new Date(t.created_at).toLocaleDateString(),
+        status: t.status === 'pending' ? 'pending' : t.status === 'failed' ? 'failed' : 'completed',
+        formattedAmount: formatAmount(convertedAmount)
+      };
+    });
+  }, [transactions, convertAmount, formatAmount]);
 
-  if (walletLoading || creditLoading) {
+  if (walletLoading || creditLoading || currencyLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -155,37 +174,39 @@ export default function EnhancedDashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-up-delayed">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Welcome back, {user?.name || 'User'} 👋
-          </h1>
-          <p className="text-muted-foreground">Here's what's happening with your money today.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/payments">
-              <Send className="mr-2 h-4 w-4" />
-              Send Money
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/wallet">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Funds
-            </Link>
-          </Button>
+    <div className="space-y-4 md:space-y-6 pb-8 animate-fade-up-delayed">
+      {/* Header - Mobile Optimized */}
+      <div className="glass-card rounded-xl p-4 md:p-6 border border-white/10">
+        <div className="flex flex-col gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Welcome back, {firstName} 👋
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground">Here's what's happening with your money today.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" className="w-full sm:w-auto" asChild>
+              <Link to="/payments">
+                <Send className="mr-2 h-4 w-4" />
+                Send Money
+              </Link>
+            </Button>
+            <Button className="w-full sm:w-auto" asChild>
+              <Link to="/wallet">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Funds
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Quick Stats - 2x2 Grid on Mobile */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <QuickStat
           title="Total Balance"
-          value={hideBalance ? "****" : `$${stats.totalBalance.toLocaleString()}`}
-          change="+2.5% from last month"
+          value={hideBalance ? "****" : formatAmount(stats.totalBalance)}
+          change={null}
           isPositive={true}
           icon={
             <Button
@@ -202,8 +223,8 @@ export default function EnhancedDashboard() {
         
         <QuickStat
           title="Savings"
-          value={`$${stats.savingsBalance.toLocaleString()}`}
-          change="+8.2% this month"
+          value={formatAmount(stats.savingsBalance)}
+          change={null}
           isPositive={true}
           icon={<PiggyBank className="h-6 w-6 text-primary" />}
           onClick={() => {}}
@@ -211,8 +232,8 @@ export default function EnhancedDashboard() {
         
         <QuickStat
           title="Monthly Spending"
-          value={`$${stats.monthlySpend.toLocaleString()}`}
-          change="-5.1% vs last month"
+          value={formatAmount(stats.monthlySpend)}
+          change={null}
           isPositive={true}
           icon={<TrendingUp className="h-6 w-6 text-primary" />}
           onClick={() => {}}
@@ -220,7 +241,8 @@ export default function EnhancedDashboard() {
         
         <QuickStat
           title="Available Credit"
-          value={`$${stats.totalCredit.toLocaleString()}`}
+          value={formatAmount(stats.totalCredit)}
+          change={null}
           icon={<CreditCard className="h-6 w-6 text-primary" />}
           onClick={() => {}}
         />
@@ -229,37 +251,37 @@ export default function EnhancedDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Quick Actions */}
+          {/* Quick Actions - 2x2 Grid on Mobile */}
           <Card className="glass-card border-white/10">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
+              <CardTitle className="text-base md:text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Button className="h-20 flex flex-col items-center gap-2" variant="outline" asChild>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
+                <Button className="h-16 md:h-20 flex flex-col items-center gap-1 md:gap-2 min-h-[44px]" variant="outline" asChild>
                   <Link to="/payments">
-                    <Send className="h-6 w-6" />
+                    <Send className="h-4 w-4 md:h-6 md:w-6" />
                     <span className="text-xs">Send Money</span>
                   </Link>
                 </Button>
                 
-                <Button className="h-20 flex flex-col items-center gap-2" variant="outline" asChild>
+                <Button className="h-16 md:h-20 flex flex-col items-center gap-1 md:gap-2 min-h-[44px]" variant="outline" asChild>
                   <Link to="/payments">
-                    <Download className="h-6 w-6" />
+                    <Download className="h-4 w-4 md:h-6 md:w-6" />
                     <span className="text-xs">Request</span>
                   </Link>
                 </Button>
                 
-                <Button className="h-20 flex flex-col items-center gap-2" variant="outline" asChild>
+                <Button className="h-16 md:h-20 flex flex-col items-center gap-1 md:gap-2 min-h-[44px]" variant="outline" asChild>
                   <Link to="/payments">
-                    <Smartphone className="h-6 w-6" />
+                    <Smartphone className="h-4 w-4 md:h-6 md:w-6" />
                     <span className="text-xs">Pay Bills</span>
                   </Link>
                 </Button>
                 
-                <Button className="h-20 flex flex-col items-center gap-2" variant="outline" asChild>
+                <Button className="h-16 md:h-20 flex flex-col items-center gap-1 md:gap-2 min-h-[44px]" variant="outline" asChild>
                   <Link to="/wallet">
-                    <Banknote className="h-6 w-6" />
+                    <Banknote className="h-4 w-4 md:h-6 md:w-6" />
                     <span className="text-xs">Top Up</span>
                   </Link>
                 </Button>
@@ -321,76 +343,21 @@ export default function EnhancedDashboard() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Savings Goal */}
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Savings Goal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Emergency Fund</span>
-                  <span className="text-sm font-medium">70%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full w-[70%]"></div>
-                </div>
-                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>$7,000</span>
-                  <span>$10,000</span>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/wallet">Add to Savings</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Security Status */}
           <Card className="glass-card border-white/10">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Security Status
+                Account Security
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm">2FA Enabled</span>
-                <Badge variant="default" className="bg-green-500">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">PIN Set</span>
-                <Badge variant="default" className="bg-green-500">Active</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Biometric</span>
-                <Badge variant="secondary">Setup</Badge>
+                <span className="text-sm">Account Status</span>
+                <Badge variant="default" className="bg-green-500">Verified</Badge>
               </div>
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/security">Manage Security</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Rewards */}
-          <Card className="glass-card border-white/10">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Gift className="h-5 w-5" />
-                Rewards
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-primary">1,250</p>
-                <p className="text-sm text-muted-foreground">ZiroPoints Available</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/rewards">Redeem Rewards</Link>
+                <Link to="/security">Security Settings</Link>
               </Button>
             </CardContent>
           </Card>

@@ -1,0 +1,42 @@
+{
+  "name": "ZiroKash - Digital Wallet & Fintech",
+  "short_name": "ZiroKash",
+  "description": "Your all-in-one digital wallet for payments, transfers, investments, and financial management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#7C3AED",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "business", "productivity"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Send Money",
+      "short_name": "Send",
+      "description": "Quick send money to contacts",
+      "url": "/payments?tab=send",
+      "icons": [{ "src": "/favicon.ico", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pay Bills",
+      "short_name": "Bills",
+      "description": "Pay utility bills and airtime",
+      "url": "/payments?tab=bills",
+      "icons": [{ "src": "/favicon.ico", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Cards",
+      "short_name": "Cards",
+      "description": "View and manage your cards",
+      "url": "/cards",
+      "icons": [{ "src": "/favicon.ico", "sizes": "192x192" }]
+    }
+  ]
+}

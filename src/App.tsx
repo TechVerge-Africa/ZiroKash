@@ -4,29 +4,22 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ZiroPay from "./pages/ZiroPay";
 import Dashboard from "./pages/Dashboard";
-import Wallet from "./pages/Wallet";
-import Cards from "./pages/Cards";
-import Payments from "./pages/Payments";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import Investments from "./pages/Investments";
-import Credit from "./pages/Credit";
+import MainLayout from "@/components/layout/MainLayout";
+import PaymentForm from "./pages/PaymentForm";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import FormDetails from "./pages/FormDetails";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
-import KYC from "./pages/KYC";
-import Security from "./pages/Security";
-import Insurance from "./pages/Insurance";
-import MerchantTools from "./pages/MerchantTools";
-import OfflineUSSD from "./pages/OfflineUSSD";
-import Rewards from "./pages/Rewards";
-import Profile from "./pages/Profile";
-import Support from "./pages/Support";
-import About from "./pages/About";
-import MainLayout from "./components/layout/MainLayout";
+import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import { ThemeProvider } from "./hooks/use-theme";
+import Transactions from "./pages/Transactions";
+import Support from "./pages/Support";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -42,17 +35,38 @@ function RootRedirect() {
     );
   }
   
-  return user ? <Navigate to="/dashboard" replace /> : <Landing />;
+  return user ? <Navigate to="/ziropay" replace /> : <Navigate to="/landing" replace />;
 }
 
-// App Routes component moved outside of main App component
+// App Routes component
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />
+      <Route path="/landing" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
       
+      {/* Public payment form routes */}
+      <Route path="/pay/:formId" element={<PaymentForm />} />
+      <Route path="/pay/:formId/success" element={<PaymentSuccess />} />
+      
       {/* Protected Routes */}
+        <Route path="/ziropay" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <ZiroPay />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/transactions" element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Transactions />
+            </MainLayout>
+          </ProtectedRoute>
+        } />
+
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <MainLayout>
@@ -60,41 +74,23 @@ function AppRoutes() {
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/wallet" element={
+      
+      <Route path="/forms/:formId" element={
         <ProtectedRoute>
           <MainLayout>
-            <Wallet />
+            <FormDetails />
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/cards" element={
+
+      <Route path="/ziropay/:formId" element={
         <ProtectedRoute>
           <MainLayout>
-            <Cards />
+            <FormDetails />
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/payments" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Payments />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/investments" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Investments />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/credit" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Credit />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+      
       <Route path="/settings" element={
         <ProtectedRoute>
           <MainLayout>
@@ -102,68 +98,17 @@ function AppRoutes() {
           </MainLayout>
         </ProtectedRoute>
       } />
-      <Route path="/kyc" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <KYC />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/security" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Security />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/insurance" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Insurance />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/merchant" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <MerchantTools />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/offline" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <OfflineUSSD />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/rewards" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Rewards />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Profile />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+
       <Route path="/support" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Support />
-          </MainLayout>
-        </ProtectedRoute>
+        <MainLayout>
+          <Support />
+        </MainLayout>
       } />
+
       <Route path="/about" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <About />
-          </MainLayout>
-        </ProtectedRoute>
+        <MainLayout>
+          <About />
+        </MainLayout>
       } />
       
       <Route path="*" element={<NotFound />} />
@@ -171,7 +116,7 @@ function AppRoutes() {
   );
 }
 
-// Main App component properly wrapped with providers
+// Main App component
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>

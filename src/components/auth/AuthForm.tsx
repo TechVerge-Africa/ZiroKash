@@ -102,10 +102,6 @@ export function AuthForm() {
       
       <Card className="backdrop-blur-xl bg-card/60 border-white/20 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-orange-500 to-secondary opacity-50 group-hover:opacity-100 transition-opacity" />
-        <CardHeader className="pb-4">
-          <CardTitle className="text-center text-xl font-bold">Access Your Wallet</CardTitle>
-          <CardDescription className="text-center">Enter your details to securely log in</CardDescription>
-        </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1 mb-6">
@@ -114,6 +110,10 @@ export function AuthForm() {
             </TabsList>
             
             <TabsContent value="signin" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="mb-4">
+                <CardTitle className="text-center text-xl font-bold">Access Your Wallet</CardTitle>
+                <CardDescription className="text-center">Enter your details to securely log in</CardDescription>
+              </div>
               <Form {...signInForm}>
                 <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
                   <FormField
@@ -189,6 +189,10 @@ export function AuthForm() {
             </TabsContent>
             
             <TabsContent value="signup" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="mb-4">
+                <CardTitle className="text-center text-xl font-bold">Create Your Account</CardTitle>
+                <CardDescription className="text-center">Join ZiroKash and explore freedom</CardDescription>
+              </div>
               <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4">
                   <FormField

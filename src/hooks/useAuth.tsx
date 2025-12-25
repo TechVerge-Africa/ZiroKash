@@ -54,7 +54,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    if (!error) {
+    if (error) {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
       toast({
         title: "Account created successfully!",
         description: "Please check your email to verify your account.",
@@ -70,7 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
     });
 
-    if (!error) {
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
@@ -92,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error) {
       toast({
-        title: "Error",
+        title: "Google sign in failed",
         description: error.message,
         variant: "destructive",
       });

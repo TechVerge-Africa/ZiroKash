@@ -78,7 +78,7 @@ serve(async (req) => {
       .insert({
         form_id: formId,
         submission_data: submissionData,
-        amount: amount,
+        amount: Math.round(amount * 100), // Store in subunits (pesewas)
         payer_name: payerName || 'Anonymous',
         payer_email: payerEmail,
         status: 'pending'

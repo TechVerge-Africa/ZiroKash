@@ -47,11 +47,11 @@ export function MerchantWallet() {
       if (submissions) {
         const totalReceived = submissions
           .filter(s => s.status === 'paid')
-          .reduce((sum, s) => sum + (s.amount || 0), 0);
+          .reduce((sum, s) => sum + ((s.amount || 0) / 100), 0);
         
         const pendingAmount = submissions
           .filter(s => s.status === 'pending')
-          .reduce((sum, s) => sum + (s.amount || 0), 0);
+          .reduce((sum, s) => sum + ((s.amount || 0) / 100), 0);
 
         const transactionCount = submissions.filter(s => s.status === 'paid').length;
 

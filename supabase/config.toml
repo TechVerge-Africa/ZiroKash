@@ -11,8 +11,8 @@ enabled = true
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
-secure_nonce = true
+# refresh_token_rotation_enabled = true
+# secure_nonce = true
 
 [functions.auth-api]
 verify_jwt = false

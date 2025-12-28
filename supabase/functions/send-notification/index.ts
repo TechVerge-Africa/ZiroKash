@@ -4,9 +4,9 @@ import { Resend } from 'https://esm.sh/resend@4.0.0';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 
-const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+const atUsername = Deno.env.get('AFRICAS_TALKING_USERNAME');
+const atApiKey = Deno.env.get('AFRICAS_TALKING_API_KEY');
+const atSenderId = Deno.env.get('AFRICAS_TALKING_SENDER_ID');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -106,17 +106,19 @@ serve(async (req) => {
       }
 
       const smsResult = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
+        'https://api.africastalking.com/version1/messaging',
         {
           method: 'POST',
           headers: {
-            'Authorization': `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`,
+            'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
+            'apikey': atApiKey!,
           },
           body: new URLSearchParams({
-            To: recipient.phone,
-            From: twilioPhoneNumber!,
-            Body: message,
+            username: atUsername || 'sandbox',
+            to: recipient.phone,
+            message: message,
+            ...(atSenderId ? { from: atSenderId } : {}),
           }),
         }
       );

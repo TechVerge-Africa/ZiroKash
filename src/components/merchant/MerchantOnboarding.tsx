@@ -207,7 +207,27 @@ export function MerchantOnboarding() {
                 maxLength={15}
               />
             </div>
-            <Button 
+            {accountVerified && accountName && (
+              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <p className="text-sm font-medium text-green-600">✓ Account Verified</p>
+                <p className="text-sm text-muted-foreground mt-1">{accountName}</p>
+              </div>
+            )}
+            {verifying && (
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                <p className="text-sm text-blue-600">Verifying account...</p>
+              </div>
+            )}
+            {accountVerified && accountName ? (
+              <Button 
+                onClick={() => setStep('verify')} 
+                className="w-full"
+              >
+                Continue
+              </Button>
+            ) : (
+              <Button 
               onClick={handleVerifyAccount} 
               disabled={verifying || !selectedBank || !accountNumber}
               className="w-full"
@@ -215,6 +235,7 @@ export function MerchantOnboarding() {
               {verifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Verify Account
             </Button>
+            )}
           </CardContent>
         </Card>
       )}

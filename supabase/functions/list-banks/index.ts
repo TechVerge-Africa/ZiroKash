@@ -41,8 +41,18 @@ serve(async (req) => {
 
     console.log(`Successfully fetched ${data.data.length} banks`);
 
+    // Remove duplicates based on bank code and sort alphabetically
+    const uniqueBanks = data.data.reduce((acc: any[], bank: any) => {
+      if (!acc.find(b => b.code === bank.code)) {
+        acc.push(bank);
+      }
+      return acc;
+    }, []).sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+    console.log(`Returning ${uniqueBanks.length} unique banks`);
+
     return new Response(
-      JSON.stringify({ banks: data.data }),
+      JSON.stringify({ banks: uniqueBanks }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

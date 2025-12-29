@@ -199,6 +199,12 @@ export function MerchantOnboarding() {
                   <SelectValue placeholder={loadingBanks ? "Loading banks..." : "Select your bank"} />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
+                  {banks.length === 0 && loadingBanks && (
+                    <div className="p-2 text-sm text-muted-foreground">Loading banks...</div>
+                  )}
+                  {banks.length === 0 && !loadingBanks && (
+                    <div className="p-2 text-sm text-muted-foreground">No banks available</div>
+                  )}
                   {banks.map((bank: Bank) => (
                     <SelectItem key={bank.code} value={bank.code}>
                       {bank.name}

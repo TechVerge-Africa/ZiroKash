@@ -50,11 +50,17 @@ export function MerchantOnboarding() {
     }
   }, [step]);
 
-  // Auto-verify account when account number is 10 digits and bank is selected
+  // Auto-verify account when user stops typing (debounced)
   useEffect(() => {
     const trimmedAccountNumber = accountNumber.trim();
-    if (trimmedAccountNumber.length === 10 && selectedBank && !accountVerified && !verifying) {
-      handleVerifyAccount(true); // true = auto mode (no validation errors)
+    
+    // Only auto-verify if account number is between 10-16 digits
+    if (trimmedAccountNumber.length >= 10 && trimmedAccountNumber.length <= 16 && selectedBank && !accountVerified && !verifying) {
+      const timeoutId = setTimeout(() => {
+        handleVerifyAccount(true); // true = auto mode (no validation errors)
+      }, 1000); // Wait 1 second after user stops typing
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [accountNumber, selectedBank]);
 
@@ -66,14 +72,14 @@ export function MerchantOnboarding() {
 
     const trimmedAccountNumber = accountNumber.trim();
     
-    // Only show length validation error on manual verification
-    if (!isAuto && trimmedAccountNumber.length !== 10) {
-      toast.error('Account number must be 10 digits');
+    // Validate account number length (typically 10-16 digits for Ghana banks)
+    if (!isAuto && (trimmedAccountNumber.length < 10 || trimmedAccountNumber.length > 16)) {
+      toast.error('Account number must be between 10-16 digits');
       return;
     }
     
-    // For auto mode, silently return if not 10 digits
-    if (isAuto && trimmedAccountNumber.length !== 10) {
+    // For auto mode, silently return if not in valid range
+    if (isAuto && (trimmedAccountNumber.length < 10 || trimmedAccountNumber.length > 16)) {
       return;
     }
 
@@ -211,7 +217,6 @@ export function MerchantOnboarding() {
                   setAccountNumber(e.target.value);
                   setAccountVerified(false);
                 }}
-                maxLength={15}
               />
             </div>
             {accountVerified && accountName && (

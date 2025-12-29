@@ -87,9 +87,9 @@ export function MerchantOnboarding() {
     try {
       const result = await verifyBankAccount(trimmedAccountNumber, selectedBank);
       if (result && result.verified) {
-        setAccountName(result.account_name);
+        setAccountName(result.accountName);
         setAccountVerified(true);
-        toast.success(`Account verified: ${result.account_name}`);
+        toast.success(`Account verified: ${result.accountName}`);
       } else {
         toast.error(result?.message || 'Account verification failed');
         setAccountVerified(false);

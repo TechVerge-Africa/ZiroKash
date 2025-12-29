@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       form_api_keys: {
@@ -159,6 +184,36 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_notifications: boolean | null
+          id: string
+          push_notifications: boolean | null
+          sms_notifications: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -323,6 +378,36 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string | null
+          currency: string
+          id: string
+          updated_at: string | null
+          user_id: string
+          wallet_type: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          wallet_type?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          wallet_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -481,6 +566,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       card_status: ["active", "frozen", "cancelled"],

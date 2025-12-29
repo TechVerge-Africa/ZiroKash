@@ -10,11 +10,12 @@ interface MerchantStats {
   totalReceived: number;
   pendingAmount: number;
   transactionCount: number;
+  availableBalance?: number;
 }
 
 export function MerchantWallet() {
   const { merchant, loading: merchantLoading } = useMerchant();
-  const [stats, setStats] = useState<MerchantStats>({ totalReceived: 0, pendingAmount: 0, transactionCount: 0 });
+  const [stats, setStats] = useState<MerchantStats>({ totalReceived: 0, pendingAmount: 0, transactionCount: 0, availableBalance: 0 });
   const [loading, setLoading] = useState(true);
   const [showWithdraw, setShowWithdraw] = useState(false);
 
@@ -45,6 +46,7 @@ export function MerchantWallet() {
         .in('form_id', formIds);
 
       if (submissions) {
+        // Total received from paid submissions (in main currency units)
         const totalReceived = submissions
           .filter(s => s.status === 'paid')
           .reduce((sum, s) => sum + ((s.amount || 0) / 100), 0);
@@ -55,7 +57,27 @@ export function MerchantWallet() {
 
         const transactionCount = submissions.filter(s => s.status === 'paid').length;
 
-        setStats({ totalReceived, pendingAmount, transactionCount });
+        // Get total withdrawn to calculate available balance
+        const { data: withdrawals } = await supabase
+          .from('merchant_withdrawals')
+          .select('amount, status')
+          .eq('merchant_id', merchant!.id)
+          .in('status', ['completed', 'processing']);
+
+        const totalWithdrawn = withdrawals
+          ? withdrawals.reduce((sum, w) => sum + ((w.amount || 0) / 100), 0)
+          : 0;
+
+        // Available balance = total received - total withdrawn, max 80% of total
+        const maxWithdrawable = totalReceived * 0.8;
+        const availableBalance = Math.max(0, Math.min(totalReceived - totalWithdrawn, maxWithdrawable));
+
+        setStats({ 
+          totalReceived, 
+          pendingAmount, 
+          transactionCount,
+          availableBalance 
+        });
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -85,7 +107,7 @@ export function MerchantWallet() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="glass-card border-white/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -123,6 +145,20 @@ export function MerchantWallet() {
               <div>
                 <p className="text-sm text-muted-foreground">Transactions</p>
                 <p className="text-2xl font-bold">{stats.transactionCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card border-white/10 border-2 border-blue-500/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-500/10 rounded-full">
+                <ArrowDownToLine className="h-6 w-6 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Available to Withdraw</p>
+                <p className="text-2xl font-bold text-blue-600">{formatAmount(stats.availableBalance || 0)}</p>
               </div>
             </div>
           </CardContent>

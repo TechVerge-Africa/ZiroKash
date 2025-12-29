@@ -65,12 +65,11 @@ export function WithdrawalForm({ onSuccess }: WithdrawalFormProps) {
           return;
         }
 
-        const { data, error } = await supabase.functions.invoke('withdraw-momo', {
+        const { data, error } = await supabase.functions.invoke('merchant-withdraw-momo', {
           body: {
             amount: amountNum,
-            phone: momoNumber,
+            phone_number: momoNumber,
             provider: momoProvider,
-            reason: 'Merchant withdrawal',
           }
         });
 

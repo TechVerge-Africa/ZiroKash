@@ -107,6 +107,7 @@ export function useMerchant() {
           business_email: merchantData.businessEmail,
           business_phone: merchantData.businessPhone,
           business_address: merchantData.businessAddress,
+          verification_status: 'pending', // Explicitly set to valid enum value
         })
         .select()
         .single();

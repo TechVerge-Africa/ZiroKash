@@ -50,31 +50,52 @@ export function MerchantOnboarding() {
     }
   }, [step]);
 
+  // Auto-verify account when account number is 10 digits and bank is selected
+  useEffect(() => {
+    const trimmedAccountNumber = accountNumber.trim();
+    if (trimmedAccountNumber.length === 10 && selectedBank && !accountVerified) {
+      handleVerifyAccount();
+    }
+  }, [accountNumber, selectedBank]);
+
   const handleVerifyAccount = async () => {
     if (!accountNumber || !selectedBank) {
       toast.error('Please enter account details');
       return;
     }
 
+    const trimmedAccountNumber = accountNumber.trim();
+    if (trimmedAccountNumber.length !== 10) {
+      toast.error('Account number must be 10 digits');
+      return;
+    }
+
     setVerifying(true);
     try {
-      const result = await verifyBankAccount(accountNumber, selectedBank);
-      if (result.verified) {
+      const result = await verifyBankAccount(trimmedAccountNumber, selectedBank);
+      if (result && result.verified) {
         setAccountName(result.account_name);
         setAccountVerified(true);
         toast.success(`Account verified: ${result.account_name}`);
-        setStep('verify');
       } else {
-        toast.error('Account verification failed');
+        toast.error(result?.message || 'Account verification failed');
+        setAccountVerified(false);
       }
     } catch (error: any) {
-      toast.error(error.message || 'Verification failed');
+      console.error('Verification error:', error);
+      toast.error(error.message || 'Verification failed. Please try again.');
+      setAccountVerified(false);
     } finally {
       setVerifying(false);
     }
   };
 
   const handleCompleteSetup = async () => {
+    if (!accountVerified || !accountName) {
+      toast.error('Please verify your account first');
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Create merchant if it doesn't exist
@@ -89,14 +110,15 @@ export function MerchantOnboarding() {
       await setupPaystackSubaccount(
         user?.email || 'ZiroPay Merchant',
         selectedBank,
-        accountNumber,
+        accountNumber.trim(),
         accountName
       );
       
       toast.success('Merchant setup complete! You can now receive payments.');
       setStep('complete');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to complete setup');
+      console.error('Setup error:', error);
+      toast.error(error.message || 'Failed to complete setup. Please try again.');
     } finally {
       setSubmitting(false);
     }

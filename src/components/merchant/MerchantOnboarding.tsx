@@ -53,20 +53,27 @@ export function MerchantOnboarding() {
   // Auto-verify account when account number is 10 digits and bank is selected
   useEffect(() => {
     const trimmedAccountNumber = accountNumber.trim();
-    if (trimmedAccountNumber.length === 10 && selectedBank && !accountVerified) {
-      handleVerifyAccount();
+    if (trimmedAccountNumber.length === 10 && selectedBank && !accountVerified && !verifying) {
+      handleVerifyAccount(true); // true = auto mode (no validation errors)
     }
   }, [accountNumber, selectedBank]);
 
-  const handleVerifyAccount = async () => {
+  const handleVerifyAccount = async (isAuto = false) => {
     if (!accountNumber || !selectedBank) {
       toast.error('Please enter account details');
       return;
     }
 
     const trimmedAccountNumber = accountNumber.trim();
-    if (trimmedAccountNumber.length !== 10) {
+    
+    // Only show length validation error on manual verification
+    if (!isAuto && trimmedAccountNumber.length !== 10) {
       toast.error('Account number must be 10 digits');
+      return;
+    }
+    
+    // For auto mode, silently return if not 10 digits
+    if (isAuto && trimmedAccountNumber.length !== 10) {
       return;
     }
 

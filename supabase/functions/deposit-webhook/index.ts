@@ -20,23 +20,34 @@ Deno.serve(async (req) => {
     // Verify webhook signature from Paystack
     const paystackSignature = req.headers.get('x-paystack-signature');
     const body = await req.text();
-    
-    const paystackSecret = Deno.env.get('PAYSTACK_SECRET_KEY');
-    const hash = await crypto.subtle.digest(
-      'SHA-512',
-      new TextEncoder().encode(paystackSecret + body)
+
+    console.log('[Deposit Webhook] Received request');
+
+    const secret = Deno.env.get('PAYSTACK_SECRET_KEY') ?? '';
+    const encoder = new TextEncoder();
+    const data = encoder.encode(body);
+    const key = encoder.encode(secret);
+
+    const hmac = await crypto.subtle.importKey(
+      'raw',
+      key,
+      { name: 'HMAC', hash: 'SHA-512' },
+      false,
+      ['sign']
     );
-    const expectedSignature = Array.from(new Uint8Array(hash))
+
+    const signatureBytes = await crypto.subtle.sign('HMAC', hmac, data);
+    const hash = Array.from(new Uint8Array(signatureBytes))
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
-    if (paystackSignature !== expectedSignature) {
-      console.error('Invalid webhook signature');
-      throw new Error('Invalid signature');
+    if (hash !== paystackSignature) {
+      console.error('[Deposit Webhook] Invalid signature. Expected:', hash, 'Received:', paystackSignature);
+      return new Response('Invalid signature', { status: 401 });
     }
 
     const payload = JSON.parse(body);
-    console.log('Webhook received:', payload.event);
+    console.log('[Deposit Webhook] Payload verified. Event:', payload.event);
 
     if (payload.event === 'charge.success') {
       const reference = payload.data.reference;
@@ -132,7 +143,7 @@ Deno.serve(async (req) => {
 
     } else if (payload.event === 'charge.failed') {
       const transactionId = payload.data.metadata?.transaction_id;
-      
+
       if (transactionId) {
         await supabaseClient
           .from('transactions')

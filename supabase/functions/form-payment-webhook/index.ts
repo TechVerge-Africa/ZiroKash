@@ -38,9 +38,11 @@ serve(async (req) => {
       .join('');
 
     if (hash !== signature) {
-      console.error('[Form Payment Webhook] Invalid signature');
+      console.error('[Form Payment Webhook] Invalid signature. Expected:', hash, 'Received:', signature);
       return new Response('Invalid signature', { status: 401 });
     }
+
+    console.log('[Form Payment Webhook] Signature verified successfully');
 
     const event = JSON.parse(body);
     console.log(`[Form Payment Webhook] Event type: ${event.event}`);
@@ -55,7 +57,7 @@ serve(async (req) => {
       const submissionId = metadata?.submission_id || reference;
 
       console.log(`[Form Payment Webhook] Processing successful payment for submission: ${submissionId}`);
-      console.log(`[Form Payment Webhook] Amount: ${amount} pesewas, Status: ${status}`);
+      console.log(`[Form Payment Webhook] Event Data: Amount: ${amount} pesewas, Status: ${status}, Reference: ${reference}`);
 
       // Update submission status
       const { error: updateError } = await supabase

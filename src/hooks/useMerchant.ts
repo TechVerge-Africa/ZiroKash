@@ -107,7 +107,6 @@ export function useMerchant() {
           business_email: merchantData.businessEmail,
           business_phone: merchantData.businessPhone,
           business_address: merchantData.businessAddress,
-          contact_person: merchantData.contactPerson,
         })
         .select()
         .single();
@@ -131,9 +130,9 @@ export function useMerchant() {
       const { data, error } = await supabase.functions.invoke('create-paystack-subaccount', {
         body: { businessName, bankCode, accountNumber, accountName }
       });
-      
+
       if (error) throw error;
-      
+
       // Refresh merchant data
       await fetchMerchant();
       return data;

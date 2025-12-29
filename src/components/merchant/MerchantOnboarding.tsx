@@ -235,7 +235,7 @@ export function MerchantOnboarding() {
               </Button>
             ) : (
               <Button 
-              onClick={handleVerifyAccount} 
+              onClick={() => handleVerifyAccount(false)} 
               disabled={verifying || !selectedBank || !accountNumber}
               className="w-full"
             >

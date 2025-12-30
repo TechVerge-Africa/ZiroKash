@@ -8,3 +8,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </AuthProvider>
 );
+
+// Unregister any existing service workers to avoid stale cache issues
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister();
+    }
+  });
+}

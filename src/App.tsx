@@ -20,6 +20,7 @@ import { ThemeProvider } from "./hooks/use-theme";
 import Transactions from "./pages/Transactions";
 import Support from "./pages/Support";
 import About from "./pages/About";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -123,7 +124,9 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <AppRoutes />
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
         </TooltipProvider>
       </ThemeProvider>
     </BrowserRouter>

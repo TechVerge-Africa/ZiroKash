@@ -19,6 +19,7 @@ export function MerchantOnboarding() {
     banks, 
     loadingBanks, 
     fetchBanks, 
+    fetchMerchant,
     verifyBankAccount, 
     createMerchant, 
     setupPaystackSubaccount 

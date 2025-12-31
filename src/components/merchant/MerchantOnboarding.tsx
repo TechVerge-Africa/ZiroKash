@@ -111,15 +111,32 @@ export function MerchantOnboarding() {
 
     setSubmitting(true);
     try {
-      // Create merchant if it doesn't exist
-      if (!merchant) {
-        await createMerchant({
-          businessName: user?.email || 'ZiroPay Merchant',
-          businessEmail: user?.email || '',
-        });
+      let currentMerchant = merchant;
+
+      // 1. Create merchant record if it doesn't exist
+      if (!currentMerchant) {
+        try {
+          currentMerchant = await createMerchant({
+            businessName: user?.email || 'ZiroPay Merchant',
+            businessEmail: user?.email || '',
+          });
+          
+          if (!currentMerchant) {
+            throw new Error("Failed to create merchant profile");
+          }
+          // Refresh to ensure we have the latest state
+          await fetchMerchant(); 
+        } catch (err: any) {
+           console.error("Merchant creation failed", err);
+           // If error is regarding "approved" enum, give specific advice
+           if (err.message?.includes("approved") || err.details?.includes("approved")) {
+             throw new Error("Database configuration error. Please contact support to reset merchant status.");
+           }
+           throw err;
+        }
       }
 
-      // Setup Paystack subaccount
+      // 2. Setup Paystack subaccount (Requires merchant record to exist)
       await setupPaystackSubaccount(
         user?.email || 'ZiroPay Merchant',
         selectedBank,

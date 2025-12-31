@@ -16,6 +16,7 @@ import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
 import { ThemePicker } from "@/components/ziropay/ThemePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
+import { useMerchant } from "@/hooks/useMerchant";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -107,6 +108,23 @@ export default function ZiroPay() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { forms, stats, isLoading, refetch } = usePaymentForms();
+  const { isMerchant, hasSubaccount, loading: merchantLoading } = useMerchant();
+
+  const checkMerchantStatus = () => {
+    if (merchantLoading) return false;
+    if (!isMerchant || !hasSubaccount) {
+      toast.error("Merchant Setup Required", {
+        description: "You need to complete your business profile and bank setup before creating payment forms.",
+        action: {
+          label: "Complete Setup",
+          onClick: () => navigate("/settings?tab=business")
+        }
+      });
+      navigate("/settings?tab=business");
+      return false;
+    }
+    return true;
+  };
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFormId, setEditingFormId] = useState<string | null>(null);
@@ -402,6 +420,7 @@ export default function ZiroPay() {
         }}>
           <DialogTrigger asChild>
             <Button className="gap-2 w-full sm:w-auto" onClick={() => {
+              if (!checkMerchantStatus()) return;
               resetFormState();
               setIsCreating(true);
             }}>
@@ -753,6 +772,7 @@ export default function ZiroPay() {
               <h3 className="text-lg font-semibold mb-2">No payment forms yet</h3>
               <p className="text-muted-foreground mb-6">Create your first payment form to start collecting payments</p>
               <Button onClick={() => {
+                if (!checkMerchantStatus()) return;
                 resetFormState();
                 setIsCreating(true);
               }} className="gap-2">
@@ -793,6 +813,7 @@ export default function ZiroPay() {
                         size="sm" 
                         className="gap-2 flex-1 sm:flex-initial"
                         onClick={() => {
+                          if (!checkMerchantStatus()) return;
                           const link = `${window.location.origin}/pay/${form.id}`;
                           navigator.clipboard.writeText(link);
                           toast.success('Payment link copied!');

@@ -11,6 +11,7 @@ type NavItem = {
 };
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
+
   { name: "My Forms", href: "/ziropay", icon: <DollarSign size={20} /> },
   { name: "Transactions", href: "/transactions", icon: <Send size={20} /> },
 ];
@@ -18,7 +19,6 @@ const mainNavItems: NavItem[] = [
 // Commented out for future implementation
 // const additionalNavItems: NavItem[] = [
 //   { name: "Insurance", href: "/insurance", icon: <Shield size={20} /> },
-//   { name: "Merchant", href: "/merchant", icon: <Building size={20} /> },
 //   { name: "Rewards", href: "/rewards", icon: <Gift size={20} /> },
 //   { name: "Offline/USSD", href: "/offline", icon: <Phone size={20} /> },
 // ];

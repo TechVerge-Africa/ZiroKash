@@ -17,11 +17,20 @@ import { useMerchant } from "@/hooks/useMerchant";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const { hasSubaccount } = useMerchant();
+  const [searchParams, setSearchParams] = useSearchParams(); // Added useSearchParams
+  
+  // Get active tab from URL or default to 'profile'
+  const activeTab = searchParams.get('tab') || 'profile';
+
+  const setActiveTab = (val: string) => {
+    setSearchParams({ tab: val });
+  };
 
   // We'll hold the initial theme to detect changes for visual feedback
   const [initialTheme, setInitialTheme] = useState(theme);
@@ -203,7 +212,7 @@ export default function Settings() {
         </div>
       </div>
       
-      <Tabs defaultValue="profile" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 mb-6">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />

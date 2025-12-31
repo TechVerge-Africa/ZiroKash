@@ -22,6 +22,7 @@ import Support from "./pages/Support";
 import About from "./pages/About";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
+
 const queryClient = new QueryClient();
 
 
@@ -74,6 +75,8 @@ function AppRoutes() {
           </MainLayout>
         </ProtectedRoute>
       } />
+
+
       
       <Route path="/forms/:formId" element={
         <ProtectedRoute>

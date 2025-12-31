@@ -142,6 +142,30 @@ export function useMerchant() {
       throw error;
     }
   };
+  const withdrawToMobileMoney = async (params: {
+    amount: number;
+    phoneNumber: string;
+    provider: string;
+    currency: string;
+  }) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('withdraw-momo', {
+        body: {
+          ...params,
+          is_merchant: true // Flag to indicate merchant withdrawal
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Withdrawal of GHS ${params.amount} initiated successfully`);
+      return data;
+    } catch (error: any) {
+      console.error('Withdrawal error:', error);
+      toast.error(error.message || 'Withdrawal failed');
+      throw error;
+    }
+  };
 
   return {
     merchant,
@@ -153,6 +177,7 @@ export function useMerchant() {
     verifyBankAccount,
     createMerchant,
     setupPaystackSubaccount,
+    withdrawToMobileMoney,
     isMerchant: !!merchant,
     hasSubaccount: !!merchant?.paystack_subaccount_code,
   };

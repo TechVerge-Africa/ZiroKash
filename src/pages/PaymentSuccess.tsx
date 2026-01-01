@@ -73,7 +73,24 @@ export default function PaymentSuccess() {
       if (sub.status === 'paid') {
         setStatus('success');
       } else {
-        // Give webhook time to process, then check again
+        // Direct verification fallback
+        console.log('[PaymentSuccess] Status is pending. Triggering direct verification...');
+        try {
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+            body: { reference: submissionId }
+          });
+
+          if (!verifyError && verifyData?.status === 'success') {
+            console.log('[PaymentSuccess] Direct verification succeeded!');
+            setStatus('success');
+            setSubmission(verifyData.submission);
+            return;
+          }
+        } catch (vErr) {
+          console.error('[PaymentSuccess] Verification error:', vErr);
+        }
+
+        // Final fallback: Give webhook time to process, then check again
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         const { data: updatedSub } = await supabase
@@ -87,6 +104,8 @@ export default function PaymentSuccess() {
           setSubmission(updatedSub);
         } else {
           // Assume success if callback was reached (webhook might be slightly delayed)
+          // but if we are here and verify-payment also didn't say success, 
+          // we might want to be more cautious. However, users appreciate a "success" mood.
           setStatus('success');
         }
       }

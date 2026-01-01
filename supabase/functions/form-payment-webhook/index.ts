@@ -53,11 +53,12 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      const { reference, metadata, amount, status } = event.data;
+      const { reference, metadata, amount, status, gateway_response } = event.data;
       const submissionId = metadata?.submission_id || reference;
 
       console.log(`[Form Payment Webhook] Processing successful payment for submission: ${submissionId}`);
-      console.log(`[Form Payment Webhook] Event Data: Amount: ${amount} pesewas, Status: ${status}, Reference: ${reference}`);
+      console.log(`[Form Payment Webhook] Auth: ${event.data.authorization?.brand || 'unknown'}, Reference: ${reference}, Gateway Ref: ${event.data.reference}`);
+      console.log(`[Form Payment Webhook] Status: ${status}, Amount: ${amount}, Response: ${gateway_response}`);
 
       // Update submission status
       const { error: updateError } = await supabase
@@ -78,8 +79,54 @@ serve(async (req) => {
 
       console.log(`[Form Payment Webhook] Submission ${submissionId} marked as paid`);
 
+      // Credit the merchant's wallet
+      try {
+        console.log(`[Form Payment Webhook] Fetching submission and form details for wallet credit...`);
+        const { data: submissionData } = await supabase
+          .from('form_submissions')
+          .select(`
+            amount,
+            form_id
+          `)
+          .eq('id', submissionId)
+          .single();
+
+        if (submissionData) {
+          const { data: formData } = await supabase
+            .from('payment_forms')
+            .select('user_id')
+            .eq('id', submissionData.form_id)
+            .single();
+
+          if (formData) {
+            console.log(`[Form Payment Webhook] Crediting wallet for user: ${formData.user_id}`);
+            const creditAmount = submissionData.amount / 100;
+
+            const { error: walletError } = await supabase.rpc('increment_wallet_balance', {
+              _user_id: formData.user_id,
+              _wallet_type: 'merchant',
+              _amount: creditAmount,
+              _currency: 'GHS'
+            });
+
+            if (walletError) {
+              console.error('[Form Payment Webhook] Wallet credit error:', walletError);
+            } else {
+              console.log(`[Form Payment Webhook] Successfully credited ${creditAmount} GHS to merchant wallet`);
+            }
+          } else {
+            console.warn(`[Form Payment Webhook] Could not find form data for form_id: ${submissionData.form_id}`);
+          }
+        } else {
+          console.warn(`[Form Payment Webhook] Could not find submission data for ID: ${submissionId}`);
+        }
+      } catch (creditError) {
+        console.error('[Form Payment Webhook] Unexpected credit error:', creditError);
+      }
+
       // Trigger notification
       try {
+        console.log(`[Form Payment Webhook] Triggering notification...`);
         const { data: sub } = await supabase
           .from('form_submissions')
           .select('payer_name, payer_email, amount')
@@ -87,7 +134,7 @@ serve(async (req) => {
           .single();
 
         if (sub?.payer_email) {
-          console.log(`[Form Payment Webhook] Triggering notification for ${sub.payer_email}`);
+          console.log(`[Form Payment Webhook] Sending 'transaction-success' to ${sub.payer_email}`);
 
           const notifyResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`, {
             method: 'POST',

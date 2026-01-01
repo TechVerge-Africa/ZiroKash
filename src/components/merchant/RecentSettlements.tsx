@@ -51,7 +51,7 @@ export function RecentSettlements() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Badge variant={s.status === 'completed' ? 'default' : 'secondary'}>
+                    <Badge variant={(s.status === 'completed' || s.status === 'paid') ? 'default' : 'secondary'}>
                         {s.status}
                     </Badge>
                     <span className="font-bold">₵{(s.amount / 100).toFixed(2)}</span>

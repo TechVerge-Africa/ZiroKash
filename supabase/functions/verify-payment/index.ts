@@ -1,0 +1,112 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+    if (req.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders });
+    }
+
+    try {
+        const { reference } = await req.json();
+
+        if (!reference) {
+            return new Response(
+                JSON.stringify({ error: 'Missing reference' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+
+        console.log(`[Verify Payment] Verifying: ${reference}`);
+
+        // Call Paystack API to verify
+        const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
+        const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: {
+                'Authorization': `Bearer ${paystackKey}`,
+            }
+        });
+
+        const paystackData = await paystackResponse.json();
+
+        if (!paystackData.status) {
+            return new Response(
+                JSON.stringify({ status: 'failed', message: paystackData.message }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        const { status, amount, reference: paystackRef } = paystackData.data;
+
+        if (status === 'success') {
+            console.log(`[Verify Payment] ${reference} is successful. Updating DB...`);
+
+            // Update submission status in ZiroPay
+            const { data: submission, error: updateError } = await supabase
+                .from('form_submissions')
+                .update({
+                    status: 'paid',
+                    transaction_id: paystackRef
+                })
+                .eq('id', reference)
+                .select()
+                .maybeSingle();
+
+            if (updateError) {
+                console.error('[Verify Payment] DB Update error:', updateError);
+                return new Response(
+                    JSON.stringify({ error: 'DB Update failed', details: updateError.message }),
+                    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+            }
+
+            // Credit wallet if not already done
+            if (submission) {
+                console.log(`[Verify Payment] Submission ${reference} updated to paid. Checking wallet...`);
+
+                const { data: formData } = await supabase
+                    .from('payment_forms')
+                    .select('user_id')
+                    .eq('id', submission.form_id)
+                    .single();
+
+                if (formData) {
+                    const creditAmount = submission.amount / 100;
+                    await supabase.rpc('increment_wallet_balance', {
+                        _user_id: formData.user_id,
+                        _wallet_type: 'merchant',
+                        _amount: creditAmount,
+                        _currency: 'GHS'
+                    });
+                    console.log(`[Verify Payment] Credited ${creditAmount} GHS to merchant ${formData.user_id}`);
+                }
+            }
+
+            return new Response(
+                JSON.stringify({ status: 'success', submission }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        return new Response(
+            JSON.stringify({ status, message: paystackData.data.gateway_response }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+
+    } catch (error) {
+        console.error('[Verify Payment] Unexpected error:', error);
+        return new Response(
+            JSON.stringify({ error: 'Verification failed', details: error.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+    }
+});

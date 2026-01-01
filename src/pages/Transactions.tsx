@@ -13,7 +13,9 @@ export default function Transactions() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-secondary text-secondary-foreground';
+      case 'completed':
+      case 'paid': 
+        return 'bg-secondary text-secondary-foreground';
       case 'pending': return 'bg-accent text-accent-foreground';
       case 'failed': return 'bg-destructive text-destructive-foreground';
       default: return 'bg-muted text-muted-foreground';

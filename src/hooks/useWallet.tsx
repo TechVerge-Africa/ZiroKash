@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface Wallet {
   id: string;
@@ -23,6 +23,7 @@ export interface Transaction {
 
 export function useWallet() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: wallets = [], isLoading: loadingWallets } = useQuery({
     queryKey: ['wallets', user?.id],
@@ -84,6 +85,42 @@ export function useWallet() {
     },
     enabled: !!user
   });
+
+  // Real-time synchronization
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('wallet-balance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['wallets', user.id] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'form_submissions'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['dashboard-activity', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   const getWalletByType = (type: string) => {
     return wallets.find(w => w.wallet_type === type);

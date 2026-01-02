@@ -39,7 +39,7 @@ export function usePaymentForms() {
     queryKey: ['payment-forms', userId],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       const { data, error } = await supabase
         .from('payment_forms')
         .select('*')
@@ -66,11 +66,11 @@ export function usePaymentForms() {
       if (error) throw error;
 
       const statsMap: Record<string, FormStats> = {};
-      
+
       forms.forEach(form => {
         const formSubmissions = submissions?.filter(s => s.form_id === form.id) || [];
         const paid = formSubmissions.filter(s => s.status === 'paid');
-        
+
         statsMap[form.id] = {
           totalSubmissions: formSubmissions.length,
           paidSubmissions: paid.length,
@@ -150,6 +150,23 @@ export function usePaymentForms() {
           table: 'form_submissions'
         },
         () => {
+          queryClient.invalidateQueries({ queryKey: ['form-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['revenue-history'] });
+          queryClient.invalidateQueries({ queryKey: ['unique-customers'] });
+          // Invalidate wallets when form submissions change (payment received)
+          queryClient.invalidateQueries({ queryKey: ['wallets'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['wallets', userId] });
           queryClient.invalidateQueries({ queryKey: ['form-stats'] });
         }
       )

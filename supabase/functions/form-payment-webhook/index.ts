@@ -54,11 +54,41 @@ serve(async (req) => {
       );
 
       const { reference, metadata, amount, status, gateway_response } = event.data;
+      const subaccount = event.data.subaccount;
       const submissionId = metadata?.submission_id || reference;
 
       console.log(`[Form Payment Webhook] Processing successful payment for submission: ${submissionId}`);
       console.log(`[Form Payment Webhook] Auth: ${event.data.authorization?.brand || 'unknown'}, Reference: ${reference}, Gateway Ref: ${event.data.reference}`);
       console.log(`[Form Payment Webhook] Status: ${status}, Amount: ${amount}, Response: ${gateway_response}`);
+
+      if (subaccount) {
+        console.log(`[Form Payment Webhook] Subaccount involved: ${subaccount.subaccount_code} (Percentage: ${subaccount.percentage_charge}%)`);
+      }
+
+      // Robust lookup for the submission
+      // 1. Try by ID (primary reference)
+      // 2. Try by transaction_id (secondary reference)
+      // 3. Try by metadata submission_id
+
+      let targetSubmissionId = submissionId;
+
+      const { data: existingSub, error: lookupError } = await supabase
+        .from('form_submissions')
+        .select('id, status')
+        .or(`id.eq.${submissionId},transaction_id.eq.${reference}`)
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error('[Form Payment Webhook] Lookup error:', lookupError);
+      }
+
+      if (existingSub) {
+        targetSubmissionId = existingSub.id;
+        console.log(`[Form Payment Webhook] Found matching submission: ${targetSubmissionId}`);
+      } else {
+        console.warn(`[Form Payment Webhook] No matching submission found for reference: ${reference} or metadata: ${submissionId}`);
+        // We will still try to update by submissionId as a last resort
+      }
 
       // Update submission status
       const { error: updateError } = await supabase
@@ -67,7 +97,7 @@ serve(async (req) => {
           status: 'paid',
           transaction_id: reference
         })
-        .eq('id', submissionId);
+        .eq('id', targetSubmissionId);
 
       if (updateError) {
         console.error('[Form Payment Webhook] Update error:', updateError);
@@ -77,7 +107,7 @@ serve(async (req) => {
         );
       }
 
-      console.log(`[Form Payment Webhook] Submission ${submissionId} marked as paid`);
+      console.log(`[Form Payment Webhook] Submission ${targetSubmissionId} marked as paid`);
 
       // Credit the merchant's wallet
       try {
@@ -88,7 +118,7 @@ serve(async (req) => {
             amount,
             form_id
           `)
-          .eq('id', submissionId)
+          .eq('id', targetSubmissionId) // Use the resolved target ID
           .single();
 
         if (submissionData) {
@@ -118,7 +148,7 @@ serve(async (req) => {
             console.warn(`[Form Payment Webhook] Could not find form data for form_id: ${submissionData.form_id}`);
           }
         } else {
-          console.warn(`[Form Payment Webhook] Could not find submission data for ID: ${submissionId}`);
+          console.warn(`[Form Payment Webhook] Could not find submission data for ID: ${targetSubmissionId}`);
         }
       } catch (creditError) {
         console.error('[Form Payment Webhook] Unexpected credit error:', creditError);
@@ -130,7 +160,7 @@ serve(async (req) => {
         const { data: sub } = await supabase
           .from('form_submissions')
           .select('payer_name, payer_email, amount')
-          .eq('id', submissionId)
+          .eq('id', targetSubmissionId) // Use resolved target ID
           .single();
 
         if (sub?.payer_email) {
@@ -153,7 +183,7 @@ serve(async (req) => {
                 transactionType: 'Form Payment',
                 amount: (sub.amount / 100).toFixed(2),
                 currency: 'GHS',
-                reference: submissionId,
+                reference: targetSubmissionId,
                 date: new Date().toLocaleString(),
               },
             }),

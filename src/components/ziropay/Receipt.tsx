@@ -85,7 +85,7 @@ export function Receipt({
       const seed = (hash + i * 7) % 100;
       bars.push({
         width: (seed % 3) + 1,
-        height: 20 + (seed % 15),
+        height: 24 + (seed % 20),
         spacing: (seed % 2) + 1,
       });
     }
@@ -97,82 +97,82 @@ export function Receipt({
   return (
     <Card 
       id={id}
-      className={`bg-white relative overflow-hidden shadow-lg print:shadow-none ${
+      className={`bg-white relative overflow-hidden shadow-2xl print:shadow-none w-full transition-all duration-300 ${
         template.securityFeatures?.showSecurityBorder 
-          ? "border-4 border-dashed border-primary/40 print:border-primary" 
-          : "border-2 border-border"
+          ? "border-4 border-dashed border-primary/30 print:border-black" 
+          : "border border-slate-200"
       }`}
-      style={{ maxWidth: '600px', margin: '0 auto' }}
+      style={{ margin: '0 auto' }}
     >
-      {/* Watermark */}
+      {/* Premium Security Hologram / Watermark */}
       {template.securityFeatures?.showWatermark && (
         <div 
-          className="absolute inset-0 pointer-events-none opacity-[0.03] print:opacity-[0.05]"
+          className="absolute inset-0 pointer-events-none opacity-[0.04] print:opacity-[0.05] overflow-hidden"
           style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg, 
-              transparent, 
-              transparent 50px, 
-              currentColor 50px, 
-              currentColor 100px
-            )`,
+            zIndex: 0,
+            background: `radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,0.02) 100%)`
           }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center select-none overflow-hidden">
             <p 
-              className="text-7xl font-black transform -rotate-45 text-gray-400 print:text-gray-300 select-none"
+              className="text-[120px] font-black transform -rotate-45 text-slate-900 print:text-black whitespace-nowrap"
               style={{ 
-                letterSpacing: '0.1em',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+                letterSpacing: '0.15em',
+                textShadow: '0 0 10px rgba(0,0,0,0.05)'
               }}
             >
-              {template.securityFeatures?.watermarkText || "OFFICIAL"}
+              {[...Array(5)].map(() => template.securityFeatures?.watermarkText || "OFFICIAL ").join(' ')}
             </p>
           </div>
         </div>
       )}
       
-      <CardContent className="p-8 print:p-6 space-y-6 relative z-10 text-gray-900 print:text-black">
-        {/* Logo */}
-        {template.showLogo && logoUrl && (
-          <div className="flex justify-center mb-2">
-            <img 
-              src={logoUrl} 
-              alt="Logo" 
-              className="h-24 w-auto object-contain print:h-20" 
-            />
-          </div>
-        )}
+      <CardContent className="p-4 sm:p-10 print:p-8 space-y-8 relative z-10 text-slate-900 print:text-black">
+        {/* Header Section */}
+        <div className="flex flex-col items-center text-center space-y-4">
+          {/* Logo with Glow */}
+          {template.showLogo && logoUrl && (
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur opacity-40 group-hover:opacity-60 transition duration-1000 print:hidden"></div>
+              <img 
+                src={logoUrl} 
+                alt="Logo" 
+                className="relative h-16 sm:h-24 w-auto object-contain print:h-20" 
+              />
+            </div>
+          )}
 
-        {/* Header */}
-        <div className="text-center border-b border-gray-300 print:border-gray-400 pb-5 print:pb-4">
-          <h2 className="text-3xl font-bold tracking-tight mb-3 print:text-2xl text-gray-900 print:text-black">
-            {template.headerText || "Payment Receipt"}
-          </h2>
+          <div className="space-y-2">
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 print:text-black">
+              {template.headerText || "Payment Receipt"}
+            </h2>
+            <div className="h-1 w-20 bg-primary mx-auto rounded-full print:hidden" />
+          </div>
+
           {template.securityFeatures?.enableNumbering !== false && (
-            <div className="mt-3 space-y-2">
-              <p className="text-base font-mono font-bold text-primary print:text-blue-600 tracking-wide">
-                Receipt #{receiptNumber}
-              </p>
-              <p className="text-xs text-gray-600 print:text-gray-700 font-medium">
-                Verification Code: <span className="font-mono text-gray-800 print:text-black">{verificationCode}</span>
+            <div className="flex flex-col items-center space-y-1">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-primary/10 text-primary print:bg-transparent print:text-black print:border print:border-black">
+                RECEIPT #{receiptNumber}
+              </span>
+              <p className="text-[10px] sm:text-xs text-slate-500 font-medium tracking-widest uppercase">
+                Verification Code: <span className="text-slate-900 print:text-black font-bold">{verificationCode}</span>
               </p>
             </div>
           )}
         </div>
 
-        {/* Payment Details - Standard Fields */}
-        <div className="grid grid-cols-2 gap-6 text-sm print:gap-4">
-          <div className="space-y-1">
-            <p className="text-gray-600 print:text-gray-700 text-xs font-medium uppercase tracking-wide">Date</p>
-            <p className="font-semibold text-base text-gray-900 print:text-black">
+        {/* Info Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 py-6 border-y border-slate-100 print:border-slate-300">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Transaction Date</label>
+            <p className="text-sm font-semibold">
               {date.toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
               })}
             </p>
-            <p className="text-xs text-gray-600 print:text-gray-700">
+            <p className="text-xs font-medium text-slate-500">
               {date.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
@@ -180,44 +180,41 @@ export function Receipt({
               })}
             </p>
           </div>
-          <div className="space-y-1">
-            <p className="text-gray-600 print:text-gray-700 text-xs font-medium uppercase tracking-wide">Transaction ID</p>
-            <p className="font-semibold font-mono text-sm break-all text-gray-900 print:text-black">{transactionId}</p>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Reference ID</label>
+            <p className="text-sm font-mono font-bold break-all text-primary/80 print:text-black">
+              {transactionId}
+            </p>
           </div>
         </div>
 
-        {/* Form Fields Data */}
+        {/* Dynamic Fields Section */}
         {visibleMappings.length > 0 && (
-          <div className="border-t border-gray-300 print:border-gray-400 pt-5 print:pt-4">
-            <h3 className="font-semibold text-base mb-4 print:text-sm uppercase tracking-wide text-gray-700 print:text-gray-800">
-              Payment Details
+          <div className="space-y-4">
+            <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Payment Information
             </h3>
-            <div className="grid grid-cols-1 gap-4 text-sm print:gap-3">
+            <div className="grid gap-3">
               {visibleMappings.map((mapping) => {
                 const formField = formFields.find(f => f.id === mapping.formFieldId);
                 let value = submissionData[mapping.receiptLabel] || submissionData[formField?.label || ''] || "N/A";
                 
-                // Demo data for designer preview if no submission data is provided
+                // Demo data fallback
                 if (Object.keys(submissionData).length === 0) {
-                  if (formField) {
-                    if (formField.type === "amount") {
-                      value = "₵1,000.00";
-                    } else if (formField.type === "email") {
-                      value = "payer@example.com";
-                    } else if (formField.type === "text") {
-                      value = formField.label.includes("Name") ? "John Doe" : "Sample Text";
-                    } else if (formField.type === "dropdown" && formField.options) {
-                      value = formField.options[0];
-                    }
-                  } else {
-                    value = "Custom Value";
-                  }
+                  const demoValues: Record<string, string> = {
+                    "amount": "₵1,000.00",
+                    "email": "customer@example.com",
+                    "text": "Sample Data",
+                    "dropdown": "Option A"
+                  };
+                  value = demoValues[formField?.type || "text"];
                 }
 
                 return (
-                  <div key={mapping.formFieldId} className="flex justify-between items-start py-2 border-b border-gray-200 print:border-gray-300 last:border-0">
-                    <p className="text-gray-600 print:text-gray-700 font-medium">{mapping.receiptLabel}</p>
-                    <p className="font-semibold text-right max-w-[60%] break-words text-gray-900 print:text-black">{value}</p>
+                  <div key={mapping.formFieldId} className="flex justify-between items-center py-3 px-4 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 print:bg-transparent print:border-none print:px-0">
+                    <span className="text-sm font-medium text-slate-500">{mapping.receiptLabel}</span>
+                    <span className="text-sm font-bold text-slate-900 border-b-2 border-primary/20 print:border-none">{value}</span>
                   </div>
                 );
               })}
@@ -225,58 +222,94 @@ export function Receipt({
           </div>
         )}
 
-        {/* Total Amount */}
-        <div className="border-y-2 border-primary/20 print:border-gray-400 py-5 print:py-4 bg-primary/5 print:bg-transparent rounded-lg print:rounded-none">
-          <div className="flex justify-between items-center">
-            <span className="text-xl font-bold print:text-lg text-gray-900 print:text-black">Amount Paid</span>
-            <span className="text-3xl font-extrabold text-primary print:text-blue-600 print:text-2xl">
-              {submissionData.Amount || submissionData.Total || "₵1,000.00"}
-            </span>
+        {/* Total Highlight */}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500 print:hidden"></div>
+          <div className="relative bg-slate-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 print:bg-white print:text-black print:border-2 print:border-black print:rounded-none">
+            <span className="text-sm sm:text-lg font-bold uppercase tracking-widest opacity-80">Final Amount Paid</span>
+            <div className="text-center sm:text-right">
+              <span className="text-3xl sm:text-5xl font-black text-primary print:text-black">
+                {submissionData.Amount || submissionData.Total || "₵1,000.00"}
+              </span>
+              <div className="flex items-center justify-center sm:justify-end gap-1.5 mt-1 text-[10px] font-bold text-primary-foreground/60 print:text-black uppercase tracking-tighter">
+                <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse print:hidden" />
+                Transaction Verified
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Signature */}
-        {template.showSignature && signatureUrl && (
-          <div className="flex justify-end pt-2">
-            <div className="text-center space-y-2">
-              <div className="border-t-2 border-gray-300 print:border-gray-400 pt-3 inline-block">
+        {/* Footer Grid: Signature & QR */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-6">
+          {/* Signature Area */}
+          <div className="flex flex-col items-center sm:items-start justify-end px-4">
+            {template.showSignature && signatureUrl && (
+              <div className="text-center w-full max-w-[180px] space-y-2">
                 <img 
                   src={signatureUrl} 
                   alt="Signature" 
-                  className="h-20 w-auto object-contain mb-2 print:h-16" 
+                  className="h-16 w-auto object-contain mx-auto print:h-16" 
                 />
-                <p className="text-xs text-gray-600 print:text-gray-700 font-medium">
-                  Authorized Signature
-                </p>
+                <div className="border-t-2 border-slate-200 pt-2">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Authorized Signatory
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
 
-        {/* QR Code */}
-        {template.showQRCode && (
-          <div className="flex flex-col items-center space-y-3 border-t border-gray-300 print:border-gray-400 pt-6 print:pt-4">
-            <div className="p-3 bg-white border-2 border-gray-300 print:border-gray-400 rounded-lg print:p-2 print:p-1">
-              <div className="w-32 h-32 print:w-24 print:h-24">
+          {/* QR Code Area */}
+          {template.showQRCode && (
+            <div className="flex justify-center sm:justify-end">
+              <div className="relative p-2 rounded-2xl bg-white border border-slate-100 shadow-sm transition-transform hover:scale-105 group print:border-black print:rounded-none print:p-1">
                 <QRCodeSVG
                   value={verificationUrl}
-                  size={128}
-                  level="M"
-                  includeMargin={true}
-                  className="w-full h-full"
+                  size={100}
+                  level="H"
+                  includeMargin={false}
+                  className="w-24 h-24 sm:w-28 sm:h-28"
+                  imageSettings={{
+                    src: logoUrl || "",
+                    x: undefined,
+                    y: undefined,
+                    height: 20,
+                    width: 20,
+                    excavate: true,
+                  }}
                 />
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                  SCAN TO VERIFY
+                </div>
               </div>
             </div>
-            <div className="text-center">
-              <p className="text-xs font-semibold text-gray-800 print:text-black uppercase tracking-wider">Scan to Verify</p>
+          )}
+        </div>
+
+        {/* Bottom Barcode Decorative */}
+        {template.securityFeatures?.showBarcodeBottom && (
+          <div className="pt-4 overflow-hidden mask-fade-x print:hidden">
+            <div className="flex items-end justify-center gap-0.5 h-10 opacity-30">
+              {barcodeBars.map((bar, i) => (
+                <div 
+                  key={i} 
+                  style={{ 
+                    width: `${bar.width}px`, 
+                    height: `${bar.height}px`,
+                    marginLeft: `${bar.spacing}px`
+                  }} 
+                  className="bg-slate-900 rounded-full"
+                />
+              ))}
             </div>
+            <p className="text-[8px] font-mono text-slate-400 text-center mt-1 tracking-[0.5em]">{receiptNumber}</p>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center pt-6 print:pt-4 border-t border-gray-200 print:border-gray-300">
-          <p className="text-sm text-gray-700 print:text-black leading-relaxed whitespace-pre-wrap">
-            {template.footerText || "Thank you for your payment"}
+        {/* Footer message */}
+        <div className="text-center pt-4">
+          <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed italic border-t border-slate-100 pt-6">
+            {template.footerText || "This is an electronically generated document. Thank you for your business."}
           </p>
         </div>
       </CardContent>

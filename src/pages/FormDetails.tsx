@@ -17,6 +17,7 @@ interface FormSubmission {
   payer_name: string;
   payer_email: string;
   amount: number;
+  net_amount?: number;
   status: string;
   created_at: string;
   submission_data: any;
@@ -256,7 +257,7 @@ export default function FormDetails() {
                           <TableRow key={submission.id}>
                             <TableCell className="text-xs sm:text-sm">{submission.payer_name}</TableCell>
                             <TableCell className="text-xs sm:text-sm break-all">{submission.payer_email}</TableCell>
-                            <TableCell className="text-xs sm:text-sm">GHS {(submission.amount / 100).toFixed(2)}</TableCell>
+                            <TableCell className="text-xs sm:text-sm">GHS {((submission.net_amount || submission.amount) / 100).toFixed(2)}</TableCell>
                             <TableCell className="text-xs sm:text-sm">
                               <Badge variant={submission.status === 'paid' ? 'default' : 'secondary'} className="text-xs">
                                 {submission.status}

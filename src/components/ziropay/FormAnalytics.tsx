@@ -35,7 +35,7 @@ export default function FormAnalytics({ formId }: AnalyticsProps) {
       const pending = submissions?.filter(s => s.status === 'pending').length || 0;
       const amount = submissions
         ?.filter(s => s.status === 'paid')
-        .reduce((sum, s) => sum + (s.amount || 0), 0) || 0;
+        .reduce((sum, s: any) => sum + (s.net_amount || s.amount || 0), 0) || 0;
 
       setStats({
         totalSubmissions: total,
@@ -51,7 +51,7 @@ export default function FormAnalytics({ formId }: AnalyticsProps) {
           acc[date] = { date, amount: 0, count: 0 };
         }
         if (sub.status === 'paid') {
-          acc[date].amount += sub.amount / 100;
+          acc[date].amount += ((sub as any).net_amount || sub.amount) / 100;
           acc[date].count += 1;
         }
         return acc;

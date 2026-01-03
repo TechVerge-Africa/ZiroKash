@@ -12,6 +12,7 @@ import {
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PaymentSuccess() {
   const { formId } = useParams<{ formId: string }>();
@@ -104,9 +105,6 @@ export default function PaymentSuccess() {
           setStatus('success');
           setSubmission(updatedSub);
         } else {
-          // Assume success if callback was reached (webhook might be slightly delayed)
-          // but if we are here and verify-payment also didn't say success, 
-          // we might want to be more cautious. However, users appreciate a "success" mood.
           setStatus('success');
         }
       }
@@ -121,7 +119,7 @@ export default function PaymentSuccess() {
     if (status === 'success' && submission && view === 'receipt') {
       const timer = setTimeout(() => {
         handleDownloadPDF();
-      }, 1500); 
+      }, 2000); 
       return () => clearTimeout(timer);
     }
   }, [status, submission, view]);
@@ -130,15 +128,16 @@ export default function PaymentSuccess() {
     if (!receiptRef.current) return;
     
     setIsDownloading(true);
-    const toastId = toast.loading("Saving your receipt...");
+    const toastId = toast.loading("Preparing your premium receipt...");
     
     try {
       const element = receiptRef.current;
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3, // Higher scale for premium quality
         useCORS: true,
         logging: false,
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        windowWidth: 700 // Fix capture width for consistency
       });
       
       const imgData = canvas.toDataURL("image/png");
@@ -153,18 +152,18 @@ export default function PaymentSuccess() {
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Receipt-${receiptMeta.number}.pdf`);
+      pdf.save(`ZiroPay-Receipt-${receiptMeta.number}.pdf`);
       
-      toast.success("Receipt saved successfully!", { id: toastId });
+      toast.success("Receipt downloaded!", { id: toastId });
       
-      // After a successful download, transition to promotion after 3 seconds
+      // Auto-transition to promotion
       setTimeout(() => {
         setView('promotion');
-      }, 3000);
+      }, 2500);
 
     } catch (error) {
       console.error("PDF generation failed:", error);
-      toast.error("Failed to save receipt. You can try manual download.", { id: toastId });
+      toast.error("Format error. Please try manual download.", { id: toastId });
     } finally {
       setIsDownloading(false);
     }
@@ -179,173 +178,286 @@ export default function PaymentSuccess() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md w-full mx-4 glass-card border-white/10">
-          <CardContent className="pt-8 text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground animate-pulse">Verifying your payment...</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="text-center space-y-4">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto"
+          />
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-slate-400 font-medium tracking-widest uppercase text-xs"
+          >
+            Securing Transaction...
+          </motion.p>
+        </div>
       </div>
     );
   }
 
   if (status === 'failed') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <Card className="max-w-md w-full glass-card border-destructive/20">
-          <CardHeader className="text-center">
-            <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <CardTitle className="text-xl">Verification Failed</CardTitle>
-            <CardDescription>
-              We couldn't confirm your payment status immediately. Please check your email for a receipt or contact the merchant.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center pb-6">
-            <Button variant="outline" onClick={() => window.location.href = `/pay/${formId}`}>
-              Back to Form
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (view === 'promotion') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12 gap-8 text-center animate-in fade-in zoom-in duration-500">
-        <div className="max-w-3xl space-y-8">
-            <div className="space-y-4">
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-3xl mx-auto shadow-lg shadow-primary/20">
-                    Z
-                </div>
-                <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight">
-                    Grow Your Business with <span className="text-primary italic">ZiroPay</span>
-                </h1>
-                <p className="text-xl text-muted-foreground">
-                    You've just experienced how easy it is to pay. Now, see how easy it is to collect!
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="glass-card border-white/5 p-6 space-y-3">
-                    <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-primary">
-                        <DollarSign className="h-6 w-6" />
-                    </div>
-                    <h3 className="font-bold">Collect Instantly</h3>
-                    <p className="text-sm text-muted-foreground">Get your own payment links and start receiving money in minutes.</p>
-                </Card>
-                <Card className="glass-card border-white/5 p-6 space-y-3">
-                    <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-primary">
-                        <ReceiptIcon className="h-6 w-6" />
-                    </div>
-                    <h3 className="font-bold">Auto-Receipts</h3>
-                    <p className="text-sm text-muted-foreground">Professional receipts generated and sent to your customers automatically.</p>
-                </Card>
-                <Card className="glass-card border-white/5 p-6 space-y-3">
-                    <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-primary">
-                        <Activity className="h-6 w-6" />
-                    </div>
-                    <h3 className="font-bold">Real-time Data</h3>
-                    <p className="text-sm text-muted-foreground">Track every transaction and see your business grow live on your dashboard.</p>
-                </Card>
-            </div>
-
-            <div className="space-y-4 pt-4">
-                <Button className="w-full sm:w-auto px-16 h-14 text-xl rounded-full shadow-2xl hover:shadow-primary/30 bg-primary hover:bg-primary/90 transition-all font-bold" asChild>
-                    <a href="/auth">Start My Free Journey</a>
-                </Button>
-                <div>
-                    <Button variant="link" className="text-muted-foreground" onClick={() => setView('receipt')}>
-                        View My Receipt Again
-                    </Button>
-                </div>
-            </div>
-
-            <div className="pt-12 border-t border-white/5 flex flex-wrap justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all">
-                <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-xs">Secure Payments</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-xs">Instant Settlement</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-xs">24/7 Support</span>
-                </div>
-            </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full"
+        >
+          <Card className="border-destructive/20 shadow-2xl">
+            <CardHeader className="text-center">
+              <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <XCircle className="h-12 w-12 text-destructive" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-slate-900">Verification Pending</CardTitle>
+              <CardDescription className="text-slate-600">
+                The payment is still processing. Don't worry, your submission is safe. Please check your email in a few minutes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center pb-8 pt-4">
+              <Button size="lg" variant="outline" className="rounded-full px-8" onClick={() => window.location.href = `/pay/${formId}`}>
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12 gap-8 overflow-x-hidden">
-      <div className="text-center space-y-3 animate-in fade-in slide-in-from-bottom duration-700">
-        <div className="relative mx-auto w-20 h-20">
-            <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping" />
-            <CheckCircle2 className="relative h-20 w-20 text-green-500" />
-        </div>
-        <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
-            Payment Completed!
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Your payment to <span className="font-semibold text-foreground">{form?.title}</span> was processed securely.
-        </p>
-      </div>
-
-      <div className="w-full max-w-[650px] flex flex-col gap-8 animate-in fade-in fill-mode-both duration-1000 delay-300">
-        <div 
-            ref={receiptRef} 
-            className="shadow-2xl shadow-primary/5 transform transition-transform hover:scale-[1.01] duration-500 rounded-2xl overflow-hidden border border-white/5"
+    <AnimatePresence mode="wait">
+      {view === 'receipt' ? (
+        <motion.div 
+          key="receipt"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="min-h-screen bg-slate-50 relative py-12 px-4 selection:bg-primary selection:text-white"
         >
-          <Receipt
-            template={form?.receipt_template || {}}
-            logoUrl={form?.logo_url}
-            signatureUrl={form?.signature_url}
-            formFields={form?.fields}
-            fieldMappings={form?.receipt_template?.fieldMappings}
-            submissionData={{
-              ...submission?.submission_data,
-              Amount: formatAmount(submission?.amount || 0),
-              Total: formatAmount(submission?.amount || 0),
-            }}
-            receiptNumber={receiptMeta.number}
-            verificationCode={receiptMeta.code}
-            transactionId={submission?.id || reference || "N/A"}
-            date={receiptMeta.date}
-          />
-        </div>
+          <div className="max-w-[700px] mx-auto space-y-10 relative z-10">
+            {/* Header Success Message */}
+            <div className="text-center space-y-4 pt-4">
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
+                className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-green-500/30 ring-8 ring-green-100"
+              >
+                <CheckCircle2 className="h-12 w-12 text-white" />
+              </motion.div>
+              
+              <div className="space-y-2">
+                <motion.h1 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight"
+                >
+                  Payment Confirmed
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="text-slate-500 font-medium max-w-sm mx-auto"
+                >
+                  Your payment to <span className="text-slate-900 font-bold underline decoration-primary/30 decoration-4">{form?.title}</span> has been successfully processed.
+                </motion.p>
+              </div>
+            </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            className="flex-1 gap-2 h-12 text-lg shadow-lg hover:shadow-primary/20 transition-all" 
-            onClick={handleDownloadPDF}
-            disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Download className="h-5 w-5" />
-            )}
-            Download Receipt
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex-1 gap-2 h-12 text-lg hover:bg-muted/10 transition-colors" 
-            onClick={() => setView('promotion')}
-          >
-            Continue to ZiroPay
-            <ArrowRight className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <p className="text-center text-sm text-muted-foreground opacity-70">
-          A copy of this receipt has been emailed to you.
-        </p>
-      </div>
-    </div>
+            {/* Receipt Component */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", delay: 0.8, bounce: 0.3 }}
+              className="relative"
+            >
+              <div className="absolute -inset-4 bg-gradient-to-b from-primary/5 to-transparent rounded-[40px] blur-3xl -z-10" />
+              <div ref={receiptRef} className="overflow-visible">
+                <Receipt
+                  template={form?.receipt_template || {}}
+                  logoUrl={form?.logo_url}
+                  signatureUrl={form?.signature_url}
+                  formFields={form?.fields}
+                  fieldMappings={form?.receipt_template?.fieldMappings}
+                  submissionData={{
+                    ...submission?.submission_data,
+                    Amount: formatAmount(submission?.amount || 0),
+                    Total: formatAmount(submission?.amount || 0),
+                  }}
+                  receiptNumber={receiptMeta.number}
+                  verificationCode={receiptMeta.code}
+                  transactionId={submission?.id || reference || "N/A"}
+                  date={receiptMeta.date}
+                />
+              </div>
+            </motion.div>
+
+            {/* Actions */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 py-4"
+            >
+              <Button 
+                size="lg"
+                className="w-full sm:w-auto px-10 h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                onClick={handleDownloadPDF}
+                disabled={isDownloading}
+              >
+                {isDownloading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Download className="mr-2 h-5 w-5" />}
+                Save as PDF
+              </Button>
+              <Button 
+                size="lg"
+                variant="ghost"
+                className="w-full sm:w-auto h-14 rounded-2xl text-slate-600 font-bold hover:bg-slate-200/50"
+                onClick={() => setView('promotion')}
+              >
+                Go to ZiroPay
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+            
+            <p className="text-center text-xs font-bold text-slate-400 tracking-widest uppercase">
+              Securely Powered by ZiroPay • 256-bit SSL Encrypted
+            </p>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div 
+          key="promotion"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden"
+        >
+          {/* Background Aura */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(55,48,163,0.15),transparent_50%)] pointer-events-none" />
+          
+          <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+            {/* Promo Content */}
+            <div className="space-y-10 text-center lg:text-left">
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black tracking-widest uppercase"
+              >
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                Join 500+ Businesses in Ghana
+              </motion.div>
+              
+              <div className="space-y-6">
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-5xl sm:text-7xl font-black text-white leading-tight tracking-tighter"
+                >
+                  Sell <span className="bg-gradient-to-r from-primary to-indigo-400 bg-clip-text text-transparent italic">Faster</span>.<br />Collect <span className="underline decoration-indigo-500/40">Smarter</span>.
+                </motion.h2>
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-lg sm:text-xl text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+                >
+                  Create high-converting payment pages like the one you just used in seconds. No coding, no hassle.
+                </motion.p>
+              </div>
+
+              {/* Benefits */}
+              <div className="grid sm:grid-cols-3 gap-6">
+                {[
+                  { title: "No Fees", desc: "Pass charges to customers", icon: <DollarSign className="h-5 w-5" /> },
+                  { title: "Quick Setup", desc: "Live in under 2 minutes", icon: <Activity className="h-5 w-5" /> },
+                  { title: "Auto-Billing", desc: "Digital professional receipts", icon: <ReceiptIcon className="h-5 w-5" /> }
+                ].map((item, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + (i * 0.1) }}
+                    className="p-5 rounded-2xl bg-white/5 border border-white/10 text-center lg:text-left hover:bg-white/10 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary mb-3 mx-auto lg:mx-0">
+                      {item.icon}
+                    </div>
+                    <h4 className="text-white font-bold text-sm mb-1">{item.title}</h4>
+                    <p className="text-slate-500 text-[10px] sm:text-xs leading-tight font-medium uppercase tracking-wider">{item.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 pt-4"
+              >
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto px-12 h-16 rounded-2xl text-xl font-black bg-gradient-to-r from-primary to-indigo-600 hover:scale-[1.05] active:scale-95 shadow-2xl shadow-primary/40 transition-all group"
+                  asChild
+                >
+                  <a href="/auth">
+                    Create My Store Now
+                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform" />
+                  </a>
+                </Button>
+                <Button 
+                  variant="link" 
+                  className="text-slate-500 font-bold hover:text-white transition-colors"
+                  onClick={() => setView('receipt')}
+                >
+                  Wait, show my receipt
+                </Button>
+              </motion.div>
+            </div>
+
+            {/* Visual Part */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring", delay: 0.5, bounce: 0.4 }}
+              className="hidden lg:block relative"
+            >
+              <div className="absolute -inset-20 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+              <div className="relative rounded-[32px] overflow-hidden border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
+                <img 
+                  src="/images/merchant_hero.png" 
+                  alt="ZiroPay Merchant Success" 
+                  className="w-full h-auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
+                
+                {/* Float Card Overlay */}
+                <motion.div 
+                  initial={{ y: 20 }}
+                  animate={{ y: 0 }}
+                  transition={{ repeat: Infinity, repeatType: "reverse", duration: 3 }}
+                  className="absolute bottom-8 right-8 bg-white p-4 rounded-2xl shadow-2xl flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h5 className="text-slate-950 font-bold text-sm">Sale Credited!</h5>
+                    <p className="text-slate-500 text-xs">+₵250.00 Received</p>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+          
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-700 text-[10px] font-black tracking-[1em] uppercase">
+            Designed for Greatness
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

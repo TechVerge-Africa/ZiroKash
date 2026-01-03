@@ -74,7 +74,7 @@ export function usePaymentForms() {
         statsMap[form.id] = {
           totalSubmissions: formSubmissions.length,
           paidSubmissions: paid.length,
-          totalCollected: paid.reduce((sum, s) => sum + (s.amount || 0), 0) / 100
+          totalCollected: paid.reduce((sum, s: any) => sum + (s.net_amount || s.amount || 0), 0) / 100
         };
       });
 

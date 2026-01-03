@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    /* Slightly off-white for better contrast */
+    --background: 220 33% 96%;
+    /* Darkened further for better contrast against white cards/buttons */
     --foreground: 217 35% 15%;
 
     --card: 0 0% 100%;
@@ -22,8 +22,8 @@
     /* Richer Forest Green */
     --secondary-foreground: 24 75% 98%;
 
-    --muted: 220 20% 97%;
-    /* Cooler gray for better contrast */
+    --muted: 220 20% 92%;
+    /* Slightly darker muted for better separation */
     --muted-foreground: 215 25% 35%;
     /* Darker muted text for readability */
 
@@ -49,8 +49,10 @@
     --zirokash-gold: 45 93% 47%;
     /* African wealth & heritage */
     --zirokash-gradient: linear-gradient(135deg, hsl(24 75% 50%) 0%, hsl(160 50% 45%) 50%, hsl(45 93% 47%) 100%);
-    --zirokash-glass: rgba(255, 255, 255, 0.1);
-    --zirokash-shadow: 0 8px 32px rgba(50, 30, 0, 0.37);
+    --zirokash-glass: rgba(255, 255, 255, 0.6);
+    /* Increased opacity for better visibility on dark BG */
+    --zirokash-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    /* Stronger shadow for depth */
 
     --sidebar-background: 210 40% 96.1%;
     --sidebar-foreground: 222 47% 11%;
@@ -138,21 +140,16 @@
 }
 
 @layer utilities {
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
-  }
-
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari and Opera */
+  .premium-mesh-gradient {
+    background:
+      radial-gradient(at 0% 0%, hsla(24, 75%, 50%, 0.05) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(160, 60%, 45%, 0.05) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(45, 93%, 47%, 0.05) 0, transparent 50%);
   }
 }
 
 .glass-card {
-  @apply border border-white/10 bg-white/5 backdrop-blur-lg dark:border-white/10 dark:bg-white/5;
+  @apply border border-white/60 bg-white/70 backdrop-blur-2xl shadow-xl dark:border-white/10 dark:bg-white/5;
 }
 
 .gradient-text {

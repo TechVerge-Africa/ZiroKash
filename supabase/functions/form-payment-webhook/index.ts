@@ -53,13 +53,15 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      const { reference, metadata, amount, status, gateway_response } = event.data;
+      const { reference, metadata, amount, status, gateway_response, fees } = event.data;
       const subaccount = event.data.subaccount;
       const submissionId = metadata?.submission_id || reference;
 
+      const netAmount = amount - (fees || 0);
+
       console.log(`[Form Payment Webhook] Processing successful payment for submission: ${submissionId}`);
       console.log(`[Form Payment Webhook] Auth: ${event.data.authorization?.brand || 'unknown'}, Reference: ${reference}, Gateway Ref: ${event.data.reference}`);
-      console.log(`[Form Payment Webhook] Status: ${status}, Amount: ${amount}, Response: ${gateway_response}`);
+      console.log(`[Form Payment Webhook] Status: ${status}, Amount: ${amount}, Fees: ${fees || 0}, Net: ${netAmount}, Response: ${gateway_response}`);
 
       if (subaccount) {
         console.log(`[Form Payment Webhook] Subaccount involved: ${subaccount.subaccount_code} (Percentage: ${subaccount.percentage_charge}%)`);
@@ -99,7 +101,9 @@ serve(async (req) => {
         .from('form_submissions')
         .update({
           status: 'paid',
-          transaction_id: reference
+          transaction_id: reference,
+          net_amount: netAmount,
+          fees: fees || 0
         })
         .eq('id', targetSubmissionId);
 
@@ -120,6 +124,7 @@ serve(async (req) => {
           .from('form_submissions')
           .select(`
             amount,
+            net_amount,
             form_id
           `)
           .eq('id', targetSubmissionId) // Use the resolved target ID
@@ -134,7 +139,8 @@ serve(async (req) => {
 
           if (formData) {
             console.log(`[Form Payment Webhook] Crediting wallet for user: ${formData.user_id}`);
-            const creditAmount = submissionData.amount / 100;
+            // Use net_amount if available, otherwise fallback to amount (converted to GHS)
+            const creditAmount = (submissionData.net_amount || submissionData.amount) / 100;
 
             const { error: walletError } = await supabase.rpc('increment_wallet_balance', {
               _user_id: formData.user_id,

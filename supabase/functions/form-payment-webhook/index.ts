@@ -164,43 +164,96 @@ serve(async (req) => {
         console.error('[Form Payment Webhook] Unexpected credit error:', creditError);
       }
 
-      // Trigger notification
+      // Trigger notifications (Merchant + Payer)
       try {
-        console.log(`[Form Payment Webhook] Triggering notification...`);
+        console.log(`[Form Payment Webhook] Triggering notifications...`);
+
+        // 1. Get Submission details
         const { data: sub } = await supabase
           .from('form_submissions')
-          .select('payer_name, payer_email, amount')
-          .eq('id', targetSubmissionId) // Use resolved target ID
+          .select('payer_name, payer_email, amount, form_id')
+          .eq('id', targetSubmissionId)
           .single();
 
-        if (sub?.payer_email) {
-          console.log(`[Form Payment Webhook] Sending 'transaction-success' to ${sub.payer_email}`);
+        if (sub) {
+          // 2. Get Merchant details and preferences
+          const { data: formDetails } = await supabase
+            .from('payment_forms')
+            .select('user_id, title')
+            .eq('id', sub.form_id)
+            .single();
 
-          const notifyResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-            },
-            body: JSON.stringify({
-              type: 'email',
-              template: 'transaction-success',
-              recipient: {
-                email: sub.payer_email,
-                name: sub.payer_name || 'Valued Payer',
-              },
-              data: {
-                transactionType: 'Form Payment',
-                amount: (sub.amount / 100).toFixed(2),
-                currency: 'GHS',
-                reference: targetSubmissionId,
-                date: new Date().toLocaleString(),
-              },
-            }),
-          });
+          if (formDetails) {
+            const [
+              { data: merchantProfile },
+              { data: merchantPrefs }
+            ] = await Promise.all([
+              supabase.from('profiles').select('full_name, email, phone').eq('user_id', formDetails.user_id).single(),
+              supabase.from('notification_preferences').select('*').eq('user_id', formDetails.user_id).single()
+            ]);
 
-          const notifyResult = await notifyResponse.json();
-          console.log('[Form Payment Webhook] Notification result:', notifyResult);
+            // Notify Merchant
+            if (merchantProfile && merchantPrefs) {
+              const channels = [];
+              if (merchantPrefs.email_enabled) channels.push('email');
+              if (merchantPrefs.sms_enabled) channels.push('sms');
+              if (merchantPrefs.whatsapp_enabled) channels.push('whatsapp');
+
+              if (channels.length > 0) {
+                console.log(`[Form Payment Webhook] Notifying merchant ${merchantProfile.email} via ${channels.join(', ')}`);
+                await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                  },
+                  body: JSON.stringify({
+                    type: channels.length === 3 ? 'all' : channels[0], // Simplified channel selection
+                    template: 'merchant-payment-received',
+                    recipient: {
+                      email: merchantProfile.email,
+                      phone: merchantProfile.phone,
+                      name: merchantProfile.full_name || 'Merchant',
+                    },
+                    data: {
+                      formName: formDetails.title,
+                      amount: (sub.amount / 100).toFixed(2),
+                      currency: 'GHS',
+                      reference: targetSubmissionId,
+                      merchantName: sub.payer_name || 'a customer'
+                    },
+                  }),
+                });
+              }
+            }
+          }
+
+          // Notify Payer
+          if (sub.payer_email) {
+            console.log(`[Form Payment Webhook] Sending 'transaction-success' to ${sub.payer_email}`);
+            await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-notification`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              },
+              body: JSON.stringify({
+                type: 'email',
+                template: 'transaction-success',
+                recipient: {
+                  email: sub.payer_email,
+                  name: sub.payer_name || 'Valued Payer',
+                },
+                data: {
+                  transactionType: 'Form Payment',
+                  amount: (sub.amount / 100).toFixed(2),
+                  currency: 'GHS',
+                  reference: targetSubmissionId,
+                  date: new Date().toLocaleString(),
+                },
+              }),
+            });
+          }
         }
       } catch (notifyError) {
         console.error('[Form Payment Webhook] Notification error:', notifyError);

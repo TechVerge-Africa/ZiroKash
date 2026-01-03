@@ -279,19 +279,19 @@ export default function PaymentForm() {
                       required={field.required}
                       value={formData[field.label] || ''}
                       onChange={(e) => setFormData({ ...formData, [field.label]: e.target.value })}
-                      className="text-sm sm:text-base"
+                      className="text-base"
                     />
                   ) : field.type === 'dropdown' ? (
                     <Select
                       value={formData[field.label] || ''}
                       onValueChange={(value) => setFormData({ ...formData, [field.label]: value })}
                     >
-                      <SelectTrigger className="text-sm sm:text-base">
+                      <SelectTrigger className="text-base">
                         <SelectValue placeholder={`Select ${field.label}`} />
                       </SelectTrigger>
                       <SelectContent>
                         {field.options?.map((option, i) => (
-                          <SelectItem key={i} value={option} className="text-sm sm:text-base">{option}</SelectItem>
+                          <SelectItem key={i} value={option} className="text-base">{option}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -306,7 +306,7 @@ export default function PaymentForm() {
                         step="0.01"
                         min="0"
                         required={field.required}
-                        className="pl-12 sm:pl-16 text-sm sm:text-base"
+                        className="pl-12 sm:pl-16 text-base"
                         value={formData[field.label] || ''}
                         onChange={(e) => {
                           const val = e.target.value;

@@ -59,6 +59,20 @@ export default function Settings() {
   // Session info state
   const [locationInfo, setLocationInfo] = useState("Loading location...");
   const [browserInfo, setBrowserInfo] = useState("Loading browser...");
+  
+  // Notification Preferences State
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [prefs, setPrefs] = useState<any>({
+    email_enabled: true,
+    sms_enabled: true,
+    push_enabled: true,
+    payment_confirmations_enabled: true,
+    deposit_alerts_enabled: true,
+    low_balance_alerts_enabled: false,
+    special_offers_enabled: false,
+    newsletter_enabled: true,
+    whatsapp_enabled: false
+  });
 
   useEffect(() => {
     setInitialTheme(theme);
@@ -129,6 +143,32 @@ export default function Settings() {
     }
   };
 
+  const fetchNotificationPrefs = async () => {
+    try {
+      setNotifLoading(true);
+      const { data, error } = await supabase
+        .from('notification_preferences')
+        .select('*')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+        
+      if (error) throw error;
+      if (data) {
+        setPrefs(data);
+      }
+    } catch (error: any) {
+      console.error("Error fetching notification preferences:", error.message);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotificationPrefs();
+    }
+  }, [user]);
+
   const handleSaveProfile = async () => {
     try {
       setSavingLoading(true);
@@ -150,6 +190,34 @@ export default function Settings() {
       toast({
         title: "Profile updated",
         description: "Your personal information has been saved successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingLoading(false);
+    }
+  };
+
+  const handleSavePreferences = async () => {
+    try {
+      setSavingLoading(true);
+      const { error } = await supabase
+        .from('notification_preferences')
+        .upsert({
+          user_id: user?.id,
+          ...prefs,
+          updated_at: new Date().toISOString()
+        });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Preferences saved",
+        description: "Your notification settings have been updated.",
       });
     } catch (error: any) {
       toast({
@@ -586,104 +654,163 @@ export default function Settings() {
               <CardDescription>Choose how you receive notifications</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium mb-3">Account Notifications</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Email Notifications</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive emails about account activity
-                      </p>
-                    </div>
-                    <Switch id="email-notifications" defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Push Notifications</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive push notifications on your devices
-                      </p>
-                    </div>
-                    <Switch id="push-notifications" defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Text Message</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive text messages for important updates
-                      </p>
-                    </div>
-                    <Switch id="text-notifications" />
-                  </div>
+              {notifLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              </div>
+              )}
               
-              <div>
-                <h3 className="text-sm font-medium mb-3">Transaction Notifications</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Payment Confirmations</p>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when a payment is made
-                      </p>
+              {!notifLoading && (
+                <>
+                  <div>
+                    <h3 className="text-sm font-medium mb-3">Account Notifications</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Email Notifications</p>
+                          <p className="text-sm text-muted-foreground">
+                            Receive emails about account activity
+                          </p>
+                        </div>
+                        <Switch 
+                          id="email-notifications" 
+                          checked={prefs.email_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, email_enabled: val})}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Push Notifications</p>
+                          <p className="text-sm text-muted-foreground">
+                            Receive push notifications on your devices
+                          </p>
+                        </div>
+                        <Switch 
+                          id="push-notifications" 
+                          checked={prefs.push_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, push_enabled: val})}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Text Message (SMS)</p>
+                          <p className="text-sm text-muted-foreground">
+                            Receive text messages for important updates
+                          </p>
+                        </div>
+                        <Switch 
+                          id="text-notifications" 
+                          checked={prefs.sms_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, sms_enabled: val})}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">WhatsApp</p>
+                          <p className="text-sm text-muted-foreground">
+                            Get updates via WhatsApp (Africa's Talking)
+                          </p>
+                        </div>
+                        <Switch 
+                          id="whatsapp-notifications" 
+                          checked={prefs.whatsapp_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, whatsapp_enabled: val})}
+                        />
+                      </div>
                     </div>
-                    <Switch id="payment-notifications" defaultChecked />
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Deposit Alerts</p>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when you receive money
-                      </p>
+                  <div>
+                    <h3 className="text-sm font-medium mb-3">Transaction Notifications</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Payment Confirmations</p>
+                          <p className="text-sm text-muted-foreground">
+                            Get notified when a payment is made
+                          </p>
+                        </div>
+                        <Switch 
+                          id="payment-notifications" 
+                          checked={prefs.payment_confirmations_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, payment_confirmations_enabled: val})}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Deposit Alerts</p>
+                          <p className="text-sm text-muted-foreground">
+                            Get notified when you receive money
+                          </p>
+                        </div>
+                        <Switch 
+                          id="deposit-notifications" 
+                          checked={prefs.deposit_alerts_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, deposit_alerts_enabled: val})}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Low Balance Alert</p>
+                          <p className="text-sm text-muted-foreground">
+                            Get notified when your balance is low
+                          </p>
+                        </div>
+                        <Switch 
+                          id="balance-notifications" 
+                          checked={prefs.low_balance_alerts_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, low_balance_alerts_enabled: val})}
+                        />
+                      </div>
                     </div>
-                    <Switch id="deposit-notifications" defaultChecked />
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Low Balance Alert</p>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when your balance is low
-                      </p>
+                  <div>
+                    <h3 className="text-sm font-medium mb-3">Marketing Preferences</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Special Offers</p>
+                          <p className="text-sm text-muted-foreground">
+                            Receive notifications about special offers and promotions
+                          </p>
+                        </div>
+                        <Switch 
+                          id="marketing-notifications" 
+                          checked={prefs.special_offers_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, special_offers_enabled: val})}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <p className="font-medium">Newsletter</p>
+                          <p className="text-sm text-muted-foreground">
+                            Receive our monthly newsletter
+                          </p>
+                        </div>
+                        <Switch 
+                          id="newsletter-notifications" 
+                          checked={prefs.newsletter_enabled} 
+                          onCheckedChange={(val) => setPrefs({...prefs, newsletter_enabled: val})}
+                        />
+                      </div>
                     </div>
-                    <Switch id="balance-notifications" />
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-3">Marketing Preferences</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Special Offers</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive notifications about special offers and promotions
-                      </p>
-                    </div>
-                    <Switch id="marketing-notifications" />
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="font-medium">Newsletter</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive our monthly newsletter
-                      </p>
-                    </div>
-                    <Switch id="newsletter-notifications" defaultChecked />
+                  <div className="flex justify-end">
+                    <Button onClick={handleSavePreferences} disabled={savingLoading}>
+                      {savingLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Save Preferences
+                    </Button>
                   </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button>Save Preferences</Button>
-              </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

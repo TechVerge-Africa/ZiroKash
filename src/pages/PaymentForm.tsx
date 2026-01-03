@@ -135,7 +135,8 @@ export default function PaymentForm() {
           amount: Math.round(totalAmount * 100), // What customer pays (in pesewas for Paystack)
           feeAmount: processingFee, // The fee portion
           payerName: payerName,
-          payerEmail: payerEmail
+          payerEmail: payerEmail,
+          redirectOrigin: window.location.origin // Ensure we redirect back here
         }
       });
 

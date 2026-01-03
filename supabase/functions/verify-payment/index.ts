@@ -28,6 +28,21 @@ serve(async (req) => {
 
         console.log(`[Verify Payment] Verifying: ${reference}`);
 
+        // First check if it's already paid in our DB to avoid redundant API calls
+        const { data: currentSub } = await supabase
+            .from('form_submissions')
+            .select('id, status')
+            .eq('id', reference)
+            .maybeSingle();
+
+        if (currentSub?.status === 'paid') {
+            console.log(`[Verify Payment] ${reference} is already marked as paid in DB.`);
+            return new Response(
+                JSON.stringify({ status: 'success', submission: currentSub }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
         // Call Paystack API to verify
         const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
         const paystackResponse = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
@@ -37,6 +52,7 @@ serve(async (req) => {
         });
 
         const paystackData = await paystackResponse.json();
+        console.log(`[Verify Payment] Paystack response for ${reference}:`, paystackData.status);
 
         if (!paystackData.status) {
             return new Response(
@@ -48,7 +64,7 @@ serve(async (req) => {
         const { status, amount, reference: paystackRef } = paystackData.data;
 
         if (status === 'success') {
-            console.log(`[Verify Payment] ${reference} is successful. Updating DB...`);
+            console.log(`[Verify Payment] ${reference} confirmed as success by Paystack. Updating DB...`);
 
             // Update submission status in ZiroPay
             const { data: submission, error: updateError } = await supabase

@@ -66,11 +66,8 @@ serve(async (req) => {
       }
 
       // Robust lookup for the submission
-      // 1. Try by ID (primary reference)
-      // 2. Try by transaction_id (secondary reference)
-      // 3. Try by metadata submission_id
-
       let targetSubmissionId = submissionId;
+      let isAlreadyPaid = false;
 
       const { data: existingSub, error: lookupError } = await supabase
         .from('form_submissions')
@@ -84,10 +81,17 @@ serve(async (req) => {
 
       if (existingSub) {
         targetSubmissionId = existingSub.id;
-        console.log(`[Form Payment Webhook] Found matching submission: ${targetSubmissionId}`);
+        isAlreadyPaid = existingSub.status === 'paid';
+        console.log(`[Form Payment Webhook] Found matching submission: ${targetSubmissionId}, current status: ${existingSub.status}`);
       } else {
         console.warn(`[Form Payment Webhook] No matching submission found for reference: ${reference} or metadata: ${submissionId}`);
-        // We will still try to update by submissionId as a last resort
+      }
+
+      if (isAlreadyPaid) {
+        console.log(`[Form Payment Webhook] Submission ${targetSubmissionId} is already marked as 'paid'. Skipping update and credit.`);
+        return new Response(JSON.stringify({ received: true, message: 'Already processed' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
 
       // Update submission status

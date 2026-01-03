@@ -20,7 +20,11 @@ export default function Dashboard() {
   const [showWithdraw, setShowWithdraw] = useState(false);
   
   const mainWallet = getWalletByType('main');
-  const balance = (mainWallet?.balance || 0) / 100;
+  const merchantWallet = getWalletByType('merchant');
+  
+  // Show combined balance or prioritize the one with funds
+  const balance = ((mainWallet?.balance || 0) + (merchantWallet?.balance || 0)) / 100;
+  const merchantBalance = (merchantWallet?.balance || 0) / 100;
 
   // Calculate aggregated stats from all forms
   const dashboardStats = useMemo(() => {
@@ -71,7 +75,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold">₵{balance.toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Available balance</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {isMerchant ? `Includes ₵${merchantBalance.toFixed(2)} business earnings` : "Available balance"}
+                    </p>
                 </CardContent>
                 </Card>
 

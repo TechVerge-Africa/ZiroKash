@@ -19,7 +19,8 @@ serve(async (req) => {
       amount, // Total amount in pesewas 
       feeAmount,
       payerName,
-      payerEmail
+      payerEmail,
+      redirectOrigin
     } = await req.json();
 
     // Validate required fields
@@ -121,7 +122,11 @@ serve(async (req) => {
     }
 
     // Build payment payload - amount in pesewas (GHS smallest unit, 1 GHS = 100 pesewas)
-    const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
+    const originHeader = req.headers.get('origin');
+    const appBaseUrl = redirectOrigin || Deno.env.get('APP_BASE_URL') || originHeader || 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
+
+    console.log(`[Payment Form Submit] Using App Base URL: ${appBaseUrl} (Priority: Param > Env > Header > Fallback)`);
+
     const paymentPayload: Record<string, any> = {
       email: payerEmail,
       amount: amount, // Already in pesewas

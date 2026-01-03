@@ -112,17 +112,33 @@ serve(async (req) => {
 
     // For InlineJS, we don't call transaction/initialize on the server.
     // Instead, we return the data needed for the frontend PaystackPop instance.
-    const paystackPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY');
+    // Check both common naming conventions for public keys
+    const paystackPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY') || Deno.env.get('VITE_PAYSTACK_PUBLIC_KEY');
 
     if (!paystackPublicKey) {
-      console.error('PAYSTACK_PUBLIC_KEY not configured');
+      console.error('[Payment Form Submit] PAYSTACK_PUBLIC_KEY not configured in Supabase Secrets');
       return new Response(
-        JSON.stringify({ error: 'Payment gateway public key not configured' }),
+        JSON.stringify({
+          status: 'error',
+          error: 'Payment gateway configuration error: Missing Public Key',
+          details: 'Please ensure PAYSTACK_PUBLIC_KEY is set in Supabase Edge Function secrets.'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!submission?.id) {
+      console.error('[Payment Form Submit] Submission ID missing despite successful insert');
+      return new Response(
+        JSON.stringify({
+          status: 'error',
+          error: 'Internal server error: Failed to generate submission reference'
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`[Payment Form Submit] Returning InlineJS metadata for submission: ${submission.id}`);
+    console.log(`[Payment Form Submit] Successfully prepared InlineJS metadata for reference: ${submission.id}`);
 
     return new Response(
       JSON.stringify({
@@ -138,7 +154,7 @@ serve(async (req) => {
           payer_name: payerName || 'Anonymous',
         }
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {

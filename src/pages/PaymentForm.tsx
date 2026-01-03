@@ -145,8 +145,9 @@ export default function PaymentForm() {
         throw error;
       }
 
-      console.log('Payment form submission response:', data);
+      console.log('[DEBUG] Payment form submission response data:', data);
 
+      // Check if we received the expected data
       if (data?.publicKey && data?.reference) {
         // Initialize Paystack Inline popup
         const paystack = new PaystackPop();
@@ -161,7 +162,6 @@ export default function PaymentForm() {
             console.log('Payment successful:', response);
             toast.success('Payment successful!');
             setPaymentSuccess(true);
-            // Navigate to success page after a short delay
             setTimeout(() => {
               navigate(`/pay/${formId}/success?reference=${data.reference}`);
             }, 1000);
@@ -178,13 +178,21 @@ export default function PaymentForm() {
           }
         });
       } else {
-        throw new Error('Incomplete payment data received from server');
+        // Handle cases where data is returned but missing keys
+        const missing = [];
+        if (!data?.publicKey) missing.push('Public Key');
+        if (!data?.reference) missing.push('Reference');
+        
+        console.error('Incomplete data from edge function:', data);
+        const serverError = data?.error || data?.message;
+        
+        throw new Error(serverError || `Incomplete payment data received: Missing ${missing.join(' and ')}`);
       }
     } catch (error: any) {
       console.error('Payment submission error:', error);
       const errorMessage = error?.message || 'Failed to process payment';
       toast.error(errorMessage, {
-        description: 'Please check your details and try again'
+        description: error?.details || 'Please check your details and try again'
       });
       setSubmitting(false);
     }

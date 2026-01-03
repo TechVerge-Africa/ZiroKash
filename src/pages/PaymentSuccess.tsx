@@ -114,15 +114,7 @@ export default function PaymentSuccess() {
     }
   };
 
-  // Auto-trigger download on success
-  useEffect(() => {
-    if (status === 'success' && submission && view === 'receipt') {
-      const timer = setTimeout(() => {
-        handleDownloadPDF();
-      }, 2000); 
-      return () => clearTimeout(timer);
-    }
-  }, [status, submission, view]);
+  // Automatic download removed as per user request to let users initiate it manually
 
   const handleDownloadPDF = async () => {
     if (!receiptRef.current) return;

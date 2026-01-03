@@ -12,7 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    const { formId, submissionData, amount, payerName, payerEmail } = await req.json();
+    const {
+      formId,
+      submissionData,
+      originalAmount,
+      amount, // Total amount in pesewas 
+      feeAmount,
+      payerName,
+      payerEmail
+    } = await req.json();
 
     // Validate required fields
     if (!formId || !amount || !payerEmail) {
@@ -77,8 +85,13 @@ serve(async (req) => {
       .from('form_submissions')
       .insert({
         form_id: formId,
-        submission_data: submissionData,
-        amount: Math.round(amount * 100), // Store in subunits (pesewas)
+        submission_data: {
+          ...submissionData,
+          original_amount: originalAmount,
+          fee_amount: feeAmount,
+          total_amount: amount / 100, // Store total in GHS 
+        },
+        amount: amount, // Store total in pesewas
         payer_name: payerName || 'Anonymous',
         payer_email: payerEmail,
         status: 'pending'
@@ -111,7 +124,7 @@ serve(async (req) => {
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
     const paymentPayload: Record<string, any> = {
       email: payerEmail,
-      amount: Math.round(amount * 100), // Convert GHS to pesewas
+      amount: amount, // Already in pesewas
       reference: submission.id,
       callback_url: `${appBaseUrl}/pay/${formId}/success?reference=${submission.id}`,
       metadata: {
@@ -129,6 +142,13 @@ serve(async (req) => {
       paymentPayload.bearer = 'subaccount';
       console.log(`[Payment Form Submit] Using subaccount: ${merchant.paystack_subaccount_code}`);
     }
+
+    console.log('[Payment Form Submit] Payment breakdown:', {
+      originalAmount,
+      feeAmount,
+      totalAmount: amount / 100,
+      feeBearer: form.fee_bearer
+    });
 
     console.log(`[Payment Form Submit] Initializing Paystack payment for ${paymentPayload.amount} pesewas`);
 

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { FormBuilder } from "@/components/ziropay/FormBuilder";
 import { FormPreview } from "@/components/ziropay/FormPreview";
@@ -136,6 +137,7 @@ export default function ZiroPay() {
   const [themeColor, setThemeColor] = useState("#0056D2");
   const [logoUrl, setLogoUrl] = useState("");
   const [signatureUrl, setSignatureUrl] = useState("");
+  const [feeBearer, setFeeBearer] = useState<'customer' | 'merchant'>('customer');
   const [receiptTemplate, setReceiptTemplate] = useState<ReceiptTemplate>({
     headerText: "Official Payment Receipt",
     footerText: "Thank you for your payment",
@@ -173,6 +175,7 @@ export default function ZiroPay() {
         setThemeColor(formToEdit.theme_color || "#0056D2");
         setLogoUrl(formToEdit.logo_url || "");
         setSignatureUrl(formToEdit.signature_url || "");
+        setFeeBearer((formToEdit as any).fee_bearer || 'customer');
         setReceiptTemplate(formToEdit.receipt_template || {
           headerText: "Official Payment Receipt",
           footerText: "Thank you for your payment",
@@ -240,6 +243,7 @@ export default function ZiroPay() {
         theme_color: themeColor,
         logo_url: logoUrl || null,
         signature_url: signatureUrl || null,
+        fee_bearer: feeBearer,
         receipt_template: receiptTemplate as any,
       });
 
@@ -273,6 +277,7 @@ export default function ZiroPay() {
           theme_color: themeColor,
           logo_url: logoUrl || null,
           signature_url: signatureUrl || null,
+          fee_bearer: feeBearer,
           receipt_template: receiptTemplate as any,
         })
         .eq("id", editingFormId);
@@ -296,6 +301,7 @@ export default function ZiroPay() {
     setThemeColor("#0056D2");
     setLogoUrl("");
     setSignatureUrl("");
+    setFeeBearer('customer');
     setEditingFormId(null);
     setCurrentStep(1);
     setSelectedTemplate(null);
@@ -384,6 +390,7 @@ export default function ZiroPay() {
     setThemeColor(form.theme_color || "#0056D2");
     setLogoUrl(form.logo_url || "");
     setSignatureUrl(form.signature_url || "");
+    setFeeBearer((form as any).fee_bearer || 'customer');
     setReceiptTemplate(form.receipt_template || {
       headerText: "Official Payment Receipt",
       footerText: "Thank you for your payment",
@@ -662,8 +669,24 @@ export default function ZiroPay() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="design" className="mt-4">
+                  <TabsContent value="design" className="mt-4 space-y-6">
                     <ThemePicker color={themeColor} onColorChange={setThemeColor} />
+                    
+                    <div className="border-t pt-6">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <Label className="text-base">Pass processing fee to customer</Label>
+                          <p className="text-sm text-muted-foreground">
+                            When enabled, a 1.95% processing fee (max GHS 100) will be added to the customer's payment. 
+                            You will receive 100% of the intended amount.
+                          </p>
+                        </div>
+                        <Switch 
+                          checked={feeBearer === 'customer'}
+                          onCheckedChange={(checked) => setFeeBearer(checked ? 'customer' : 'merchant')}
+                        />
+                      </div>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="receipt" className="mt-4">

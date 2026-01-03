@@ -23,6 +23,7 @@ interface PaymentForm {
   fields: FormField[];
   logo_url: string | null;
   theme_color: string;
+  fee_bearer: 'customer' | 'merchant';
 }
 
 export default function PaymentForm() {
@@ -33,6 +34,26 @@ export default function PaymentForm() {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [originalAmount, setOriginalAmount] = useState<number>(0);
+  const [processingFee, setProcessingFee] = useState<number>(0);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+
+  const calculateProcessingFee = (amount: number): number => {
+    if (!amount || amount <= 0) return 0;
+    const fee = amount * 0.0195; // 1.95%
+    return Math.min(fee, 100); // Capped at GHS 100
+  };
+
+  useEffect(() => {
+    if (form?.fee_bearer === 'customer') {
+      const fee = calculateProcessingFee(originalAmount);
+      setProcessingFee(fee);
+      setTotalAmount(originalAmount + fee);
+    } else {
+      setProcessingFee(0);
+      setTotalAmount(originalAmount);
+    }
+  }, [originalAmount, form?.fee_bearer]);
 
   useEffect(() => {
     fetchForm();
@@ -73,9 +94,9 @@ export default function PaymentForm() {
       }
 
       const amountField = form?.fields.find(f => f.type === 'amount');
-      const amount = amountField ? parseFloat(formData[amountField.label]) : 0;
+      const enteredAmount = amountField ? parseFloat(formData[amountField.label]) : 0;
 
-      if (!amount || amount <= 0) {
+      if (!enteredAmount || enteredAmount <= 0) {
         toast.error('Please enter a valid amount');
         setSubmitting(false);
         return;
@@ -100,7 +121,7 @@ export default function PaymentForm() {
 
       console.log('Submitting payment form:', {
         formId: form?.id,
-        amount,
+        amount: totalAmount,
         payerEmail,
         payerName
       });
@@ -110,7 +131,9 @@ export default function PaymentForm() {
         body: {
           formId: form?.id,
           submissionData: formData,
-          amount: amount,
+          originalAmount: originalAmount, // What merchant should receive
+          amount: Math.round(totalAmount * 100), // What customer pays (in pesewas for Paystack)
+          feeAmount: processingFee, // The fee portion
           payerName: payerName,
           payerEmail: payerEmail
         }
@@ -233,12 +256,33 @@ export default function PaymentForm() {
                         required={field.required}
                         className="pl-12 sm:pl-16 text-sm sm:text-base"
                         value={formData[field.label] || ''}
-                        onChange={(e) => setFormData({ ...formData, [field.label]: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData({ ...formData, [field.label]: val });
+                          setOriginalAmount(parseFloat(val) || 0);
+                        }}
                       />
                     </div>
                   ) : null}
                 </div>
               ))}
+
+              {form?.fee_bearer === 'customer' && originalAmount > 0 && (
+                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Amount</span>
+                    <span>GH₵ {originalAmount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Processing Fee (1.95%)</span>
+                    <span>GH₵ {processingFee.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between font-semibold">
+                    <span>Total to Pay</span>
+                    <span>GH₵ {totalAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
 
               <Button
                 type="submit"
@@ -252,7 +296,7 @@ export default function PaymentForm() {
                     Processing...
                   </>
                 ) : (
-                  'Pay Now'
+                  `Pay GH₵ ${totalAmount.toFixed(2)}`
                 )}
               </Button>
             </form>

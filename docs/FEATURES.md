@@ -1,6 +1,6 @@
-# ZiroPay Features Documentation
+# ZiroKash Features Documentation
 
-Detailed documentation of all ZiroPay features and their implementation.
+Detailed documentation of all ZiroKash features and their implementation.
 
 ---
 
@@ -10,8 +10,8 @@ Detailed documentation of all ZiroPay features and their implementation.
 The drag-and-drop form builder allows users to create custom payment forms without any coding knowledge.
 
 ### Location
-- **Page:** `/ziropay`
-- **Component:** `src/components/ziropay/FormBuilder.tsx`
+- **Page:** `/zirokash`
+- **Component:** `src/components/zirokash/FormBuilder.tsx`
 
 ### Supported Field Types
 
@@ -55,7 +55,7 @@ interface FormField {
 Customize professional receipts with your institution's branding.
 
 ### Location
-- **Component:** `src/components/ziropay/ReceiptDesigner.tsx`
+- **Component:** `src/components/zirokash/ReceiptDesigner.tsx`
 
 ### Customization Options
 
@@ -141,7 +141,7 @@ window.location.href = payment_url;
 Real-time analytics for payment form performance.
 
 ### Location
-- **Component:** `src/components/ziropay/FormAnalytics.tsx`
+- **Component:** `src/components/zirokash/FormAnalytics.tsx`
 - **Page Integration:** `src/pages/FormDetails.tsx`
 
 ### Metrics
@@ -180,13 +180,13 @@ WHERE form_id = :formId
 Multiple ways to share payment forms with payers.
 
 ### Location
-- **Component:** `src/components/ziropay/FormEmbedCode.tsx`
+- **Component:** `src/components/zirokash/FormEmbedCode.tsx`
 
 ### Sharing Options
 
 #### 1. Direct Link
 ```
-https://ziropay.app/pay/{formId}
+https://zirokash.app/pay/{formId}
 ```
 
 #### 2. QR Code
@@ -195,7 +195,7 @@ Auto-generated QR code pointing to the payment page.
 #### 3. Embed Code (iframe)
 ```html
 <iframe 
-  src="https://ziropay.app/pay/{formId}?embed=true"
+  src="https://zirokash.app/pay/{formId}?embed=true"
   width="100%"
   height="600"
   frameborder="0">
@@ -204,8 +204,8 @@ Auto-generated QR code pointing to the payment page.
 
 #### 4. JavaScript Widget (Future)
 ```html
-<script src="https://ziropay.app/widget.js"></script>
-<div id="ziropay-form" data-form-id="{formId}"></div>
+<script src="https://zirokash.app/widget.js"></script>
+<div id="zirokash-form" data-form-id="{formId}"></div>
 ```
 
 ---

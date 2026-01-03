@@ -19,7 +19,7 @@ export function BottomNav() {
     {
       icon: DollarSign,
       label: 'Forms',
-      href: '/ziropay'
+      href: '/zirokash'
     },
     {
       icon: Receipt,

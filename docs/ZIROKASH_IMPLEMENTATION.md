@@ -1,4 +1,4 @@
-# ZiroKash Production-Ready ZiroPay System
+# ZiroKash Production-Ready ZiroKash System
 
 ## ✅ Completed Implementation
 
@@ -58,8 +58,8 @@
 
 #### Merchant Flow
 - **MerchantOnboarding.tsx**: Beautiful 2-step onboarding wizard
-- **MerchantPinVerify.tsx**: Secure PIN entry for ZiroPay access
-- **ZiroPay.tsx**: Main dashboard (only accessible after PIN verification)
+- **MerchantPinVerify.tsx**: Secure PIN entry for ZiroKash access
+- **ZiroKash.tsx**: Main dashboard (only accessible after PIN verification)
 
 #### Currency System
 - **useCurrency.tsx**: GHS-first currency hook
@@ -154,12 +154,12 @@
 
 ### For Merchants
 1. Sign up → Main wallet created (GHS)
-2. Go to ZiroPay → Onboarding flow
+2. Go to ZiroKash → Onboarding flow
 3. Enter business info (Step 1)
 4. Set up 4-digit PIN (Step 2)
 5. Account auto-approved ✅
 6. Merchant wallet created (GHS)
-7. Enter PIN to access ZiroPay
+7. Enter PIN to access ZiroKash
 8. Create payment forms
 9. Share payment links
 10. Receive payments → Merchant wallet credited

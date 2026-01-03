@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, CreditCard, Send, LineChart, Wallet, Shield, ShieldCheck, Settings, Menu, X, DollarSign, Gift, User, HelpCircle, Info, Building, Phone, Car, CheckCircle } from "lucide-react";
+import { Home, CreditCard, Send, LineChart, Wallet, Shield, ShieldCheck, Settings, Menu, X, DollarSign, Gift, User, HelpCircle, Info, Building, Phone, Car, CheckCircle, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
+import { useMerchant } from "@/hooks/useMerchant";
+import { Badge } from "@/components/ui/badge";
 type NavItem = {
   name: string;
   href: string;
@@ -12,7 +14,7 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
 
-  { name: "My Forms", href: "/ziropay", icon: <DollarSign size={20} /> },
+  { name: "My Forms", href: "/zirokash", icon: <DollarSign size={20} /> },
   { name: "Transactions", href: "/transactions", icon: <Send size={20} /> },
 ];
 
@@ -40,6 +42,7 @@ const supportNavItems: NavItem[] = [{
 export default function Sidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { merchant, loading: merchantLoading } = useMerchant();
   const [isOpen, setIsOpen] = useState(false);
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -69,7 +72,7 @@ export default function Sidebar() {
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
               Z
             </div>
-            <span className="text-xl font-bold gradient-text">ZiroPay</span>
+            <span className="text-xl font-bold gradient-text">ZiroKash</span>
           </Link>
           {isMobile && <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
               <X size={20} />
@@ -109,13 +112,55 @@ export default function Sidebar() {
 
       {/* Fixed Footer */}
       <div className="flex-shrink-0 px-3 py-4 border-t border-sidebar-border bg-sidebar">
-        <div className="glass-card rounded-lg p-3">
-          <p className="text-xs text-muted-foreground">Go Pro</p>
-          <p className="text-sm font-medium mt-1">Upgrade to Premium</p>
-          <Button size="sm" className="mt-2 w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
-            Upgrade Now
-          </Button>
-        </div>
+        {!merchantLoading && merchant ? (
+          <div className="glass-card rounded-lg p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">Merchant Status</p>
+              {merchant.verification_status === 'verified' && (
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1 px-1.5 py-0">
+                  <CheckCircle2 size={10} /> Verified
+                </Badge>
+              )}
+              {merchant.verification_status === 'pending' && (
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1 px-1.5 py-0">
+                  <Clock size={10} /> Pending
+                </Badge>
+              )}
+              {merchant.verification_status === 'rejected' && (
+                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1 px-1.5 py-0">
+                  <AlertCircle size={10} /> Rejected
+                </Badge>
+              )}
+            </div>
+            
+            <div>
+              <p className="text-sm font-medium truncate">{merchant.business_name}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">ID: {merchant.paystack_subaccount_code || 'Unlinked'}</p>
+            </div>
+            
+            {merchant.verification_status === 'verified' ? (
+              <div className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-medium bg-emerald-500/5 p-1.5 rounded border border-emerald-500/10">
+                <ShieldCheck size={12} /> Full Access Enabled
+              </div>
+            ) : merchant.verification_status === 'rejected' ? (
+              <Button size="sm" variant="destructive" className="w-full text-xs h-8">
+                Fix Verification
+              </Button>
+            ) : (
+              <div className="flex items-center gap-1.5 text-[10px] text-amber-500 font-medium bg-amber-500/5 p-1.5 rounded border border-amber-500/10">
+                <Clock size={12} /> Processing Application
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="glass-card rounded-lg p-3">
+            <p className="text-xs text-muted-foreground">Go Pro</p>
+            <p className="text-sm font-medium mt-1">Upgrade to Premium</p>
+            <Button size="sm" className="mt-2 w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
+              Upgrade Now
+            </Button>
+          </div>
+        )}
       </div>
     </div>;
   const menuButton = isMobile && <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm" onClick={toggleSidebar}>

@@ -75,7 +75,7 @@ serve(async (req) => {
               <p><strong>Reference:</strong> ${data.reference}</p>
               <p><strong>Date:</strong> ${data.date || new Date().toLocaleString()}</p>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-              <p style="color: #6b7280; font-size: 12px;">ZiroPay - The easiest way to get paid</p>
+              <p style="color: #6b7280; font-size: 12px;">ZiroKash - The easiest way to get paid</p>
             </div>
           `;
           break;
@@ -90,10 +90,10 @@ serve(async (req) => {
               <p><strong>Reference:</strong> ${data.reference}</p>
               <p><strong>Date:</strong> ${data.date || new Date().toLocaleString()}</p>
               <div style="margin-top: 20px;">
-                <a href="https://ziropay.com/dashboard" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View in Dashboard</a>
+                <a href="https://zirokash.com/dashboard" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View in Dashboard</a>
               </div>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-              <p style="color: #6b7280; font-size: 12px;">ZiroPay Business - Powering African Commerce</p>
+              <p style="color: #6b7280; font-size: 12px;">ZiroKash Business - Powering African Commerce</p>
             </div>
           `;
           break;
@@ -106,20 +106,20 @@ serve(async (req) => {
               <p>Your wallet balance is currently <strong>${data.currency} ${data.balance}</strong>, which is below your preferred threshold.</p>
               <p>Please top up your wallet to continue using our services without interruption.</p>
               <div style="margin-top: 20px;">
-                <a href="https://ziropay.com/dashboard" style="background-color: #0d9488; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Top Up Now</a>
+                <a href="https://zirokash.com/dashboard" style="background-color: #0d9488; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Top Up Now</a>
               </div>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-              <p style="color: #6b7280; font-size: 12px;">ZiroPay Security</p>
+              <p style="color: #6b7280; font-size: 12px;">ZiroKash Security</p>
             </div>
           `;
           break;
         case 'welcome-email':
-          subject = `Welcome to ZiroPay, ${recipient.name}! 🚀`;
+          subject = `Welcome to ZiroKash, ${recipient.name}! 🚀`;
           html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #f97316;">Welcome to ZiroPay!</h1>
+              <h1 style="color: #f97316;">Welcome to ZiroKash!</h1>
               <p>Hello ${recipient.name},</p>
-              <p>We're excited to have you on board. ZiroPay is designed to help you manage your digital finances and grow your business with ease.</p>
+              <p>We're excited to have you on board. ZiroKash is designed to help you manage your digital finances and grow your business with ease.</p>
               <p>Here's what you can do right now:</p>
               <ul>
                 <li>Set up your business profile</li>
@@ -127,10 +127,10 @@ serve(async (req) => {
                 <li>Link your bank or MoMo account</li>
               </ul>
               <div style="margin-top: 25px;">
-                <a href="https://ziropay.com/onboarding" style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Get Started</a>
+                <a href="https://zirokash.com/onboarding" style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Get Started</a>
               </div>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
-              <p style="color: #6b7280; font-size: 12px;">ZiroPay Team - Accra, Ghana</p>
+              <p style="color: #6b7280; font-size: 12px;">ZiroKash Team - Accra, Ghana</p>
             </div>
           `;
           break;
@@ -145,15 +145,15 @@ serve(async (req) => {
               <p><strong>Amount:</strong> ${data.currency} ${data.amount}</p>
               <p><strong>Submission ID:</strong> ${data.reference}</p>
               <div style="margin-top: 20px;">
-                <a href="https://ziropay.com/dashboard/forms" style="background-color: #0d9488; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Submissions</a>
+                <a href="https://zirokash.com/dashboard/forms" style="background-color: #0d9488; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Submissions</a>
               </div>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-              <p style="color: #6b7280; font-size: 12px;">ZiroPay Forms</p>
+              <p style="color: #6b7280; font-size: 12px;">ZiroKash Forms</p>
             </div>
           `;
           break;
         case 'weekly-summary':
-          subject = `Your ZiroPay Weekly Summary 📊`;
+          subject = `Your ZiroKash Weekly Summary 📊`;
           html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
               <h1 style="color: #f97316;">Weekly Activity Report</h1>
@@ -166,20 +166,20 @@ serve(async (req) => {
               </div>
               <p>Keep up the great work!</p>
               <div style="margin-top: 20px;">
-                <a href="https://ziropay.com/dashboard" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
+                <a href="https://zirokash.com/dashboard" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
               </div>
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-              <p style="color: #6b7280; font-size: 12px;">ZiroPay Insights</p>
+              <p style="color: #6b7280; font-size: 12px;">ZiroKash Insights</p>
             </div>
           `;
           break;
         default:
-          subject = `Notification from ZiroPay`;
+          subject = `Notification from ZiroKash`;
           html = `<p>Hello ${recipient.name}, you have a new notification.</p>`;
       }
 
       const emailResult = await resend.emails.send({
-        from: 'ZiroPay <finance@ziropay.com>', // Branded sender
+        from: 'ZiroKash <finance@zirokash.com>', // Branded sender
         to: [recipient.email],
         subject,
         html,
@@ -198,16 +198,16 @@ serve(async (req) => {
       let message: string;
       switch (template) {
         case 'transaction-success':
-          message = `ZiroPay: Your payment of ${data.currency} ${data.amount} was successful. Ref: ${data.reference}`;
+          message = `ZiroKash: Your payment of ${data.currency} ${data.amount} was successful. Ref: ${data.reference}`;
           break;
         case 'merchant-payment-received':
-          message = `ZiroPay: New payment received! You've been credited ${data.currency} ${data.amount} for "${data.formName}". Ref: ${data.reference}`;
+          message = `ZiroKash: New payment received! You've been credited ${data.currency} ${data.amount} for "${data.formName}". Ref: ${data.reference}`;
           break;
         case 'low-balance':
-          message = `ZiroPay Alert: Your balance is low (${data.currency} ${data.balance}). Please top up to avoid interruptions.`;
+          message = `ZiroKash Alert: Your balance is low (${data.currency} ${data.balance}). Please top up to avoid interruptions.`;
           break;
         default:
-          message = `ZiroPay: You have a new notification for your account.`;
+          message = `ZiroKash: You have a new notification for your account.`;
       }
 
       // Africa's Talking API call

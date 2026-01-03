@@ -151,14 +151,14 @@ export const testimonials: Testimonial[] = [
     {
         name: "Sarah Mensah",
         role: "School Administrator",
-        content: "ZiroPay has made collecting school fees so much easier. Parents can pay anytime, anywhere!",
+        content: "ZiroKash has made collecting school fees so much easier. Parents can pay anytime, anywhere!",
         rating: 5,
         avatar: "SM"
     },
     {
         name: "Pastor John",
         role: "Church Leader",
-        content: "Our tithes and offerings collection has increased by 40% since using ZiroPay. Highly recommended!",
+        content: "Our tithes and offerings collection has increased by 40% since using ZiroKash. Highly recommended!",
         rating: 5,
         avatar: "PJ"
     },
@@ -206,7 +206,7 @@ export const pricingPlans: PricingPlan[] = [
             "Priority support"
         ],
         isPopular: true,
-        ctaText: "Activate ZiroPay",
+        ctaText: "Activate ZiroKash",
         ctaVariant: "default"
     }
 ];

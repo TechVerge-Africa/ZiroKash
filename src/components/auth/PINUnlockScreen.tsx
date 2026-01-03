@@ -59,7 +59,7 @@ export function PINUnlockScreen({ onUnlock }: PINUnlockScreenProps) {
           <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary via-orange-500 to-secondary flex items-center justify-center text-white font-bold text-3xl shadow-lg shadow-primary/20 rotate-3 transform mb-8">
             Z
           </div>
-          <h1 className="text-3xl font-black tracking-tight gradient-text mb-2">ZiroPay</h1>
+          <h1 className="text-3xl font-black tracking-tight gradient-text mb-2">ZiroKash</h1>
           <p className="text-muted-foreground">Session Locked • Enter PIN to continue</p>
         </div>
 
@@ -109,7 +109,7 @@ export function PINUnlockScreen({ onUnlock }: PINUnlockScreenProps) {
             Log out & Switch Account
           </Button>
           <p className="text-xs text-muted-foreground">
-            © 2025 ZiroPay. Accra, Ghana.
+            © 2025 ZiroKash. Accra, Ghana.
           </p>
         </div>
       </div>

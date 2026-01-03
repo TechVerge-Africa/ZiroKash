@@ -118,7 +118,7 @@ export function MerchantOnboarding() {
       if (!currentMerchant) {
         try {
           currentMerchant = await createMerchant({
-            businessName: user?.email || 'ZiroPay Merchant',
+            businessName: user?.email || 'ZiroKash Merchant',
             businessEmail: user?.email || '',
           });
           
@@ -139,7 +139,7 @@ export function MerchantOnboarding() {
 
       // 2. Setup Paystack subaccount (Requires merchant record to exist)
       await setupPaystackSubaccount(
-        user?.email || 'ZiroPay Merchant',
+        user?.email || 'ZiroKash Merchant',
         selectedBank,
         accountNumber.trim(),
         accountName
@@ -339,7 +339,7 @@ export function MerchantOnboarding() {
             </div>
             <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                💡 Tip: Create payment forms in the ZiroPay section. Each form can have its own business name and branding.
+                💡 Tip: Create payment forms in the ZiroKash section. Each form can have its own business name and branding.
               </p>
             </div>
           </CardContent>

@@ -56,14 +56,14 @@ export default function Header(): JSX.Element {
         {/* Center - Logo (desktop only) */}
         {!isMobile && (
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
-            <Link to="/ziropay" className="flex items-center">
+            <Link to="/zirokash" className="flex items-center">
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-full blur-sm opacity-75 group-hover:opacity-100 transition duration-200"></div>
                 <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-base">
                   Z
                 </div>
               </div>
-              <span className="text-xl font-bold gradient-text ml-2 tracking-tight">ZiroPay</span>
+              <span className="text-xl font-bold gradient-text ml-2 tracking-tight">ZiroKash</span>
             </Link>
           </div>
         )}
@@ -139,7 +139,7 @@ export default function Header(): JSX.Element {
                     className="hover:bg-foreground/5 cursor-pointer" 
                     onClick={() => {
                       if (user) {
-                        sessionStorage.removeItem(`ziropay_unlocked_${user.id}`);
+                        sessionStorage.removeItem(`zirokash_unlocked_${user.id}`);
                         window.location.reload();
                       }
                     }}

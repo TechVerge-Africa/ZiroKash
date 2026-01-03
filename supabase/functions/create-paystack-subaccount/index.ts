@@ -40,7 +40,7 @@ serve(async (req) => {
       bankCode, 
       accountNumber, 
       accountName,
-      percentageCharge = 5 // ZiroPay takes 5% by default
+      percentageCharge = 5 // ZiroKash takes 5% by default
     } = await req.json();
 
     if (!businessName || !bankCode || !accountNumber || !accountName) {

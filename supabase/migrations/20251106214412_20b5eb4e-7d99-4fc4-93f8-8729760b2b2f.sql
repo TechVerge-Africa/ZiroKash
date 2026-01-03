@@ -27,23 +27,23 @@ USING (user_id = auth.uid());
 
 -- Create storage bucket for receipts and logos
 INSERT INTO storage.buckets (id, name, public) 
-VALUES ('ziropay', 'ziropay', true);
+VALUES ('zirokash', 'zirokash', true);
 
 -- Storage policies for logos and receipts
 CREATE POLICY "Users can upload own files"
 ON storage.objects FOR INSERT
 WITH CHECK (
-  bucket_id = 'ziropay' AND 
+  bucket_id = 'zirokash' AND 
   auth.uid()::text = (storage.foldername(name))[1]
 );
 
 CREATE POLICY "Users can view own files"
 ON storage.objects FOR SELECT
-USING (bucket_id = 'ziropay' AND auth.uid()::text = (storage.foldername(name))[1]);
+USING (bucket_id = 'zirokash' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Public can view receipts"
 ON storage.objects FOR SELECT
-USING (bucket_id = 'ziropay' AND (storage.foldername(name))[2] = 'receipts');
+USING (bucket_id = 'zirokash' AND (storage.foldername(name))[2] = 'receipts');
 
 -- Add indexes
 CREATE INDEX idx_form_api_keys_form_id ON public.form_api_keys(form_id);

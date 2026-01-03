@@ -75,7 +75,7 @@ export function Receipt({
   date,
 }: ReceiptProps) {
   const visibleMappings = fieldMappings.filter(m => m.showOnReceipt);
-  const verificationUrl = `https://ziropay.com/verify/${receiptNumber}?code=${verificationCode}`;
+  const verificationUrl = `https://zirokash.com/verify/${receiptNumber}?code=${verificationCode}`;
 
   // Generate barcode pattern based on receipt number
   const generateBarcodePattern = (text: string) => {

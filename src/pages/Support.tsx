@@ -98,7 +98,7 @@ export default function Support() {
       <div>
         <h1 className="text-3xl font-bold">Help & Support</h1>
         <p className="text-muted-foreground mt-2">
-          Get help with your ZiroPay account and find answers to common questions
+          Get help with your ZiroKash account and find answers to common questions
         </p>
       </div>
 
@@ -133,7 +133,7 @@ export default function Support() {
             <p className="text-sm text-muted-foreground mb-4">
               Typical response under 2 hours
             </p>
-            <p className="text-sm font-bold">support@ziropay.com</p>
+            <p className="text-sm font-bold">support@zirokash.com</p>
           </CardContent>
         </Card>
       </div>
@@ -154,7 +154,7 @@ export default function Support() {
                 <span>Frequently Asked Questions</span>
               </CardTitle>
               <CardDescription>
-                Everything you need to know about ZiroPay
+                Everything you need to know about ZiroKash
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -172,17 +172,17 @@ export default function Support() {
                 {[
                   {
                     question: "How long do merchant settlements take?",
-                    answer: "ZiroPay offers T+0 (instant) settlements for verified premium merchants and T+1 for standard business accounts across Ghana.",
+                    answer: "ZiroKash offers T+0 (instant) settlements for verified premium merchants and T+1 for standard business accounts across Ghana.",
                     category: "Settlements"
                   },
                   {
                     question: "Can I accept international payments?",
-                    answer: "Yes, ZiroPay supports multi-currency collections, allowing your customers to pay in USD, GBP, and EUR which are settled to your local GHS wallet.",
+                    answer: "Yes, ZiroKash supports multi-currency collections, allowing your customers to pay in USD, GBP, and EUR which are settled to your local GHS wallet.",
                     category: "International"
                   },
                   {
                     question: "Are there any hidden fees?",
-                    answer: "No. ZiroPay maintains a transparent fee structure of 1.5% for local transactions, capped at GH₵50.",
+                    answer: "No. ZiroKash maintains a transparent fee structure of 1.5% for local transactions, capped at GH₵50.",
                     category: "Fees"
                   },
                   {

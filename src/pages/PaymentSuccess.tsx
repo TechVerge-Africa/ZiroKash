@@ -8,7 +8,7 @@ import {
   Receipt, 
   generateUniqueReceiptNumber, 
   generateVerificationCode 
-} from "@/components/ziropay/Receipt";
+} from "@/components/zirokash/Receipt";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
@@ -147,7 +147,7 @@ export default function PaymentSuccess() {
       });
       
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 4, canvas.height / 4, undefined, 'FAST');
-      pdf.save(`ZiroPay-Receipt-${receiptMeta.number}.pdf`);
+      pdf.save(`ZiroKash-Receipt-${receiptMeta.number}.pdf`);
       
       toast.success("Receipt downloaded!", { id: toastId });
       
@@ -313,13 +313,13 @@ export default function PaymentSuccess() {
                 className="w-full sm:w-auto h-14 rounded-2xl text-slate-600 font-bold hover:bg-slate-200/50"
                 onClick={() => setView('promotion')}
               >
-                Go to ZiroPay
+                Go to ZiroKash
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
             
             <p className="text-center text-xs font-bold text-slate-400 tracking-widest uppercase">
-              Securely Powered by ZiroPay • 256-bit SSL Encrypted
+              Securely Powered by ZiroKash • 256-bit SSL Encrypted
             </p>
           </div>
         </motion.div>
@@ -424,7 +424,7 @@ export default function PaymentSuccess() {
               <div className="relative rounded-[32px] overflow-hidden border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
                 <img 
                   src="/images/merchant_hero.png" 
-                  alt="ZiroPay Merchant Success" 
+                  alt="ZiroKash Merchant Success" 
                   className="w-full h-auto"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />

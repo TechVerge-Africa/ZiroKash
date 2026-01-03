@@ -149,7 +149,7 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <Button className="w-full justify-start" asChild>
-                            <Link to="/ziropay">
+                            <Link to="/zirokash">
                             <DollarSign className="mr-2 h-4 w-4" />
                             Create Payment Form
                             </Link>

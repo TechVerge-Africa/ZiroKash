@@ -28,7 +28,7 @@ import {
 } from "@/data/landingData";
 
 /**
- * Landing page component for ZiroPay
+ * Landing page component for ZiroKash
  * Premium design with animated sections and interactive elements
  */
 export default function Landing() {
@@ -107,7 +107,7 @@ export default function Landing() {
                 Z
               </div>
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                ZiroPay
+                ZiroKash
               </span>
             </Link>
             
@@ -643,7 +643,7 @@ export default function Landing() {
               Start collecting payments in minutes — no coding needed.
             </h2>
             <p className="text-lg text-foreground/70 mb-8 sm:mb-12">
-              Join thousands of organizations already using ZiroPay to streamline their payment collection.
+              Join thousands of organizations already using ZiroKash to streamline their payment collection.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/auth">
@@ -651,7 +651,7 @@ export default function Landing() {
                   size="lg" 
                   className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 cta-button glow-pulse"
                 >
-                  Activate ZiroPay
+                  Activate ZiroKash
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -681,7 +681,7 @@ export default function Landing() {
                   Z
                 </div>
                 <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  ZiroPay
+                  ZiroKash
                 </span>
               </div>
               <p className="text-sm text-foreground/70 mb-4">
@@ -733,7 +733,7 @@ export default function Landing() {
           </div>
           
           <div className="pt-8 border-t text-center text-sm text-foreground/60">
-            <p>© 2025 ZiroPay. All rights reserved.</p>
+            <p>© 2025 ZiroKash. All rights reserved.</p>
           </div>
         </div>
       </footer>

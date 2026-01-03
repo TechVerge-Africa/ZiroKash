@@ -12,7 +12,7 @@ export default function QuickActions() {
     { 
       icon: <DollarSign size={20} />, 
       label: "Create Form", 
-      link: "/ziropay"
+      link: "/zirokash"
     },
     { 
       icon: <Receipt size={20} />, 
@@ -22,12 +22,12 @@ export default function QuickActions() {
     { 
       icon: <Link2 size={20} />, 
       label: "My Forms", 
-      link: "/ziropay"
+      link: "/zirokash"
     },
     { 
       icon: <Eye size={20} />, 
       label: "Analytics", 
-      link: "/ziropay"
+      link: "/zirokash"
     },
   ];
 

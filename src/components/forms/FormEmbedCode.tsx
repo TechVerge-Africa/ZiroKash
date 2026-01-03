@@ -14,13 +14,13 @@ export function FormEmbedCode({ formId, apiKey }: FormEmbedCodeProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const embedCode = `<script src="https://cdn.ziropay.com/form-embed.js"></script>
-<div id="ziropay-form-${formId}"></div>
+  const embedCode = `<script src="https://cdn.zirokash.com/form-embed.js"></script>
+<div id="zirokash-form-${formId}"></div>
 <script>
-  new ZiroPayForm({
+  new ZiroKashForm({
     formId: "${formId}",
     apiKey: "${apiKey}",
-    container: "#ziropay-form-${formId}"
+    container: "#zirokash-form-${formId}"
   });
 </script>`;
 

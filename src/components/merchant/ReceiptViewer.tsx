@@ -106,7 +106,7 @@ export function ReceiptViewer({ isOpen, onClose, transaction }: ReceiptViewerPro
 
                 {/* Footer */}
                 <div className="text-center text-xs text-gray-400 mt-8 pt-4 border-t border-gray-100">
-                    <p>Powered by ZiroPay</p>
+                    <p>Powered by ZiroKash</p>
                     <p>Thank you for your business!</p>
                 </div>
             </div>

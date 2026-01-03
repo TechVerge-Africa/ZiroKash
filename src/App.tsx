@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import ZiroPay from "./pages/ZiroPay";
+import ZiroKash from "./pages/ZiroKash";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "@/components/layout/MainLayout";
 import PaymentForm from "./pages/PaymentForm";
@@ -41,7 +41,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Landing page is now at the root */}
-      <Route path="/" element={user ? <Navigate to="/ziropay" replace /> : <Landing />} />
+      <Route path="/" element={user ? <Navigate to="/zirokash" replace /> : <Landing />} />
       <Route path="/auth" element={<Auth />} />
       
       {/* Fallback for legacy /landing links */}
@@ -52,10 +52,10 @@ function AppRoutes() {
       <Route path="/pay/:formId/success" element={<PaymentSuccess />} />
       
       {/* Protected Routes */}
-        <Route path="/ziropay" element={
+        <Route path="/zirokash" element={
           <ProtectedRoute>
             <MainLayout>
-              <ZiroPay />
+              <ZiroKash />
             </MainLayout>
           </ProtectedRoute>
         } />
@@ -86,7 +86,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      <Route path="/ziropay/:formId" element={
+      <Route path="/zirokash/:formId" element={
         <ProtectedRoute>
           <MainLayout>
             <FormDetails />

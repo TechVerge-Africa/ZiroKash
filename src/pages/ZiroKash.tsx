@@ -11,10 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { FormBuilder } from "@/components/ziropay/FormBuilder";
-import { FormPreview } from "@/components/ziropay/FormPreview";
-import { ReceiptDesigner } from "@/components/ziropay/ReceiptDesigner";
-import { ThemePicker } from "@/components/ziropay/ThemePicker";
+import { FormBuilder } from "@/components/zirokash/FormBuilder";
+import { FormPreview } from "@/components/zirokash/FormPreview";
+import { ReceiptDesigner } from "@/components/zirokash/ReceiptDesigner";
+import { ThemePicker } from "@/components/zirokash/ThemePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
 import { useMerchant } from "@/hooks/useMerchant";
@@ -105,7 +105,7 @@ const QUICK_TEMPLATES = [
   },
 ];
 
-export default function ZiroPay() {
+export default function ZiroKash() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { forms, stats, isLoading, refetch } = usePaymentForms();
@@ -194,7 +194,7 @@ export default function ZiroPay() {
         });
         setIsEditing(true);
         // Clean up the URL
-        navigate("/ziropay", { replace: true });
+        navigate("/zirokash", { replace: true });
       }
     }
   }, [searchParams, forms, navigate]);
@@ -850,7 +850,7 @@ export default function ZiroPay() {
                         variant="outline" 
                         size="sm" 
                         className="gap-2 flex-1 sm:flex-initial"
-                        onClick={() => navigate(`/ziropay/${form.id}`)}
+                        onClick={() => navigate(`/zirokash/${form.id}`)}
                       >
                         <Eye className="h-4 w-4" />
                         <span className="hidden sm:inline">View</span>

@@ -92,11 +92,11 @@ export default function About() {
           <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
             Z
           </div>
-          <h1 className="text-4xl font-bold gradient-text">ZiroPay</h1>
+          <h1 className="text-4xl font-bold gradient-text">ZiroKash</h1>
         </div>
         <h2 className="text-2xl font-semibold">The Future of Merchant Payments in Africa</h2>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          ZiroPay is a premium financial technology platform designed to empower businesses 
+          ZiroKash is a premium financial technology platform designed to empower businesses 
           and individuals with seamless, secure, and boundary-less payment infrastructure.
         </p>
       </div>
@@ -137,7 +137,7 @@ export default function About() {
       {/* Key Features */}
       <Card className="glass-card border-white/10">
         <CardHeader>
-          <CardTitle>Why Businesses Choose ZiroPay</CardTitle>
+          <CardTitle>Why Businesses Choose ZiroKash</CardTitle>
           <CardDescription>
             State-of-the-art infrastructure for modern commerce
           </CardDescription>
@@ -200,7 +200,7 @@ export default function About() {
             <div className="text-center p-4 rounded-lg bg-white/5 border border-white/5">
               <Mail className="h-8 w-8 mx-auto mb-2 text-primary" />
               <h3 className="font-semibold mb-1">Email</h3>
-              <p className="text-sm text-muted-foreground">support@ziropay.com</p>
+              <p className="text-sm text-muted-foreground">support@zirokash.com</p>
             </div>
             <div className="text-center p-4 rounded-lg bg-white/5 border border-white/5">
               <Phone className="h-8 w-8 mx-auto mb-2 text-primary" />

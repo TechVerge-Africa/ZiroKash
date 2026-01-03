@@ -1,6 +1,6 @@
-# ZiroPay Architecture
+# ZiroKash Architecture
 
-This document describes the system architecture, database schema, and data flow for ZiroPay.
+This document describes the system architecture, database schema, and data flow for ZiroKash.
 
 ---
 
@@ -217,7 +217,7 @@ All tables have RLS enabled with the following policies:
 ├── Landing.tsx      # Public landing page
 ├── Auth.tsx         # Login/Signup
 ├── Dashboard.tsx    # Main dashboard (auth required)
-├── ZiroPay.tsx      # Form management & builder
+├── ZiroKash.tsx      # Form management & builder
 ├── FormDetails.tsx  # Single form view with analytics
 └── PaymentForm.tsx  # Public payment page (/pay/:formId)
 ```
@@ -225,7 +225,7 @@ All tables have RLS enabled with the following policies:
 ### Feature Components
 
 ```
-/components/ziropay/
+/components/zirokash/
 ├── FormBuilder.tsx     # Drag-and-drop form editor
 ├── FormPreview.tsx     # Live form preview
 ├── ReceiptDesigner.tsx # Receipt customization
@@ -253,7 +253,7 @@ All tables have RLS enabled with the following policies:
 │                      VERCEL                              │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │              React SPA (Vite)                   │    │
-│  │         https://ziropay.vercel.app              │    │
+│  │         https://zirokash.vercel.app              │    │
 │  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
                           │

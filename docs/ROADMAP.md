@@ -1,4 +1,4 @@
-# ZiroPay Roadmap
+# ZiroKash Roadmap
 
 Current development status, completed features, and future plans.
 
@@ -6,7 +6,7 @@ Current development status, completed features, and future plans.
 
 ## Current Status: Beta
 
-ZiroPay is in active development with core payment collection functionality working.
+ZiroKash is in active development with core payment collection functionality working.
 
 ---
 
@@ -144,7 +144,7 @@ ZiroPay is in active development with core payment collection functionality work
 
 #### White-label Solution
 - Custom domain support
-- Remove ZiroPay branding
+- Remove ZiroKash branding
 - Custom email sender
 - Enterprise pricing tier
 
@@ -218,7 +218,7 @@ ZiroPay is in active development with core payment collection functionality work
 
 ## How to Contribute
 
-1. Check the [Issues](https://github.com/your-org/ziropay/issues) for open tasks
+1. Check the [Issues](https://github.com/your-org/zirokash/issues) for open tasks
 2. Pick an issue labeled `good-first-issue` or `help-wanted`
 3. Comment on the issue to claim it
 4. Submit a PR following our [Developer Guide](./DEVELOPER_GUIDE.md)
@@ -238,5 +238,5 @@ ZiroPay is in active development with core payment collection functionality work
 ## Contact
 
 For feature requests or bug reports:
-- GitHub Issues: [ziropay/issues](https://github.com/your-org/ziropay/issues)
-- Email: support@ziropay.com
+- GitHub Issues: [zirokash/issues](https://github.com/your-org/zirokash/issues)
+- Email: support@zirokash.com

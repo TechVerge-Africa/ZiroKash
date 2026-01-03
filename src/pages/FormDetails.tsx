@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Copy, Link2, Eye, EyeOff, Trash2, Download, Edit2 } from "lucide-react";
 import { toast } from "sonner";
-import FormAnalytics from "@/components/ziropay/FormAnalytics";
-import FormEmbedCode from "@/components/ziropay/FormEmbedCode";
+import FormAnalytics from "@/components/zirokash/FormAnalytics";
+import FormEmbedCode from "@/components/zirokash/FormEmbedCode";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -94,7 +94,7 @@ export default function FormDetails() {
       if (error) throw error;
       
       toast.success('Form deleted successfully');
-      navigate('/ziropay');
+      navigate('/zirokash');
     } catch (error) {
       toast.error('Failed to delete form');
     }
@@ -152,7 +152,7 @@ export default function FormDetails() {
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/ziropay')} className="flex-shrink-0">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/zirokash')} className="flex-shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="min-w-0 flex-1">
@@ -179,7 +179,7 @@ export default function FormDetails() {
             <span className="hidden sm:inline">{form.is_active ? 'Deactivate' : 'Activate'}</span>
             <span className="sm:hidden">{form.is_active ? 'Off' : 'On'}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate(`/ziropay?edit=${formId}`)} className="flex-1 sm:flex-initial">
+          <Button variant="outline" size="sm" onClick={() => navigate(`/zirokash?edit=${formId}`)} className="flex-1 sm:flex-initial">
             <Edit2 className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Edit Form</span>
             <span className="sm:hidden">Edit</span>

@@ -66,7 +66,7 @@ serve(async (req) => {
         if (status === 'success') {
             console.log(`[Verify Payment] ${reference} confirmed as success by Paystack. Updating DB...`);
 
-            // Update submission status in ZiroPay
+            // Update submission status in ZiroKash
             const { data: submission, error: updateError } = await supabase
                 .from('form_submissions')
                 .update({

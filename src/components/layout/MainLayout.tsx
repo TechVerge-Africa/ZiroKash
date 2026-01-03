@@ -19,7 +19,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [showPINOnboarding, setShowPINOnboarding] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(() => {
     // Session-based unlock state
-    return sessionStorage.getItem(`ziropay_unlocked_${user?.id}`) === 'true';
+    return sessionStorage.getItem(`zirokash_unlocked_${user?.id}`) === 'true';
   });
   const [userHasPIN, setUserHasPIN] = useState<boolean | null>(null);
 
@@ -54,7 +54,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const handleUnlock = () => {
     setIsUnlocked(true);
     if (user) {
-      sessionStorage.setItem(`ziropay_unlocked_${user.id}`, 'true');
+      sessionStorage.setItem(`zirokash_unlocked_${user.id}`, 'true');
     }
   };
   

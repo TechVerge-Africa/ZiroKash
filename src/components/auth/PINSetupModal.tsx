@@ -109,7 +109,7 @@ export function PINSetupModal({ isOpen, onClose, onSuccess }: PINSetupModalProps
           </DialogTitle>
           <DialogDescription>
             {step === "enter" 
-              ? "Create a 4-digit PIN for quick and secure access to your ZiroPay account."
+              ? "Create a 4-digit PIN for quick and secure access to your ZiroKash account."
               : "Please re-enter your PIN to confirm."}
           </DialogDescription>
         </DialogHeader>

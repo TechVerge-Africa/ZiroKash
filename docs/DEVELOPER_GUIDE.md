@@ -1,4 +1,4 @@
-# ZiroPay Developer Guide
+# ZiroKash Developer Guide
 
 This guide covers development setup, coding conventions, and contribution workflow.
 
@@ -17,8 +17,8 @@ This guide covers development setup, coding conventions, and contribution workfl
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/ziropay.git
-cd ziropay
+git clone https://github.com/your-org/zirokash.git
+cd zirokash
 
 # 2. Install dependencies
 npm install
@@ -72,7 +72,7 @@ npm run dev
 - **Hooks**: camelCase with `use` prefix (`usePaymentForms.ts`, `useAuth.tsx`)
 - **Services**: PascalCase with `Service` suffix (`WalletService.ts`)
 - **Types**: PascalCase (`database.types.ts`, `financial.ts`)
-- **Pages**: PascalCase (`Dashboard.tsx`, `ZiroPay.tsx`)
+- **Pages**: PascalCase (`Dashboard.tsx`, `ZiroKash.tsx`)
 
 ### Component Structure
 

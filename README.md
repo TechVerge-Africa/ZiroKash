@@ -1,12 +1,12 @@
-# ZiroPay
+# ZiroKash
 
 **The easiest way to get paid** — Create payment forms as simple as Google Forms, share a link, and collect payments with customizable receipts.
 
 ---
 
-## 🎯 What is ZiroPay?
+## 🎯 What is ZiroKash?
 
-ZiroPay enables anyone to collect payments without needing technical expertise or complex payment gateway integrations. Think of it as "Google Forms for Payments":
+ZiroKash enables anyone to collect payments without needing technical expertise or complex payment gateway integrations. Think of it as "Google Forms for Payments":
 
 1. **Create** → Build a payment form with a drag-and-drop builder
 2. **Share** → Get a link or embed code for your website
@@ -63,7 +63,7 @@ ZiroPay enables anyone to collect payments without needing technical expertise o
 │   ├── components/      # Reusable UI components
 │   │   ├── ui/          # shadcn/ui base components
 │   │   ├── layout/      # Header, Sidebar, Navigation
-│   │   ├── ziropay/     # Payment form builder components
+│   │   ├── zirokash/     # Payment form builder components
 │   │   └── ...
 │   ├── hooks/           # Custom React hooks
 │   ├── pages/           # Route pages
@@ -95,8 +95,8 @@ ZiroPay enables anyone to collect payments without needing technical expertise o
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-org/ziropay.git
-cd ziropay
+git clone https://github.com/your-org/zirokash.git
+cd zirokash
 npm install
 ```
 

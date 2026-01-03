@@ -123,9 +123,34 @@ serve(async (req) => {
 
     // Build payment payload - amount in pesewas (GHS smallest unit, 1 GHS = 100 pesewas)
     const originHeader = req.headers.get('origin');
-    const appBaseUrl = redirectOrigin || Deno.env.get('APP_BASE_URL') || originHeader || 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
+    const refererHeader = req.headers.get('referer');
 
-    console.log(`[Payment Form Submit] Using App Base URL: ${appBaseUrl} (Priority: Param > Env > Header > Fallback)`);
+    // Priority: redirectOrigin (param) > Origin (header) > Referer (header) > Env (if not lovable)
+    let appBaseUrl = redirectOrigin || originHeader;
+
+    if (!appBaseUrl && refererHeader) {
+      try {
+        const url = new URL(refererHeader);
+        appBaseUrl = `${url.protocol}//${url.host}`;
+      } catch (e) {
+        console.warn('[Payment Form Submit] Failed to parse referer:', refererHeader);
+      }
+    }
+
+    // Check if what we found is still the lovable domain, and try to find better
+    if (!appBaseUrl || appBaseUrl.includes('lovableproject.com')) {
+      const envBaseUrl = Deno.env.get('APP_BASE_URL');
+      if (envBaseUrl && !envBaseUrl.includes('lovableproject.com')) {
+        appBaseUrl = envBaseUrl;
+      }
+    }
+
+    // Final fallback ONLY if everything else is missing
+    if (!appBaseUrl) {
+      appBaseUrl = 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
+    }
+
+    console.log(`[Payment Form Submit] Final Callback Base URL: ${appBaseUrl}`);
 
     const paymentPayload: Record<string, any> = {
       email: payerEmail,

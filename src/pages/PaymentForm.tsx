@@ -177,6 +177,11 @@ export default function PaymentForm() {
             setSubmitting(false);
           }
         });
+      } else if (data?.payment_url) {
+        // Fallback for when the edge function hasn't been re-deployed with the new InlineJS logic
+        console.log('[DEBUG] Server returned a payment URL. Falling back to redirect-based checkout...');
+        window.location.href = data.payment_url;
+        return;
       } else {
         // Handle cases where data is returned but missing keys
         const missing = [];
@@ -186,7 +191,7 @@ export default function PaymentForm() {
         console.error('Incomplete data from edge function:', data);
         const serverError = data?.error || data?.message;
         
-        throw new Error(serverError || `Incomplete payment data received: Missing ${missing.join(' and ')}`);
+        throw new Error(serverError || `Incomplete payment data received: Missing ${missing.join(' and ')}. If you just updated the code, make sure to deploy the edge function using 'supabase functions deploy payment-form-submit'.`);
       }
     } catch (error: any) {
       console.error('Payment submission error:', error);

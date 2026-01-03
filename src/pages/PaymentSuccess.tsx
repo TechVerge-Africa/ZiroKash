@@ -125,25 +125,28 @@ export default function PaymentSuccess() {
     try {
       const element = receiptRef.current;
       const canvas = await html2canvas(element, {
-        scale: 3, // Higher scale for premium quality
+        scale: 4, // Ultra-high resolution for professional printing
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: 700 // Fix capture width for consistency
+        windowWidth: 750, // Slightly wider for better text layout in PDF
+        onclone: (clonedDoc) => {
+          // Ensure receipt is visible and styled correctly during capture
+          const clonedElement = clonedDoc.querySelector('[data-receipt-container]');
+          if (clonedElement) {
+            (clonedElement as HTMLElement).style.padding = '40px'; // Consistent padding
+          }
+        }
       });
       
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/png", 1.0);
       const pdf = new jsPDF({
         orientation: "portrait",
-        unit: "mm",
-        format: "a4"
+        unit: "pt", // Use points for more precise scaling
+        format: [canvas.width / 4, canvas.height / 4] // Fit PDF to the receipt's native size
       });
       
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 4, canvas.height / 4, undefined, 'FAST');
       pdf.save(`ZiroPay-Receipt-${receiptMeta.number}.pdf`);
       
       toast.success("Receipt downloaded!", { id: toastId });

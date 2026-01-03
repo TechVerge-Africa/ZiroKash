@@ -97,6 +97,7 @@ export function Receipt({
   return (
     <Card 
       id={id}
+      data-receipt-container="true"
       className={`bg-white relative overflow-hidden shadow-2xl print:shadow-none w-full transition-all duration-300 ${
         template.securityFeatures?.showSecurityBorder 
           ? "border-4 border-dashed border-primary/30 print:border-black" 

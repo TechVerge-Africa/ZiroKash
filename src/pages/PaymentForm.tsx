@@ -142,6 +142,18 @@ export default function PaymentForm() {
 
       if (error) {
         console.error('Edge function error:', error);
+        // Try to extract JSON error message if possible
+        if (error instanceof Error && 'context' in error) {
+          const context = (error as any).context;
+          if (context && typeof context.json === 'function') {
+            try {
+              const errorBody = await context.json();
+              throw new Error(errorBody.error || errorBody.message || 'Server error');
+            } catch (e) {
+              // Fallback if JSON parsing fails
+            }
+          }
+        }
         throw error;
       }
 

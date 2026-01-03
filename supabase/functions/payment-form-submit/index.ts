@@ -110,107 +110,33 @@ serve(async (req) => {
 
     console.log(`[Payment Form Submit] Submission created: ${submission.id}`);
 
-    // Initialize Paystack payment with split configuration
-    const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
+    // For InlineJS, we don't call transaction/initialize on the server.
+    // Instead, we return the data needed for the frontend PaystackPop instance.
+    const paystackPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY');
 
-    if (!paystackKey) {
-      console.error('PAYSTACK_SECRET_KEY not configured');
+    if (!paystackPublicKey) {
+      console.error('PAYSTACK_PUBLIC_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'Payment gateway not configured' }),
+        JSON.stringify({ error: 'Payment gateway public key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Build payment payload - amount in pesewas (GHS smallest unit, 1 GHS = 100 pesewas)
-    const originHeader = req.headers.get('origin');
-    const refererHeader = req.headers.get('referer');
-
-    // Priority: redirectOrigin (param) > Origin (header) > Referer (header) > Env (if not lovable)
-    let appBaseUrl = redirectOrigin || originHeader;
-
-    if (!appBaseUrl && refererHeader) {
-      try {
-        const url = new URL(refererHeader);
-        appBaseUrl = `${url.protocol}//${url.host}`;
-      } catch (e) {
-        console.warn('[Payment Form Submit] Failed to parse referer:', refererHeader);
-      }
-    }
-
-    // Check if what we found is still the lovable domain, and try to find better
-    if (!appBaseUrl || appBaseUrl.includes('lovableproject.com')) {
-      const envBaseUrl = Deno.env.get('APP_BASE_URL');
-      if (envBaseUrl && !envBaseUrl.includes('lovableproject.com')) {
-        appBaseUrl = envBaseUrl;
-      }
-    }
-
-    // Final fallback ONLY if everything else is missing
-    if (!appBaseUrl) {
-      appBaseUrl = 'https://kbhyqypwwmkvssrcbfdb.lovableproject.com';
-    }
-
-    console.log(`[Payment Form Submit] Final Callback Base URL: ${appBaseUrl}`);
-
-    const paymentPayload: Record<string, any> = {
-      email: payerEmail,
-      amount: amount, // Already in pesewas
-      reference: submission.id,
-      callback_url: `${appBaseUrl}/pay/${formId}/success?reference=${submission.id}`,
-      metadata: {
-        form_id: formId,
-        submission_id: submission.id,
-        payer_name: payerName || 'Anonymous',
-      }
-    };
-
-    // Add split payment if merchant has subaccount
-    if (merchant?.paystack_subaccount_code) {
-      paymentPayload.subaccount = merchant.paystack_subaccount_code;
-      // The bearer determines who pays the Paystack transaction fee
-      // 'subaccount' means merchant pays, 'account' means ZiroPay pays
-      paymentPayload.bearer = 'subaccount';
-      console.log(`[Payment Form Submit] Using subaccount: ${merchant.paystack_subaccount_code}`);
-    }
-
-    console.log('[Payment Form Submit] Payment breakdown:', {
-      originalAmount,
-      feeAmount,
-      totalAmount: amount / 100,
-      feeBearer: form.fee_bearer
-    });
-
-    console.log(`[Payment Form Submit] Initializing Paystack payment for ${paymentPayload.amount} pesewas`);
-
-    const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${paystackKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(paymentPayload)
-    });
-
-    const paystackData = await paystackResponse.json();
-
-    if (!paystackData.status) {
-      console.error('Paystack initialization failed:', paystackData);
-      return new Response(
-        JSON.stringify({
-          error: 'Payment initialization failed',
-          details: paystackData.message || 'Unknown error from payment gateway'
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`[Payment Form Submit] Payment initialized successfully: ${paystackData.data.reference}`);
+    console.log(`[Payment Form Submit] Returning InlineJS metadata for submission: ${submission.id}`);
 
     return new Response(
       JSON.stringify({
-        submission_id: submission.id,
-        payment_url: paystackData.data.authorization_url,
-        reference: paystackData.data.reference
+        status: 'success',
+        publicKey: paystackPublicKey,
+        email: payerEmail,
+        amount: amount, // In pesewas
+        reference: submission.id,
+        subaccount: merchant?.paystack_subaccount_code || undefined,
+        metadata: {
+          form_id: formId,
+          submission_id: submission.id,
+          payer_name: payerName || 'Anonymous',
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -126,7 +126,7 @@ export default function PaymentForm() {
         payerName
       });
 
-      // Submit to edge function
+      // Submit to edge function to get payment details
       const { data, error } = await supabase.functions.invoke('payment-form-submit', {
         body: {
           formId: form?.id,
@@ -136,7 +136,7 @@ export default function PaymentForm() {
           feeAmount: processingFee, // The fee portion
           payerName: payerName,
           payerEmail: payerEmail,
-          redirectOrigin: window.location.origin // Ensure we redirect back here
+          redirectOrigin: window.location.origin 
         }
       });
 
@@ -147,12 +147,38 @@ export default function PaymentForm() {
 
       console.log('Payment form submission response:', data);
 
-      // Redirect to Paystack
-      if (data?.payment_url) {
-        console.log('Redirecting to Paystack:', data.payment_url);
-        window.location.href = data.payment_url;
+      if (data?.publicKey && data?.reference) {
+        // Initialize Paystack Inline popup
+        const paystack = new PaystackPop();
+        paystack.checkout({
+          key: data.publicKey,
+          email: data.email,
+          amount: data.amount,
+          reference: data.reference,
+          subaccount: data.subaccount,
+          metadata: data.metadata,
+          onSuccess: (response) => {
+            console.log('Payment successful:', response);
+            toast.success('Payment successful!');
+            setPaymentSuccess(true);
+            // Navigate to success page after a short delay
+            setTimeout(() => {
+              navigate(`/pay/${formId}/success?reference=${data.reference}`);
+            }, 1000);
+          },
+          onCancel: () => {
+            console.log('Payment cancelled by user');
+            toast.info('Payment cancelled. You can try again.');
+            setSubmitting(false);
+          },
+          onError: (err) => {
+            console.error('Paystack error:', err);
+            toast.error('Payment initialization error. Please try again.');
+            setSubmitting(false);
+          }
+        });
       } else {
-        throw new Error('No payment URL received from server');
+        throw new Error('Incomplete payment data received from server');
       }
     } catch (error: any) {
       console.error('Payment submission error:', error);

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useWallet } from "@/hooks/useWallet";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
 import { useMerchant } from "@/hooks/useMerchant";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { MerchantStats } from "@/components/merchant/MerchantStats";
 import { RevenueChart } from "@/components/merchant/RevenueChart";
 import { RecentSettlements } from "@/components/merchant/RecentSettlements";
@@ -22,7 +22,7 @@ export default function Dashboard() {
   const mainWallet = getWalletByType('main');
   const merchantWallet = getWalletByType('merchant');
   
-  // Show combined balance or prioritize the one with funds
+  // Show combined balance
   const balance = ((mainWallet?.balance || 0) + (merchantWallet?.balance || 0)) / 100;
   const merchantBalance = (merchantWallet?.balance || 0) / 100;
 
@@ -70,13 +70,13 @@ export default function Dashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="glass-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Wallet Balance</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Balance</CardTitle>
                     <Wallet className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-3xl font-bold">₵{balance.toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {isMerchant ? `Includes ₵${merchantBalance.toFixed(2)} business earnings` : "Available balance"}
+                    <div className="text-3xl font-bold truncate-text number-display">₵{balance.toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground mt-1 truncate-text">
+                        {isMerchant ? `Business earnings: ₵${merchantBalance.toFixed(2)}` : "Available balance"}
                     </p>
                 </CardContent>
                 </Card>
@@ -87,8 +87,8 @@ export default function Dashboard() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-3xl font-bold">₵{dashboardStats.totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    <p className="text-xs text-muted-foreground mt-1">From {dashboardStats.totalPaid} paid submissions</p>
+                    <div className="text-3xl font-bold truncate-text number-display">₵{dashboardStats.totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <p className="text-xs text-muted-foreground mt-1 truncate-text">From {dashboardStats.totalPaid} paid submissions</p>
                 </CardContent>
                 </Card>
                 
@@ -128,12 +128,12 @@ export default function Dashboard() {
                     ) : (
                         <div className="space-y-4">
                          {transactions.slice(0, 5).map((tx) => (
-                            <div key={tx.id} className="flex justify-between items-center bg-muted/40 p-3 rounded-lg">
-                                <div>
-                                    <p className="font-medium">{tx.description || tx.transaction_type}</p>
+                            <div key={tx.id} className="flex justify-between items-center gap-4 bg-muted/40 p-3 rounded-lg">
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium truncate-text">{tx.description || tx.transaction_type}</p>
                                     <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
                                 </div>
-                                <div className={`font-bold ${tx.transaction_type === 'receive' ? 'text-green-500' : 'text-foreground'}`}>
+                                <div className={`font-bold number-display flex-shrink-0 ${tx.transaction_type === 'receive' ? 'text-green-500' : 'text-foreground'}`}>
                                     {tx.transaction_type === 'receive' ? '+' : '-'}₵{(tx.amount / 100).toFixed(2)}
                                 </div>
                             </div>
@@ -163,11 +163,11 @@ export default function Dashboard() {
                         {isMerchant && (
                             <Button 
                                 variant="outline" 
-                                className="w-full justify-start text-green-600 hover:text-green-700 hover:bg-green-50"
+                                className="w-full justify-start border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all"
                                 onClick={() => setShowWithdraw(true)}
                             >
-                                <Wallet className="mr-2 h-4 w-4" />
-                                Withdraw Earnings
+                                <Wallet className="mr-2 h-4 w-4 text-primary" />
+                                <span className="text-primary font-medium">Withdraw Earnings</span>
                             </Button>
                         )}
                     </CardContent>

@@ -76,8 +76,8 @@ export default function Transactions() {
               <p className="text-muted-foreground">No transactions yet</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">ID</th>
@@ -93,13 +93,13 @@ export default function Transactions() {
                       key={transaction.id} 
                       className="border-b hover:bg-muted/50 transition-colors cursor-pointer"
                     >
-                      <td className="py-3 px-4 font-mono text-sm">
+                      <td className="py-3 px-4 font-mono text-sm truncate-text max-w-[120px]">
                         {transaction.id.slice(0, 8)}...
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 truncate-text max-w-[150px]">
                         {getTransactionType(transaction.transaction_type)}
                       </td>
-                      <td className="py-3 px-4 font-semibold">
+                      <td className="py-3 px-4 font-semibold number-display whitespace-nowrap">
                         {transaction.transaction_type === 'receive' || transaction.transaction_type === 'deposit' ? '+' : '-'}
                         {formatAmount(transaction.amount / 100)}
                       </td>
@@ -108,7 +108,7 @@ export default function Transactions() {
                           {transaction.status}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 text-sm text-muted-foreground">
+                      <td className="py-3 px-4 text-sm text-muted-foreground whitespace-nowrap">
                         {format(new Date(transaction.created_at), 'MMM dd, yyyy HH:mm')}
                       </td>
                     </tr>

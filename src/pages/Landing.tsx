@@ -102,13 +102,12 @@ export default function Landing() {
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            <Link to="/" className="flex items-center gap-2 sm:gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg sm:text-xl">
-                Z
-              </div>
-              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                ZiroKash
-              </span>
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/zirokash-logo.png" 
+                alt="ZiroKash" 
+                className="h-20 sm:h-24 w-auto scale-[1.5] sm:scale-[1.8] transform origin-left transition-transform hover:scale-[1.9]"
+              />
             </Link>
             
             {/* Desktop Navigation */}
@@ -185,26 +184,11 @@ export default function Landing() {
       </motion.header>
 
       {/* Hero Section */}
-      <section className="pt-24 sm:pt-32 pb-16 sm:pb-24 relative overflow-hidden">
-        {/* Animated gradient mesh background */}
-        <div className="absolute inset-0 gradient-mesh" aria-hidden="true"></div>
+      <section className="pt-32 sm:pt-40 pb-20 sm:pb-32 relative overflow-hidden">
+        {/* Superior background depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.08),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(var(--accent-rgb),0.05),transparent_50%)]" aria-hidden="true"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none"></div>
         
-        {/* Floating particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          {[...Array(ANIMATION_CONFIG.PARTICLE_COUNT)].map((_, i) => (
-            <div
-              key={i}
-              className="particle"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 8}s`,
-                animationDuration: `${8 + Math.random() * 4}s`
-              }}
-            />
-          ))}
-        </div>
-
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div 
             className="max-w-4xl mx-auto text-center"
@@ -213,13 +197,19 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 mb-8 backdrop-blur-sm shadow-sm"
             >
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Trusted by 10,000+ businesses across Africa</span>
+              <div className="flex -space-x-2 mr-1">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-6 h-6 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20" />
+                  </div>
+                ))}
+              </div>
+              <span className="text-xs font-semibold tracking-wide text-primary/80 uppercase">10k+ businesses trust ZiroKash</span>
             </motion.div>
 
             <motion.h1 
@@ -231,23 +221,23 @@ export default function Landing() {
               <span className="gradient-shimmer">Create. Share. Get Paid</span>
             </motion.h1>
             <motion.p 
-              className="text-lg sm:text-xl md:text-2xl text-foreground/70 mb-8 sm:mb-12 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Create custom payment forms, share payment links, and get paid instantly through MoMo or bank. No technical setup required.
+              The digital wallet for Africa. Create custom payment links, accept local payments, and settle instantly in your currency.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              className="flex flex-col sm:flex-row gap-5 justify-center items-center"
             >
               <Link to="/auth">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8 py-6 sm:py-7 cta-button glow-pulse"
+                  className="bg-primary hover:bg-primary/90 text-white font-bold text-lg px-10 py-7 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -256,10 +246,9 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="text-base sm:text-lg px-6 sm:px-8 py-6 sm:py-7"
+                className="text-lg px-10 py-7 rounded-2xl border-border/50 backdrop-blur-sm bg-background/30 transition-all hover:bg-background/80"
               >
-                <Globe className="mr-2 h-5 w-5" />
-                Watch Demo
+                Learn More
               </Button>
             </motion.div>
 
@@ -294,16 +283,17 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={statsVisible ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="group p-1"
               >
-                <Card className="stats-card border-2 hover:border-primary/50 transition-all">
-                  <CardContent className="p-6 text-center">
-                    <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${stat.color} mb-4 mx-auto`}>
-                      <stat.icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
-                    </div>
-                    <AnimatedCounter value={stat.value} isVisible={statsVisible} />
-                    <p className="text-sm sm:text-base text-foreground/70 mt-2">{stat.label}</p>
-                  </CardContent>
-                </Card>
+                <div className="h-full bg-background border border-border/40 rounded-3xl p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/5 text-primary mb-6 transition-transform group-hover:scale-110`}>
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <AnimatedCounter value={stat.value} isVisible={statsVisible} className="text-3xl sm:text-4xl font-black tracking-tighter" />
+                    <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-muted-foreground mt-2">{stat.label}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -342,28 +332,22 @@ export default function Landing() {
               <motion.div
                 key={index}
                 variants={fadeInUp}
-                className="relative"
+                className="relative group p-1"
               >
-                <Card className="h-full border-2 hover:border-primary/50 transition-all card-3d feature-card">
-                  <CardContent className="p-6 sm:p-8 text-center card-3d-content">
-                    <motion.div
-                      className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary mb-4 sm:mb-6 mx-auto icon-bounce"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <step.icon className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-                    </motion.div>
-                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                      {index + 1}
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
-                      {step.title}
-                    </h3>
-                    <p className="text-foreground/70 text-sm sm:text-base">
-                      {step.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="h-full bg-background border border-border/40 rounded-[2.5rem] p-8 sm:p-10 text-center transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary text-white mb-8 transition-transform group-hover:scale-110">
+                    <step.icon className="h-10 w-10" />
+                  </div>
+                  <div className="absolute top-8 right-8 w-10 h-10 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground opacity-50">
+                    0{index + 1}
+                  </div>
+                  <h3 className="text-2xl font-black mb-4 tracking-tight">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -441,21 +425,14 @@ export default function Landing() {
               <motion.div
                 key={index}
                 variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="group"
+                className="group p-1"
               >
-                <Card className="h-full border-2 hover:border-primary/50 transition-all cursor-pointer card-3d">
-                  <CardContent className="p-6 text-center">
-                    <motion.div
-                      className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${useCase.color} mb-4 mx-auto`}
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <useCase.icon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-                    </motion.div>
-                    <h3 className="font-semibold text-sm sm:text-base">{useCase.title}</h3>
-                  </CardContent>
-                </Card>
+                <div className="h-full bg-background border border-border/40 rounded-3xl p-8 text-center transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 cursor-pointer">
+                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${useCase.color} mb-5 mx-auto transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                    <useCase.icon className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="font-black text-sm uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">{useCase.title}</h3>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -489,34 +466,33 @@ export default function Landing() {
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.5 }}
               >
-                <Card className="border-2 hover:border-primary/50 transition-all testimonial-card">
-                  <CardContent className="p-8 sm:p-12">
-                    <div className="flex flex-col items-center text-center">
-                      {/* Avatar */}
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl sm:text-2xl mb-6">
-                        {testimonials[currentTestimonial].avatar}
-                      </div>
-                      
-                      {/* Stars */}
-                      <div className="flex gap-1 mb-6" aria-label={`Rating: ${testimonials[currentTestimonial].rating} out of 5 stars`}>
-                        {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                          <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      
-                      {/* Content */}
-                      <p className="text-lg sm:text-xl text-foreground/80 mb-6 italic max-w-2xl">
-                        "{testimonials[currentTestimonial].content}"
-                      </p>
-                      
-                      {/* Author */}
-                      <div>
-                        <p className="font-semibold text-lg">{testimonials[currentTestimonial].name}</p>
-                        <p className="text-sm text-foreground/60">{testimonials[currentTestimonial].role}</p>
-                      </div>
+                <div className="bg-background border border-border/40 rounded-[3rem] p-10 sm:p-20 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary opacity-50" />
+                  <div className="flex flex-col items-center text-center relative z-10">
+                    {/* Avatar */}
+                    <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center text-primary font-black text-2xl mb-8 shadow-inner">
+                      {testimonials[currentTestimonial].avatar}
                     </div>
-                  </CardContent>
-                </Card>
+                    
+                    {/* Stars */}
+                    <div className="flex gap-1.5 mb-8">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`h-5 w-5 ${i < testimonials[currentTestimonial].rating ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`} />
+                      ))}
+                    </div>
+                    
+                    {/* Content */}
+                    <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground/90 mb-10 max-w-2xl leading-tight">
+                      "{testimonials[currentTestimonial].content}"
+                    </p>
+                    
+                    {/* Author */}
+                    <div>
+                      <p className="font-black text-lg tracking-tight">{testimonials[currentTestimonial].name}</p>
+                      <p className="text-sm font-bold uppercase tracking-widest text-primary/60">{testimonials[currentTestimonial].role}</p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </AnimatePresence>
 
@@ -584,89 +560,91 @@ export default function Landing() {
             className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8"
           >
             {pricingPlans.map((plan, index) => (
-              <Card 
+              <div 
                 key={index}
-                className={`border-2 card-3d relative overflow-hidden ${
-                  plan.isPopular ? 'border-primary' : ''
+                className={`group relative bg-background border rounded-[3rem] p-8 sm:p-12 transition-all duration-500 overflow-hidden ${
+                  plan.isPopular ? 'border-primary ring-4 ring-primary/5 scale-105 z-10' : 'border-border/40 hover:border-primary/20'
                 }`}
               >
                 {plan.isPopular && (
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-primary">Popular</Badge>
+                  <div className="absolute top-8 right-8">
+                    <Badge className="bg-primary text-white font-black px-4 py-1">POPULAR</Badge>
                   </div>
                 )}
-                <CardContent className="p-6 sm:p-8">
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                    <p className="text-3xl sm:text-4xl font-bold text-primary mb-2">{plan.price}</p>
-                    <p className="text-foreground/70 text-sm">{plan.description}</p>
+                <div className="relative z-10">
+                  <div className="mb-10">
+                    <h3 className="text-xl font-black uppercase tracking-widest text-muted-foreground mb-4">{plan.name}</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
+                      <span className="text-muted-foreground font-bold">/txn</span>
+                    </div>
+                    <p className="text-muted-foreground font-medium mt-4">{plan.description}</p>
                   </div>
-                  <ul className="space-y-3 mb-6">
+                  <ul className="space-y-4 mb-10">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span className="text-sm sm:text-base">{feature}</span>
+                      <li key={featureIndex} className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-medium text-foreground/80">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Link to="/auth" className="block">
                     <Button 
-                      className={`w-full ${
+                      className={`w-full py-8 rounded-2xl font-black text-lg transition-all ${
                         plan.ctaVariant === 'default' 
-                          ? 'bg-gradient-to-r from-primary to-secondary cta-button' 
-                          : ''
+                          ? 'bg-primary text-white hover:bg-primary/90 shadow-xl shadow-primary/20' 
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
-                      variant={plan.ctaVariant}
                     >
                       {plan.ctaText}
                     </Button>
                   </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </motion.div>
         </div>
       </section>
 
       {/* CTA Block */}
-      <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-50" aria-hidden="true"></div>
+      <section className="py-24 sm:py-32 bg-slate-950 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(var(--primary-rgb),0.15),transparent_70%)]" aria-hidden="true"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-              Start collecting payments in minutes — no coding needed.
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-8 tracking-tighter leading-tight">
+              Ready to modernize your <span className="text-primary italic">payment experience?</span>
             </h2>
-            <p className="text-lg text-foreground/70 mb-8 sm:mb-12">
-              Join thousands of organizations already using ZiroKash to streamline their payment collection.
+            <p className="text-xl sm:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium">
+              Join 10,000+ organizations streamlining their global collections with ZiroKash.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link to="/auth">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 cta-button glow-pulse"
+                  className="bg-primary hover:bg-primary/90 text-white font-black text-xl px-12 py-8 rounded-2xl shadow-2xl shadow-primary/40 transition-all hover:scale-[1.05] active:scale-[0.95]"
                 >
-                  Activate ZiroKash
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-6 w-6" />
                 </Button>
               </Link>
             </div>
             
-            {/* Urgency element */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="mt-6 text-sm text-foreground/60"
-            >
-              🔥 Over 1,000 businesses joined this month
-            </motion.p>
+            <div className="mt-12 flex items-center justify-center gap-2">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-4 border-slate-950 bg-slate-800" />
+                ))}
+              </div>
+              <span className="text-slate-500 font-bold ml-4">Empowering Africa's digital economy</span>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -677,12 +655,11 @@ export default function Landing() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                  Z
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  ZiroKash
-                </span>
+                <img 
+                  src="/zirokash-logo.png" 
+                  alt="ZiroKash" 
+                  className="h-16 w-auto"
+                />
               </div>
               <p className="text-sm text-foreground/70 mb-4">
                 The easiest way to collect payments online. Trusted by schools, churches, and businesses across Africa.

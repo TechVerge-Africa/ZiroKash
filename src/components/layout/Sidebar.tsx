@@ -69,10 +69,11 @@ export default function Sidebar() {
       <div className="flex-shrink-0">
         <div className="flex items-center gap-2 px-3 py-4">
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-              Z
-            </div>
-            <span className="text-xl font-bold gradient-text">ZiroKash</span>
+            <img 
+              src="/zirokash-logo.png" 
+              alt="ZiroKash" 
+              className="h-16 w-auto"
+            />
           </Link>
           {isMobile && <Button variant="ghost" size="icon" className="ml-auto" onClick={toggleSidebar}>
               <X size={20} />
@@ -117,18 +118,18 @@ export default function Sidebar() {
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Merchant Status</p>
               {merchant.verification_status === 'verified' && (
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1 px-1.5 py-0">
-                  <CheckCircle2 size={10} /> Verified
+                <Badge variant="outline" className="bg-emerald-500/5 text-emerald-500 border-emerald-500/20 gap-1 px-1.5 py-0 font-medium">
+                  <CheckCircle2 size={10} strokeWidth={3} /> Verified
                 </Badge>
               )}
               {merchant.verification_status === 'pending' && (
-                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1 px-1.5 py-0">
-                  <Clock size={10} /> Pending
+                <Badge variant="outline" className="bg-blue-500/5 text-blue-500 border-blue-500/20 gap-1 px-1.5 py-0 font-medium">
+                  <Clock size={10} strokeWidth={3} /> Verification Pending
                 </Badge>
               )}
               {merchant.verification_status === 'rejected' && (
-                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1 px-1.5 py-0">
-                  <AlertCircle size={10} /> Rejected
+                <Badge variant="outline" className="bg-destructive/5 text-destructive border-destructive/20 gap-1 px-1.5 py-0 font-medium">
+                  <AlertCircle size={10} strokeWidth={3} /> Verification failed
                 </Badge>
               )}
             </div>
@@ -155,10 +156,13 @@ export default function Sidebar() {
         ) : (
           <div className="glass-card rounded-lg p-3">
             <p className="text-xs text-muted-foreground">Go Pro</p>
-            <p className="text-sm font-medium mt-1">Upgrade to Premium</p>
-            <Button size="sm" className="mt-2 w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
-              Upgrade Now
-            </Button>
+                  <div className="flex justify-center">
+                    <img 
+                      src="/zirokash-logo.png" 
+                      alt="ZiroKash" 
+                      className="h-20 w-auto"
+                    />
+                  </div>
           </div>
         )}
       </div>

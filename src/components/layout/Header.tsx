@@ -35,7 +35,7 @@ export default function Header(): JSX.Element {
   return (
     <div className="sticky top-0 z-20 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className={cn(
-        "relative flex h-14 md:h-16 items-center justify-between",
+        "relative flex h-16 md:h-18 items-center justify-between",
         isMobile ? "px-4" : "px-6 border-b border-border"
       )}>
         {/* Left side - Page Title (mobile) or Search (desktop) */}
@@ -56,14 +56,12 @@ export default function Header(): JSX.Element {
         {/* Center - Logo (desktop only) */}
         {!isMobile && (
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
-            <Link to="/zirokash" className="flex items-center">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-full blur-sm opacity-75 group-hover:opacity-100 transition duration-200"></div>
-                <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-base">
-                  Z
-                </div>
-              </div>
-              <span className="text-xl font-bold gradient-text ml-2 tracking-tight">ZiroKash</span>
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/zirokash-logo.png" 
+                alt="ZiroKash" 
+                className="h-24 w-auto scale-[1.8] transform translate-y-1 transition-transform hover:scale-[2.0]"
+              />
             </Link>
           </div>
         )}

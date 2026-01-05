@@ -126,6 +126,24 @@ export function useWallet() {
     return wallets.find(w => w.wallet_type === type);
   };
 
+  const fetchPaystackBalance = async () => {
+    if (!user) return null;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-paystack-balance');
+      
+      if (error) {
+        console.error('Error fetching Paystack balance:', error);
+        return null;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching Paystack balance:', error);
+      return null;
+    }
+  };
+
   const loading = loadingWallets || loadingTransactions;
 
   return {
@@ -140,5 +158,6 @@ export function useWallet() {
     getWalletByType,
     getConvertedBalance: () => 0,
     userCurrency: 'GHS',
+    fetchPaystackBalance, // New function to fetch real-time Paystack balance
   };
 }

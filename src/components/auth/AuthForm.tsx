@@ -90,18 +90,19 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-md mx-auto relative z-10 animate-slide-up">
       <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary via-orange-500 to-secondary flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-primary/20 rotate-3 transform transition-transform hover:rotate-0">
-            Z
-          </div>
-          <span className="text-4xl font-black tracking-tight gradient-text">ZiroKash</span>
+        <div className="flex items-center justify-center mb-6">
+          <img 
+            src="/zirokash-logo.png" 
+            alt="ZiroKash" 
+            className="h-24 w-auto animate-float"
+          />
         </div>
         <h1 className="text-3xl font-bold mb-2 tracking-tight">Experience Freedom</h1>
         <p className="text-muted-foreground">Secure your future with African-first fintech</p>
       </div>
       
-      <Card className="backdrop-blur-xl bg-card/60 border-white/20 shadow-2xl relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-orange-500 to-secondary opacity-50 group-hover:opacity-100 transition-opacity" />
+      <Card className="backdrop-blur-xl bg-card/60 border-border/50 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent opacity-50 group-hover:opacity-100 transition-opacity" />
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-muted/30 p-1 mb-6">

@@ -48,7 +48,19 @@ export interface ReceiptProps {
   date: Date;
 }
 
-// Generate unique receipt number (replicated from ReceiptDesigner for standalone use)
+// Generate deterministic receipt number from submission ID
+export const getDeterministicReceiptNumber = (id: string, prefix: string = "REC"): string => {
+  if (!id) return `${prefix}-PENDING`;
+  return `${prefix}-${id.slice(0, 8).toUpperCase()}`;
+};
+
+// Generate deterministic verification code from submission ID
+export const getDeterministicVerificationCode = (id: string): string => {
+  if (!id) return "VERIFY";
+  return id.slice(-6).toUpperCase();
+};
+
+// Generate unique receipt number (fallback for previews/standalone use)
 export const generateUniqueReceiptNumber = (prefix: string = "REC"): string => {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -56,7 +68,7 @@ export const generateUniqueReceiptNumber = (prefix: string = "REC"): string => {
   return `${prefix}-${hash}-${random}`;
 };
 
-// Generate verification code
+// Generate verification code (fallback for previews/standalone use)
 export const generateVerificationCode = (): string => {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 };

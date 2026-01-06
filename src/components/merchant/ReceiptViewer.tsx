@@ -13,7 +13,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { useRef } from "react";
-import { Receipt, ReceiptTemplate } from "@/components/zirokash/Receipt";
+import { Receipt, ReceiptTemplate, getDeterministicReceiptNumber, getDeterministicVerificationCode } from "@/components/zirokash/Receipt";
 
 interface ReceiptViewerProps {
   isOpen: boolean;
@@ -151,8 +151,8 @@ export function ReceiptViewer({ isOpen, onClose, transaction }: ReceiptViewerPro
                 "Payer Name": transaction.payer_name,
                 "Payer Email": transaction.payer_email,
               }}
-              receiptNumber={`REC-${transaction.id?.slice(0, 6).toUpperCase()}`}
-              verificationCode={transaction.id?.slice(-6).toUpperCase() || "VERIFY"}
+              receiptNumber={getDeterministicReceiptNumber(transaction.id)}
+              verificationCode={getDeterministicVerificationCode(transaction.id)}
               transactionId={transaction.transaction_id || transaction.id}
               date={new Date(transaction.created_at)}
             />

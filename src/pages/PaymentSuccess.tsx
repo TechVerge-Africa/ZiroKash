@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2, Download, Receipt as ReceiptIcon, DollarSign, Activity, ArrowRight } from "lucide-react";
 import { 
   Receipt, 
-  generateUniqueReceiptNumber, 
-  generateVerificationCode 
+  getDeterministicReceiptNumber,
+  getDeterministicVerificationCode
 } from "@/components/zirokash/Receipt";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -27,12 +27,8 @@ export default function PaymentSuccess() {
   const [isDownloading, setIsDownloading] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  // Generate these once per success page load
-  const [receiptMeta] = useState({
-    number: generateUniqueReceiptNumber(),
-    code: generateVerificationCode(),
-    date: new Date()
-  });
+  // State for receipt date
+  const [receiptDate] = useState(new Date());
 
   useEffect(() => {
     verifyPayment();
@@ -147,7 +143,7 @@ export default function PaymentSuccess() {
       });
       
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 4, canvas.height / 4, undefined, 'FAST');
-      pdf.save(`ZiroKash-Receipt-${receiptMeta.number}.pdf`);
+      pdf.save(`ZiroKash-Receipt-${getDeterministicReceiptNumber(submission?.id)}.pdf`);
       
       toast.success("Receipt downloaded!", { id: toastId });
       
@@ -283,10 +279,10 @@ export default function PaymentSuccess() {
                     Amount: formatAmount(submission?.amount || 0),
                     Total: formatAmount(submission?.amount || 0),
                   }}
-                  receiptNumber={receiptMeta.number}
-                  verificationCode={receiptMeta.code}
+                  receiptNumber={getDeterministicReceiptNumber(submission?.id)}
+                  verificationCode={getDeterministicVerificationCode(submission?.id)}
                   transactionId={submission?.id || reference || "N/A"}
-                  date={receiptMeta.date}
+                  date={receiptDate}
                 />
               </div>
             </motion.div>

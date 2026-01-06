@@ -253,7 +253,7 @@ All tables have RLS enabled with the following policies:
 │                      VERCEL                              │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │              React SPA (Vite)                   │    │
-│  │         https://zirokash.vercel.app              │    │
+│  │         https://zirokash.africa              │    │
 │  └─────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────┘
                           │

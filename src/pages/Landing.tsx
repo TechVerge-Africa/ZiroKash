@@ -105,7 +105,7 @@ export default function Landing() {
             <Link to="/" className="flex items-center gap-2">
               <img 
                 src="/zirokash-logo.png" 
-                alt="ZiroKash" 
+                alt="ZiroKash - Custom Payment Forms & Digital Wallet for Africa" 
                 className="h-20 sm:h-24 w-auto scale-[1.5] sm:scale-[1.8] transform origin-left transition-transform hover:scale-[1.9]"
               />
             </Link>
@@ -657,7 +657,7 @@ export default function Landing() {
               <div className="flex items-center gap-2 mb-4">
                 <img 
                   src="/zirokash-logo.png" 
-                  alt="ZiroKash" 
+                  alt="ZiroKash Fintech Solutions" 
                   className="h-16 w-auto"
                 />
               </div>
@@ -715,7 +715,7 @@ export default function Landing() {
             <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100">
               <span className="text-xs font-medium">Product of</span>
               <a href="https://techverge.africa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-bold text-foreground">
-                <img src="/techverge-logo.png" alt="TechVerge Africa" className="h-6 w-auto" />
+                <img src="/techverge-logo.png" alt="TechVerge Africa - Empowering African Innovation" className="h-6 w-auto" />
                 TechVerge Africa
               </a>
             </div>

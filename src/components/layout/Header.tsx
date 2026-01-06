@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, ChevronDown, User, LogOut, Settings as SettingsIcon, Menu, Lock as LockIcon } from "lucide-react";
+import { Bell, ChevronDown, User, LogOut, Settings as SettingsIcon, Menu, Lock as LockIcon, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
@@ -14,10 +14,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useMerchant } from "@/hooks/useMerchant";
 
 export default function Header(): JSX.Element {
   const isMobile = useIsMobile();
   const { user, signOut } = useAuth();
+  const { hasSubaccount } = useMerchant();
   
   const fullName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name;
   const firstName = fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
@@ -121,7 +123,16 @@ export default function Header(): JSX.Element {
                       <>
                         <div className="flex flex-col items-start text-xs">
                           <span className="font-medium text-foreground">{firstName}</span>
-                          <span className="text-foreground/60 text-[10px]">Premium</span>
+                          <span className={cn(
+                            "text-[10px] font-bold px-1 rounded flex items-center gap-0.5",
+                            hasSubaccount ? "text-blue-500 bg-blue-500/5 whitespace-nowrap" : "text-foreground/60"
+                          )}>
+                            {hasSubaccount ? (
+                              <>
+                                <CheckCircle2 size={10} strokeWidth={3} /> Verified
+                              </>
+                            ) : "Premium"}
+                          </span>
                         </div>
                         <ChevronDown size={14} className="text-foreground/60" />
                       </>

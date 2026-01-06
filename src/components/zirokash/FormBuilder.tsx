@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GripVertical, X, Plus, Mail, Type, DollarSign, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface FormField {
   id: string;
@@ -16,6 +17,7 @@ interface FormField {
   required: boolean;
   options?: string[];
   defaultValue?: string;
+  isFixed?: boolean;
 }
 
 interface FormBuilderProps {
@@ -34,14 +36,16 @@ export function FormBuilder({ fields, onFieldsChange }: FormBuilderProps) {
   const [editingField, setEditingField] = useState<string | null>(null);
 
   const addField = (type: FormField["type"]) => {
+    const newId = `field-${Date.now()}`;
     const newField: FormField = {
-      id: `field-${Date.now()}`,
+      id: newId,
       type,
       label: `New ${type} field`,
       required: false,
       options: type === "dropdown" ? ["Option 1"] : undefined,
     };
     onFieldsChange([...fields, newField]);
+    setEditingField(newId);
   };
 
   const updateField = (id: string, updates: Partial<FormField>) => {
@@ -232,35 +236,49 @@ export function FormBuilder({ fields, onFieldsChange }: FormBuilderProps) {
                                   )}
 
                                   {field.type === "amount" && (
-                                    <div>
-                                      <Label>Default Amount (₵)</Label>
-                                      <Input
-                                        type="number"
-                                        value={field.defaultValue || ""}
-                                        onChange={(e) =>
-                                          updateField(field.id, {
-                                            defaultValue: e.target.value,
-                                          })
-                                        }
-                                        placeholder="Enter amount"
-                                      />
+                                    <div className="space-y-4 pt-2">
+                                      <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5 border-primary/20">
+                                        <div className="space-y-0.5">
+                                          <Label className="text-xs font-bold uppercase tracking-tight">Fixed Payment Amount</Label>
+                                          <p className="text-[10px] text-muted-foreground italic">Payers cannot change this amount</p>
+                                        </div>
+                                        <Checkbox
+                                          id={`fixed-${field.id}`}
+                                          checked={field.isFixed}
+                                          onCheckedChange={(checked) =>
+                                            updateField(field.id, { isFixed: checked as boolean })
+                                          }
+                                        />
+                                      </div>
+                                      
+                                      <div>
+                                        <Label className="text-xs font-bold uppercase tracking-tight text-muted-foreground mb-1 block">Default Amount (₵)</Label>
+                                        <Input
+                                          type="number"
+                                          value={field.defaultValue || ""}
+                                          onChange={(e) =>
+                                            updateField(field.id, {
+                                              defaultValue: e.target.value,
+                                            })
+                                          }
+                                          placeholder="Enter amount"
+                                        />
+                                      </div>
                                     </div>
                                   )}
 
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="checkbox"
+                                  <div className="flex items-center gap-2 py-2">
+                                    <Checkbox
                                       id={`required-${field.id}`}
                                       checked={field.required}
-                                      onChange={(e) =>
+                                      onCheckedChange={(checked) =>
                                         updateField(field.id, {
-                                          required: e.target.checked,
+                                          required: checked as boolean,
                                         })
                                       }
-                                      className="rounded border-gray-300"
                                     />
-                                    <Label htmlFor={`required-${field.id}`}>
-                                      Required field
+                                    <Label htmlFor={`required-${field.id}`} className="text-sm cursor-pointer">
+                                      This is a required field
                                     </Label>
                                   </div>
 
@@ -273,13 +291,27 @@ export function FormBuilder({ fields, onFieldsChange }: FormBuilderProps) {
                                 </div>
                               ) : (
                                 <div
-                                  className="cursor-pointer"
+                                  className="group cursor-pointer space-y-2.5 p-4 rounded-xl hover:bg-muted/30 transition-all border-2 border-transparent hover:border-primary/30 bg-muted/10 shadow-sm"
                                   onClick={() => setEditingField(field.id)}
                                 >
-                                  <p className="font-medium">{field.label}</p>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    Click to edit
-                                  </p>
+                                  <div className="flex items-center justify-between">
+                                    <Label className="font-bold text-sm text-foreground cursor-pointer uppercase tracking-tight">{field.label}</Label>
+                                    <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider bg-background opacity-70 group-hover:opacity-100 transition-opacity">
+                                      {field.type}
+                                    </Badge>
+                                  </div>
+                                  <div className="h-11 w-full rounded-lg border-2 border-dashed border-muted-foreground/30 bg-background/80 px-4 py-2 text-sm text-muted-foreground/60 flex items-center transition-colors group-hover:border-primary/40 group-hover:bg-background">
+                                    {field.type === "amount" ? (
+                                      <span className="font-medium">₵ 0.00</span>
+                                    ) : (
+                                      <span className="italic">Type {field.label.toLowerCase()} here...</span>
+                                    )}
+                                  </div>
+                                  <div className="flex justify-center">
+                                    <span className="text-[10px] font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                      <Plus className="h-3 w-3" /> Click to Edit Properties
+                                    </span>
+                                  </div>
                                 </div>
                               )}
                             </div>

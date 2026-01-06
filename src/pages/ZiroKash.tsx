@@ -60,7 +60,9 @@ const QUICK_TEMPLATES = [
   {
     name: "School Fees",
     icon: "🎓",
-    templateDescription: "Collect school fees from students",
+    templateDescription: "Collect school fees from students with professional receipts",
+    defaultTheme: "#0056D2",
+    receiptHeader: "SCHOOL FEES RECEIPT",
     fields: [
       { type: "text" as const, label: "Student Name", required: true },
       { type: "text" as const, label: "Student ID", required: true },
@@ -68,12 +70,14 @@ const QUICK_TEMPLATES = [
       { type: "amount" as const, label: "Amount", required: true, defaultValue: "0" },
     ],
     title: "School Fees Payment",
-    formDescription: "Please fill in your details to complete the payment",
+    formDescription: "Please fill in student details to complete the payment",
   },
   {
     name: "Event Registration",
     icon: "🎫",
-    templateDescription: "Collect payments for events",
+    templateDescription: "Ticketing and registration for events and conferences",
+    defaultTheme: "#7C3AED",
+    receiptHeader: "EVENT TICKET / RECEIPT",
     fields: [
       { type: "text" as const, label: "Full Name", required: true },
       { type: "email" as const, label: "Email", required: true },
@@ -86,7 +90,9 @@ const QUICK_TEMPLATES = [
   {
     name: "Donation",
     icon: "❤️",
-    templateDescription: "Collect donations",
+    templateDescription: "Collect donations for charities, churches, or causes",
+    defaultTheme: "#10B981",
+    receiptHeader: "DONATION ACKNOWLEDGMENT",
     fields: [
       { type: "text" as const, label: "Donor Name", required: true },
       { type: "email" as const, label: "Email", required: false },
@@ -98,7 +104,9 @@ const QUICK_TEMPLATES = [
   {
     name: "Custom",
     icon: "✨",
-    templateDescription: "Start from scratch",
+    templateDescription: "Start from scratch and build your own flow",
+    defaultTheme: "#0056D2",
+    receiptHeader: "OFFICIAL RECEIPT",
     fields: [],
     title: "",
     formDescription: "",
@@ -161,6 +169,31 @@ export default function ZiroKash() {
   const totalSubmissions = Object.values(stats).reduce((sum, s) => sum + s.totalSubmissions, 0);
   const totalPaid = Object.values(stats).reduce((sum, s) => sum + s.paidSubmissions, 0);
   const activeForms = forms.filter(f => f.is_active).length;
+
+  // Sync form fields to receipt mappings
+  useEffect(() => {
+    if (formFields.length > 0) {
+      setReceiptTemplate(prev => {
+        const existingMappings = prev.fieldMappings || [];
+        const newMappings = [...existingMappings];
+        let changed = false;
+
+        formFields.forEach(field => {
+          const exists = newMappings.some(m => m.formFieldId === field.id);
+          if (!exists) {
+            newMappings.push({
+              formFieldId: field.id,
+              receiptLabel: field.label,
+              showOnReceipt: true
+            });
+            changed = true;
+          }
+        });
+
+        return changed ? { ...prev, fieldMappings: newMappings } : prev;
+      });
+    }
+  }, [formFields]);
 
   // Check for edit parameter in URL
   useEffect(() => {
@@ -324,23 +357,30 @@ export default function ZiroKash() {
   };
 
   const applyTemplate = (template: typeof QUICK_TEMPLATES[0]) => {
+    setThemeColor(template.defaultTheme);
+    setReceiptTemplate(prev => ({
+      ...prev,
+      headerText: (template as any).receiptHeader || prev.headerText
+    }));
+
     if (template.name === "Custom") {
       // Start with basic amount and email fields
+      const now = Date.now();
       setFormFields([
         {
-          id: `field-${Date.now()}-1`,
+          id: `field-${now}-1`,
           type: "text",
           label: "Full Name",
           required: true,
         },
         {
-          id: `field-${Date.now()}-2`,
+          id: `field-${now}-2`,
           type: "email",
           label: "Email Address",
           required: true,
         },
         {
-          id: `field-${Date.now()}-3`,
+          id: `field-${now}-3`,
           type: "amount",
           label: "Amount",
           required: true,
@@ -360,6 +400,16 @@ export default function ZiroKash() {
     }
     setSelectedTemplate(template.name);
     setCurrentStep(2);
+
+    // Auto-setup basic mappings for the template fields
+    setReceiptTemplate(prev => ({
+      ...prev,
+      fieldMappings: template.fields.map((field, index) => ({
+        formFieldId: `field-${Date.now()}-${index}`,
+        receiptLabel: field.label,
+        showOnReceipt: true
+      }))
+    }));
   };
 
   const getStepProgress = () => {
@@ -752,8 +802,8 @@ export default function ZiroKash() {
                 </div>
               </div>
 
-              {/* Right Panel - Live Preview */}
-              <div className="lg:sticky lg:top-6 h-fit">
+              {/* Right Panel - Live Preview & Checklist */}
+              <div className="lg:sticky lg:top-6 h-fit space-y-4 sm:space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Live Preview</h3>
@@ -769,6 +819,63 @@ export default function ZiroKash() {
                     />
                   </div>
                 </div>
+
+                {/* Novice Checklist */}
+                <Card className="border-primary/20 bg-primary/5 shadow-none overflow-hidden">
+                  <CardHeader className="p-4 bg-primary/10">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      Form Health Checklist
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center border-2",
+                        formTitle.trim() ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/30"
+                      )}>
+                        {formTitle.trim() && <CheckCircle2 className="h-3 w-3" />}
+                      </div>
+                      <span className={formTitle.trim() ? "text-foreground" : "text-muted-foreground"}>Catchy Form Title</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center border-2",
+                        formFields.some(f => f.type === 'amount') ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/30"
+                      )}>
+                        {formFields.some(f => f.type === 'amount') && <CheckCircle2 className="h-3 w-3" />}
+                      </div>
+                      <span className={formFields.some(f => f.type === 'amount') ? "text-foreground" : "text-muted-foreground"}>Payment Amount Field</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center border-2",
+                        formFields.some(f => f.type === 'email') ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/30"
+                      )}>
+                        {formFields.some(f => f.type === 'email') && <CheckCircle2 className="h-3 w-3" />}
+                      </div>
+                      <span className={formFields.some(f => f.type === 'email') ? "text-foreground" : "text-muted-foreground"}>Customer Email (for Receipts)</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center border-2",
+                        currentStep >= 4 ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/30"
+                      )}>
+                        {currentStep >= 4 && <CheckCircle2 className="h-3 w-3" />}
+                      </div>
+                      <span className={currentStep >= 4 ? "text-foreground" : "text-muted-foreground"}>Receipt Template Configured</span>
+                    </div>
+
+                    {!formFields.some(f => f.type === 'amount') && currentStep === 2 && (
+                      <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-600 font-medium">
+                        ⚠️ Note: Add an **Amount Field** to actually collect money!
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
             )}

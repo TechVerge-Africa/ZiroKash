@@ -8,6 +8,7 @@ export interface FormField {
   required: boolean;
   options?: string[];
   defaultValue?: string;
+  isFixed?: boolean;
 }
 
 export interface FieldMapping {

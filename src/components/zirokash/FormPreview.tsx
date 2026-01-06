@@ -11,6 +11,7 @@ interface FormField {
   required: boolean;
   options?: string[];
   defaultValue?: string;
+  isFixed?: boolean;
 }
 
 interface FormPreviewProps {
@@ -83,9 +84,16 @@ export function FormPreview({ title, description, fields, themeColor, logoUrl }:
                       <Input
                         type="number"
                         className="pl-8"
-                        placeholder={field.defaultValue || "0.00"}
-                        defaultValue={field.defaultValue}
+                        placeholder="0.00"
+                        value={field.defaultValue || ""}
+                        readOnly
+                        disabled={field.isFixed}
                       />
+                      {field.isFixed && (
+                        <p className="text-[10px] text-muted-foreground mt-1 italic">
+                          Fixed amount set by merchant
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

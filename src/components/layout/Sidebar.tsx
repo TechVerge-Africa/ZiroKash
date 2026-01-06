@@ -42,7 +42,7 @@ const supportNavItems: NavItem[] = [{
 export default function Sidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { merchant, loading: merchantLoading } = useMerchant();
+  const { merchant, hasSubaccount, loading: merchantLoading } = useMerchant();
   const [isOpen, setIsOpen] = useState(false);
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -117,17 +117,15 @@ export default function Sidebar() {
           <div className="glass-card rounded-lg p-3 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Merchant Status</p>
-              {merchant.verification_status === 'verified' && (
-                <Badge variant="outline" className="bg-emerald-500/5 text-emerald-500 border-emerald-500/20 gap-1 px-1.5 py-0 font-medium">
+              {(hasSubaccount || merchant.verification_status === 'verified') ? (
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30 gap-1 px-1.5 py-0.5 font-bold shadow-sm">
                   <CheckCircle2 size={10} strokeWidth={3} /> Verified
                 </Badge>
-              )}
-              {merchant.verification_status === 'pending' && (
-                <Badge variant="outline" className="bg-blue-500/5 text-blue-500 border-blue-500/20 gap-1 px-1.5 py-0 font-medium">
+              ) : merchant.verification_status === 'pending' ? (
+                <Badge variant="outline" className="bg-amber-500/5 text-amber-500 border-amber-500/20 gap-1 px-1.5 py-0 font-medium">
                   <Clock size={10} strokeWidth={3} /> Verification Pending
                 </Badge>
-              )}
-              {merchant.verification_status === 'rejected' && (
+              ) : (
                 <Badge variant="outline" className="bg-destructive/5 text-destructive border-destructive/20 gap-1 px-1.5 py-0 font-medium">
                   <AlertCircle size={10} strokeWidth={3} /> Verification failed
                 </Badge>
@@ -139,9 +137,9 @@ export default function Sidebar() {
               <p className="text-[10px] text-muted-foreground mt-0.5">ID: {merchant.paystack_subaccount_code || 'Unlinked'}</p>
             </div>
             
-            {merchant.verification_status === 'verified' ? (
-              <div className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-medium bg-emerald-500/5 p-1.5 rounded border border-emerald-500/10">
-                <ShieldCheck size={12} /> Full Access Enabled
+            {(hasSubaccount || merchant.verification_status === 'verified') ? (
+              <div className="flex items-center gap-1.5 text-[10px] text-blue-600 font-bold bg-blue-500/5 p-2 rounded border border-blue-500/20">
+                <ShieldCheck size={12} /> Active Merchant Account
               </div>
             ) : merchant.verification_status === 'rejected' ? (
               <Button size="sm" variant="destructive" className="w-full text-xs h-8">

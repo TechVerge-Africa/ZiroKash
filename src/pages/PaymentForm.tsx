@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ interface FormField {
   label: string;
   required?: boolean;
   options?: string[];
+  defaultValue?: string;
+  isFixed?: boolean;
 }
 
 interface PaymentForm {
@@ -69,7 +72,28 @@ export default function PaymentForm() {
         .single();
 
       if (error) throw error;
-      setForm(data as any);
+      const fetchedForm = data as any;
+      setForm(fetchedForm);
+      
+      // Initialize default values for all fields (especially fixed amounts)
+      const initialFormData: Record<string, any> = {};
+      let initialOriginalAmount = 0;
+
+      if (fetchedForm.fields && Array.isArray(fetchedForm.fields)) {
+        fetchedForm.fields.forEach((field: any) => {
+          if (field.defaultValue) {
+            initialFormData[field.label] = field.defaultValue;
+            if (field.type === 'amount') {
+              initialOriginalAmount = parseFloat(field.defaultValue) || 0;
+            }
+          }
+        });
+      }
+
+      setFormData(prev => ({ ...prev, ...initialFormData }));
+      if (initialOriginalAmount > 0) {
+        setOriginalAmount(initialOriginalAmount);
+      }
     } catch (error) {
       console.error('Error fetching form:', error);
       toast.error('Form not found or inactive');
@@ -306,7 +330,11 @@ export default function PaymentForm() {
                         step="0.01"
                         min="0"
                         required={field.required}
-                        className="pl-12 sm:pl-16 text-base"
+                        disabled={field.isFixed}
+                        className={cn(
+                          "pl-12 sm:pl-16 text-base",
+                          field.isFixed && "bg-muted/50 font-semibold text-primary"
+                        )}
                         value={formData[field.label] || ''}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -314,6 +342,12 @@ export default function PaymentForm() {
                           setOriginalAmount(parseFloat(val) || 0);
                         }}
                       />
+                      {field.isFixed && (
+                        <p className="text-[10px] text-muted-foreground mt-1.5 italic font-medium flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3 text-primary" />
+                          Fixed payment amount set by merchant
+                        </p>
+                      )}
                     </div>
                   ) : null}
                 </div>

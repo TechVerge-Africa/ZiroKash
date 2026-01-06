@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon, Shield, X, Plus, Printer, HelpCircle } from "lucide-react";
+import { Upload, ImageIcon, Shield, X, Plus, Printer, HelpCircle, Sparkles, Fingerprint } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
@@ -159,76 +160,96 @@ export function ReceiptDesigner({
 
       {!previewMode ? (
         <div className="space-y-6">
-          {/* Logo & Signature Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Institution Logo</Label>
-              <div className="flex items-center gap-4">
-                {logoUrl && (
-                  <img src={logoUrl} alt="Logo" className="h-12 w-auto object-contain border rounded" />
-                )}
-                <div className="flex-1">
-                  <label htmlFor="logo-upload">
-                    <div className="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:bg-muted/50 transition-colors text-xs">
-                      <Upload className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      Upload Logo
+          {/* Brand Hub */}
+          <Card className="border-primary/20 bg-primary/5 shadow-none">
+            <CardHeader className="p-4 bg-primary/10">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Institution Brand Hub
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Institution Logo</Label>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="show-logo"
+                        checked={template.showLogo}
+                        onCheckedChange={(checked) =>
+                          onTemplateChange({ ...template, showLogo: checked as boolean })
+                        }
+                      />
+                      <Label htmlFor="show-logo" className="text-xs cursor-pointer">Visible</Label>
                     </div>
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleImageUpload(e, "logo")}
-                    />
-                  </label>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label htmlFor="logo-upload">
+                        <div className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:bg-background/50 transition-all group">
+                          {logoUrl ? (
+                            <img src={logoUrl} alt="Logo" className="h-16 mx-auto object-contain transition-transform group-hover:scale-105" />
+                          ) : (
+                            <>
+                              <Upload className="h-6 w-6 mx-auto mb-2 text-primary/40" />
+                              <p className="text-[10px] font-medium">Click to upload Logo</p>
+                            </>
+                          )}
+                        </div>
+                        <input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, "logo")}
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="show-logo"
-                  checked={template.showLogo}
-                  onCheckedChange={(checked) =>
-                    onTemplateChange({ ...template, showLogo: checked as boolean })
-                  }
-                />
-                <Label htmlFor="show-logo" className="text-xs cursor-pointer">Show logo</Label>
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label>Signature</Label>
-              <div className="flex items-center gap-4">
-                {signatureUrl && (
-                  <img src={signatureUrl} alt="Signature" className="h-12 w-auto object-contain border rounded" />
-                )}
-                <div className="flex-1">
-                  <label htmlFor="signature-upload">
-                    <div className="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer hover:bg-muted/50 transition-colors text-xs">
-                      <ImageIcon className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      Upload Signature
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Authorized Signature</Label>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="show-signature"
+                        checked={template.showSignature}
+                        onCheckedChange={(checked) =>
+                          onTemplateChange({ ...template, showSignature: checked as boolean })
+                        }
+                      />
+                      <Label htmlFor="show-signature" className="text-xs cursor-pointer">Visible</Label>
                     </div>
-                    <input
-                      id="signature-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleImageUpload(e, "signature")}
-                    />
-                  </label>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label htmlFor="signature-upload">
+                        <div className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:bg-background/50 transition-all group">
+                          {signatureUrl ? (
+                            <img src={signatureUrl} alt="Signature" className="h-16 mx-auto object-contain transition-transform group-hover:scale-105" />
+                          ) : (
+                            <>
+                              <ImageIcon className="h-6 w-6 mx-auto mb-2 text-primary/40" />
+                              <p className="text-[10px] font-medium">Upload Signature</p>
+                            </>
+                          )}
+                        </div>
+                        <input
+                          id="signature-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, "signature")}
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="show-signature"
-                  checked={template.showSignature}
-                  onCheckedChange={(checked) =>
-                    onTemplateChange({ ...template, showSignature: checked as boolean })
-                  }
-                />
-                <Label htmlFor="show-signature" className="text-xs cursor-pointer">Show signature</Label>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Texts Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -302,75 +323,104 @@ export function ReceiptDesigner({
           {/* Security Features */}
           <div className="space-y-4 border-t pt-4">
             <Label className="text-base font-semibold flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" /> Security Features
+              <Fingerprint className="h-4 w-4 text-primary" /> Anti-Fraud Security Features
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">Unique Numbering</Label>
-                  <p className="text-[10px] text-muted-foreground">Standard for official receipts</p>
+              <TooltipProvider>
+                <div className="flex items-center justify-between p-4 border rounded-xl bg-background shadow-sm">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-sm font-semibold">Unique Numbering</Label>
+                      <Tooltip>
+                        <TooltipTrigger><HelpCircle className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                        <TooltipContent><p className="max-w-[200px]">Assigns a deterministic serial number to every receipt for bookkeeping.</p></TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Audit-ready documentation</p>
+                  </div>
+                  <Checkbox
+                    checked={template.securityFeatures?.enableNumbering ?? true}
+                    onCheckedChange={(checked) =>
+                      onTemplateChange({
+                        ...template,
+                        securityFeatures: {
+                          ...template.securityFeatures,
+                          enableNumbering: checked as boolean,
+                        },
+                      })
+                    }
+                  />
                 </div>
-                <Checkbox
-                  checked={template.securityFeatures?.enableNumbering ?? true}
-                  onCheckedChange={(checked) =>
-                    onTemplateChange({
-                      ...template,
-                      securityFeatures: {
-                        ...template.securityFeatures,
-                        enableNumbering: checked as boolean,
-                      },
-                    })
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">QR Code</Label>
-                  <p className="text-[10px] text-muted-foreground">Enable digital verification</p>
+
+                <div className="flex items-center justify-between p-4 border rounded-xl bg-background shadow-sm">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-sm font-semibold">Verification QR Code</Label>
+                      <Tooltip>
+                        <TooltipTrigger><HelpCircle className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                        <TooltipContent><p className="max-w-[200px]">Allows anyone to scan and verify the receipt's authenticity online.</p></TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Digital-first trust</p>
+                  </div>
+                  <Checkbox
+                    checked={template.showQRCode}
+                    onCheckedChange={(checked) =>
+                      onTemplateChange({ ...template, showQRCode: checked as boolean })
+                    }
+                  />
                 </div>
-                <Checkbox
-                  checked={template.showQRCode}
-                  onCheckedChange={(checked) =>
-                    onTemplateChange({ ...template, showQRCode: checked as boolean })
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">Watermark</Label>
-                  <p className="text-[10px] text-muted-foreground">Subtle "OFFICIAL" text</p>
+
+                <div className="flex items-center justify-between p-4 border rounded-xl bg-background shadow-sm">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-sm font-semibold">Ghost Watermark</Label>
+                      <Tooltip>
+                        <TooltipTrigger><HelpCircle className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                        <TooltipContent><p className="max-w-[200px]">Adds a subtle "OFFICIAL" background to prevent photocopied fraud.</p></TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Physical security layer</p>
+                  </div>
+                  <Checkbox
+                    checked={template.securityFeatures?.showWatermark ?? false}
+                    onCheckedChange={(checked) =>
+                      onTemplateChange({
+                        ...template,
+                        securityFeatures: {
+                          ...template.securityFeatures,
+                          showWatermark: checked as boolean,
+                        },
+                      })
+                    }
+                  />
                 </div>
-                <Checkbox
-                  checked={template.securityFeatures?.showWatermark ?? false}
-                  onCheckedChange={(checked) =>
-                    onTemplateChange({
-                      ...template,
-                      securityFeatures: {
-                        ...template.securityFeatures,
-                        showWatermark: checked as boolean,
-                      },
-                    })
-                  }
-                />
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">Security Border</Label>
-                  <p className="text-[10px] text-muted-foreground">Fraud-prevention border</p>
+
+                <div className="flex items-center justify-between p-4 border rounded-xl bg-background shadow-sm">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-sm font-semibold">Security Border</Label>
+                      <Tooltip>
+                        <TooltipTrigger><HelpCircle className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                        <TooltipContent><p className="max-w-[200px]">Intricate border patterns that are difficult to forge correctly.</p></TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Classic professional aesthetic</p>
+                  </div>
+                  <Checkbox
+                    checked={template.securityFeatures?.showSecurityBorder ?? true}
+                    onCheckedChange={(checked) =>
+                      onTemplateChange({
+                        ...template,
+                        securityFeatures: {
+                          ...template.securityFeatures,
+                          showSecurityBorder: checked as boolean,
+                        },
+                      })
+                    }
+                  />
                 </div>
-                <Checkbox
-                  checked={template.securityFeatures?.showSecurityBorder ?? true}
-                  onCheckedChange={(checked) =>
-                    onTemplateChange({
-                      ...template,
-                      securityFeatures: {
-                        ...template.securityFeatures,
-                        showSecurityBorder: checked as boolean,
-                      },
-                    })
-                  }
-                />
-              </div>
+              </TooltipProvider>
             </div>
           </div>
         </div>

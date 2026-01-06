@@ -11,6 +11,9 @@ import FormEmbedCode from "@/components/zirokash/FormEmbedCode";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ReceiptViewer } from "@/components/merchant/ReceiptViewer";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface FormSubmission {
   id: string;
@@ -29,11 +32,22 @@ export default function FormDetails() {
   const [form, setForm] = useState<any>(null);
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  
+  // Search and Pagination state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     fetchFormDetails();
-    fetchSubmissions();
   }, [formId]);
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [formId, currentPage, searchQuery]);
 
   const fetchFormDetails = async () => {
     try {
@@ -55,14 +69,24 @@ export default function FormDetails() {
 
   const fetchSubmissions = async () => {
     try {
-      const { data, error } = await supabase
+      const from = currentPage * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
         .from('form_submissions')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('form_id', formId)
         .order('created_at', { ascending: false });
 
+      if (searchQuery) {
+        query = query.or(`payer_name.ilike.%${searchQuery}%,payer_email.ilike.%${searchQuery}%`);
+      }
+
+      const { data, error, count } = await query.range(from, to);
+
       if (error) throw error;
       setSubmissions(data || []);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching submissions:', error);
     }
@@ -106,25 +130,44 @@ export default function FormDetails() {
     toast.success('Payment link copied to clipboard');
   };
 
-  const exportSubmissions = () => {
-    const csv = [
-      ['Name', 'Email', 'Amount', 'Status', 'Date'],
-      ...submissions.map(s => [
-        s.payer_name,
-        s.payer_email,
-        `GHS ${(s.amount / 100).toFixed(2)}`,
-        s.status,
-        new Date(s.created_at).toLocaleDateString()
-      ])
-    ].map(row => row.join(',')).join('\n');
+  const exportSubmissions = async () => {
+    try {
+      const { data: allPaidSubmissions, error } = await supabase
+        .from('form_submissions')
+        .select('*')
+        .eq('form_id', formId)
+        .eq('status', 'paid')
+        .order('created_at', { ascending: false });
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${form?.title}-submissions.csv`;
-    a.click();
-    toast.success('Submissions exported');
+      if (error) throw error;
+
+      if (!allPaidSubmissions || allPaidSubmissions.length === 0) {
+        toast.error('No paid submissions to export');
+        return;
+      }
+
+      const csv = [
+        ['Name', 'Email', 'Amount', 'Status', 'Date'],
+        ...allPaidSubmissions.map(s => [
+          s.payer_name,
+          s.payer_email,
+          `GHS ${(s.amount / 100).toFixed(2)}`,
+          s.status,
+          new Date(s.created_at).toLocaleDateString()
+        ])
+      ].map(row => row.join(',')).join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${form?.title}-submissions.csv`;
+      a.click();
+      toast.success('Submissions exported');
+    } catch (error) {
+      console.error('Error exporting submissions:', error);
+      toast.error('Failed to export submissions');
+    }
   };
 
   if (loading) {
@@ -227,11 +270,25 @@ export default function FormDetails() {
                   <CardTitle className="text-lg sm:text-xl">Submissions</CardTitle>
                   <CardDescription className="text-sm">All payment submissions for this form</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" onClick={exportSubmissions} className="w-full sm:w-auto">
-                  <Download className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Export CSV</span>
-                  <span className="sm:hidden">Export</span>
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search name or email..."
+                      className="pl-9 h-9"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setCurrentPage(0);
+                      }}
+                    />
+                  </div>
+                  <Button variant="outline" size="sm" onClick={exportSubmissions} className="w-full sm:w-auto">
+                    <Download className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Export CSV</span>
+                    <span className="sm:hidden">Export</span>
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -250,6 +307,7 @@ export default function FormDetails() {
                           <TableHead className="text-xs sm:text-sm">Amount</TableHead>
                           <TableHead className="text-xs sm:text-sm">Status</TableHead>
                           <TableHead className="text-xs sm:text-sm">Date</TableHead>
+                          <TableHead className="text-xs sm:text-sm text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -264,15 +322,72 @@ export default function FormDetails() {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-xs sm:text-sm">{new Date(submission.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right">
+                              {submission.status === 'paid' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setSelectedSubmission(submission);
+                                    setIsReceiptOpen(true);
+                                  }}
+                                  className="h-8 px-2 text-xs"
+                                >
+                                  Receipt
+                                </Button>
+                              )}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
+
+                    {/* Pagination Controls */}
+                    {totalCount > pageSize && (
+                      <div className="flex items-center justify-between py-4 border-t border-border mt-4">
+                        <p className="text-xs text-muted-foreground">
+                          Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, totalCount)} of {totalCount} submissions
+                        </p>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                            disabled={currentPage === 0}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setCurrentPage(p => p + 1)}
+                            disabled={(currentPage + 1) * pageSize >= totalCount}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {selectedSubmission && (
+            <ReceiptViewer 
+              isOpen={isReceiptOpen}
+              onClose={() => setIsReceiptOpen(false)}
+              transaction={{
+                ...selectedSubmission,
+                form_title: form.title,
+                receipt_template: form.receipt_template,
+                logo_url: form.logo_url,
+                signature_url: form.signature_url,
+                form_fields: form.fields
+              }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="share">

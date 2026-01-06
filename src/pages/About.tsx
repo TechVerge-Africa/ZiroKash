@@ -88,10 +88,12 @@ export default function About() {
     <div className="space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-3 mb-6">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
-            Z
-          </div>
+        <div className="flex flex-col items-center justify-center mb-6">
+          <img 
+            src="/zirokash-logo.png" 
+            alt="ZiroKash Logo" 
+            className="h-20 w-auto mb-4"
+          />
           <h1 className="text-4xl font-bold gradient-text">ZiroKash</h1>
         </div>
         <h2 className="text-2xl font-semibold">The Future of Merchant Payments in Africa</h2>

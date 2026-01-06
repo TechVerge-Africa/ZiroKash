@@ -15,12 +15,19 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const isMobile = useIsMobile();
+  const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes idle timeout
   const { user } = useAuth();
   const [showPINOnboarding, setShowPINOnboarding] = useState(false);
+  
   const [isUnlocked, setIsUnlocked] = useState(() => {
-    // Session-based unlock state
-    return sessionStorage.getItem(`zirokash_unlocked_${user?.id}`) === 'true';
+    if (!user) return false;
+    const unlocked = sessionStorage.getItem(`zirokash_unlocked_${user.id}`) === 'true';
+    const lastActivity = parseInt(localStorage.getItem(`zirokash_last_activity_${user.id}`) || "0");
+    const isTimedOut = Date.now() - lastActivity > IDLE_TIMEOUT;
+    
+    return unlocked && !isTimedOut;
   });
+  
   const [userHasPIN, setUserHasPIN] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -29,17 +36,48 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }
   }, [user]);
 
+  // Idle Detection Logic
+  useEffect(() => {
+    if (!user || !isUnlocked) return;
+
+    const updateActivity = () => {
+      localStorage.setItem(`zirokash_last_activity_${user.id}`, Date.now().toString());
+    };
+
+    const checkIdle = () => {
+      const lastActivity = parseInt(localStorage.getItem(`zirokash_last_activity_${user.id}`) || "0");
+      if (Date.now() - lastActivity > IDLE_TIMEOUT) {
+        setIsUnlocked(false);
+        sessionStorage.setItem(`zirokash_unlocked_${user?.id}`, 'false');
+      }
+    };
+
+    // Initial update
+    updateActivity();
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    const handleEvent = () => updateActivity();
+    
+    events.forEach(ev => window.addEventListener(ev, handleEvent));
+    const interval = setInterval(checkIdle, 10000); // Check every 10 seconds
+
+    return () => {
+      events.forEach(ev => window.removeEventListener(ev, handleEvent));
+      clearInterval(interval);
+    };
+  }, [user, isUnlocked]);
+
   const checkPINStatus = async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('pin_setup_completed, pin_code')
+        .select('pin_setup_completed, pin_hash')
         .eq('user_id', user?.id)
         .single();
       
       if (!error && data) {
         const profile = data as any;
-        setUserHasPIN(!!profile.pin_code);
+        setUserHasPIN(!!profile.pin_hash);
 
         if (profile.pin_setup_completed === false) {
           // Show onboarding after a small delay for better UX
@@ -55,6 +93,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     setIsUnlocked(true);
     if (user) {
       sessionStorage.setItem(`zirokash_unlocked_${user.id}`, 'true');
+      localStorage.setItem(`zirokash_last_activity_${user.id}`, Date.now().toString());
     }
   };
   

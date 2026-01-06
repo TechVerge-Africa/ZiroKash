@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Header(): JSX.Element {
   const isMobile = useIsMobile();
@@ -20,6 +21,20 @@ export default function Header(): JSX.Element {
   
   const fullName = (user?.user_metadata as { full_name?: string } | undefined)?.full_name;
   const firstName = fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (user) {
+      supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+        });
+    }
+  }, [user]);
   
   const getUserInitials = () => {
     const nameForInitials = fullName || user?.email || '';
@@ -94,9 +109,13 @@ export default function Header(): JSX.Element {
                     )}
                   >
                     <Avatar className={isMobile ? "h-8 w-8" : "h-7 w-7"}>
-                      <AvatarFallback className="bg-gradient-to-br from-primary/10 to-secondary/10 text-primary text-xs">
-                        {getUserInitials()}
-                      </AvatarFallback>
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={firstName} className="h-full w-full object-cover" />
+                      ) : (
+                        <AvatarFallback className="bg-gradient-to-br from-primary/10 to-secondary/10 text-primary text-xs">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                     {!isMobile && (
                       <>

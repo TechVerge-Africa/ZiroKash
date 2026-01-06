@@ -13,6 +13,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { useRef } from "react";
+import { Receipt, ReceiptTemplate } from "@/components/zirokash/Receipt";
 
 interface ReceiptViewerProps {
   isOpen: boolean;
@@ -26,29 +27,79 @@ export function ReceiptViewer({ isOpen, onClose, transaction }: ReceiptViewerPro
   if (!transaction) return null;
 
   const handlePrint = () => {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow || !receiptRef.current) {
+        toast.error("Failed to open print window");
+        return;
+    }
+
+    const styles = Array.from(document.styleSheets)
+      .map(sheet => {
+        try {
+          return Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
+        } catch (e) {
+          return '';
+        }
+      })
+      .join('\n');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt - ${transaction.id?.slice(0, 8)}</title>
+          <style>
+            ${styles}
+            body { background: white; padding: 20px; font-family: sans-serif; }
+            @media print { 
+              body { padding: 0; margin: 0; }
+              @page { size: auto; margin: 0; }
+              .print-hidden { display: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div style="max-width: 600px; margin: 0 auto;">
+            ${receiptRef.current.innerHTML}
+          </div>
+          <script>
+            window.onload = () => {
+              window.print();
+              window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleDownload = async () => {
     if (!receiptRef.current) return;
     
     try {
-      const canvas = await html2canvas(receiptRef.current, {
+      const container = receiptRef.current.querySelector('[data-receipt-container="true"]');
+      if (!container) throw new Error("Receipt container not found");
+
+      const canvas = await html2canvas(container as HTMLElement, {
         scale: 2,
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false
       });
+      
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [80, 200] // Receipt roll size approximation
+        format: "a4"
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`receipt-${transaction.id}.pdf`);
+      pdf.save(`receipt-${transaction.id?.slice(0, 8)}.pdf`);
       toast.success("Receipt downloaded");
     } catch (err) {
       console.error(err);
@@ -56,70 +107,66 @@ export function ReceiptViewer({ isOpen, onClose, transaction }: ReceiptViewerPro
     }
   };
 
+  const defaultTemplate: ReceiptTemplate = {
+    headerText: transaction.form_title || "Official Receipt",
+    footerText: "Thank you for your business.",
+    showLogo: true,
+    showSignature: true,
+    showQRCode: true,
+    customFields: [],
+    securityFeatures: {
+      showWatermark: true,
+      watermarkText: "OFFICIAL",
+      showSecurityBorder: true,
+      showBarcodeBottom: true,
+      enableNumbering: true
+    }
+  };
+
+  const template = transaction.receipt_template || defaultTemplate;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden border-none glass-card">
+        <DialogHeader className="p-4 sm:p-6 pb-2 border-b border-white/10">
           <DialogTitle>Transaction Receipt</DialogTitle>
           <DialogDescription>
             Digital receipt for transaction #{transaction.id?.slice(0, 8)}
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[60vh] p-4 bg-muted/50 rounded-lg flex justify-center">
-            <div 
-              ref={receiptRef}
-              className="bg-white text-black p-6 w-full max-w-[320px] mx-auto shadow-sm text-sm font-mono leading-relaxed"
-            >
-                {/* Header */}
-                <div className="text-center mb-6 border-b pb-4 border-dashed border-gray-300">
-                    <h3 className="text-xl font-bold mb-1">{transaction.form_title || "Merchant Payment"}</h3>
-                    <p className="text-xs text-gray-500">{new Date(transaction.created_at).toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">Ref: {transaction.reference || transaction.id}</p>
-                </div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30 p-4 sm:p-8">
+          <div ref={receiptRef} className="mx-auto max-w-full flex justify-center">
+            <Receipt
+              template={template}
+              logoUrl={transaction.logo_url}
+              signatureUrl={transaction.signature_url}
+              formFields={transaction.form_fields || []}
+              fieldMappings={template.fieldMappings || []}
+              submissionData={{
+                ...transaction.submission_data,
+                "Amount Paid": `GHS ${((transaction.net_amount || transaction.amount) / 100).toFixed(2)}`,
+                "Amount": `GHS ${((transaction.net_amount || transaction.amount) / 100).toFixed(2)}`,
+                "Total": `GHS ${((transaction.net_amount || transaction.amount) / 100).toFixed(2)}`,
+                "Payer Name": transaction.payer_name,
+                "Payer Email": transaction.payer_email,
+              }}
+              receiptNumber={`REC-${transaction.id?.slice(0, 6).toUpperCase()}`}
+              verificationCode={transaction.id?.slice(-6).toUpperCase() || "VERIFY"}
+              transactionId={transaction.transaction_id || transaction.id}
+              date={new Date(transaction.created_at)}
+            />
+          </div>
+        </div>
 
-                {/* Items */}
-                <div className="space-y-4 mb-6">
-                    {transaction.metadata?.name && (
-                         <div className="flex justify-between">
-                            <span className="text-gray-600">Payer:</span>
-                            <span className="font-semibold">{transaction.metadata.name}</span>
-                        </div>
-                    )}
-                     <div className="flex justify-between">
-                        <span className="text-gray-600">Method:</span>
-                        <span className="font-semibold">{transaction.channel || "Mobile Money"}</span>
-                    </div>
-                </div>
-
-                {/* Totals */}
-                <div className="border-t border-dashed border-gray-300 pt-4 mb-6">
-                    <div className="flex justify-between text-lg font-bold">
-                        <span>Total:</span>
-                        <span>₵{(transaction.amount / 100).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Status:</span>
-                        <span className="uppercase">{transaction.status}</span>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="text-center text-xs text-gray-400 mt-8 pt-4 border-t border-gray-100">
-                    <p>Powered by ZiroKash</p>
-                    <p>Thank you for your business!</p>
-                </div>
-            </div>
-        </ScrollArea>
-
-        <div className="flex gap-2 justify-end mt-2">
+        <div className="flex gap-2 justify-end p-6 pt-2 border-t mt-auto">
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
-          <Button variant="default" size="sm" onClick={handleDownload}>
+          <Button variant="default" size="sm" onClick={handleDownload} className="bg-primary hover:bg-primary/90">
             <Download className="h-4 w-4 mr-2" />
-            Download
+            Download PDF
           </Button>
         </div>
       </DialogContent>

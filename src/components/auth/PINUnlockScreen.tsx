@@ -22,15 +22,13 @@ export function PINUnlockScreen({ onUnlock }: PINUnlockScreenProps) {
     
     setIsVerifying(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('pin_code')
-        .eq('user_id', user?.id)
-        .single();
+      const { data: isValid, error } = await supabase.rpc('verify_user_pin', {
+        p_pin: enteredPin
+      });
 
       if (error) throw error;
 
-      if ((data as any).pin_code === enteredPin) {
+      if (isValid) {
         onUnlock();
       } else {
         setPin("");
@@ -56,9 +54,11 @@ export function PINUnlockScreen({ onUnlock }: PINUnlockScreenProps) {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl animate-in fade-in duration-500">
       <div className="w-full max-w-md px-6 text-center space-y-8">
         <div className="flex flex-col items-center">
-          <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary via-orange-500 to-secondary flex items-center justify-center text-white font-bold text-3xl shadow-lg shadow-primary/20 rotate-3 transform mb-8">
-            Z
-          </div>
+          <img 
+            src="/zirokash-logo.png" 
+            alt="ZiroKash Logo" 
+            className="h-20 w-auto mb-8 animate-in zoom-in-50 duration-500"
+          />
           <h1 className="text-3xl font-black tracking-tight gradient-text mb-2">ZiroKash</h1>
           <p className="text-muted-foreground">Session Locked • Enter PIN to continue</p>
         </div>

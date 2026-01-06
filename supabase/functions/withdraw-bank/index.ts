@@ -10,6 +10,7 @@ interface WithdrawRequest {
   bank_code: string;
   account_number: string;
   account_name: string;
+  pin: string;
   currency?: string;
 }
 
@@ -29,12 +30,26 @@ Deno.serve(async (req) => {
       }
     );
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
 
-    const { amount, bank_code, account_number, account_name }: WithdrawRequest = await req.json();
+    const { amount, bank_code, account_number, account_name, pin }: WithdrawRequest = await req.json();
+
+    // Verify PIN before any processing
+    const { data: isPinValid, error: pinError } = await supabaseClient.rpc('verify_user_pin', {
+      p_pin: pin
+    });
+
+    if (pinError || !isPinValid) {
+      throw new Error('Invalid security PIN');
+    }
 
     // Get user's main wallet with currency
     const { data: wallet, error: walletError } = await supabaseClient
@@ -80,8 +95,8 @@ Deno.serve(async (req) => {
       throw new Error('Enhanced KYC verification required for bank withdrawals');
     }
 
-    // Create pending transaction
-    const { data: transaction, error: txError } = await supabaseClient
+    // Create pending transaction (using Admin client to bypass RLS)
+    const { data: transaction, error: txError } = await supabaseAdmin
       .from('transactions')
       .insert({
         user_id: user.id,
@@ -103,8 +118,8 @@ Deno.serve(async (req) => {
       throw new Error('Failed to create transaction');
     }
 
-    // Debit wallet
-    const { error: debitError } = await supabaseClient
+    // Debit wallet (using Admin client to bypass RLS)
+    const { error: debitError } = await supabaseAdmin
       .from('wallets')
       .update({ balance: wallet.balance - totalDebit })
       .eq('id', wallet.id);
@@ -117,7 +132,7 @@ Deno.serve(async (req) => {
     const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
     if (!paystackKey) {
       // Refund
-      await supabaseClient.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+      await supabaseAdmin.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
       throw new Error('Payment provider not configured');
     }
 
@@ -142,10 +157,10 @@ Deno.serve(async (req) => {
     });
 
     const recipientData = await recipientResponse.json();
-    
+
     if (!recipientData.status) {
-      await supabaseClient.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
-      await supabaseClient.from('transactions').update({ status: 'failed', metadata: { error: recipientData.message } }).eq('id', transaction.id);
+      await supabaseAdmin.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+      await supabaseAdmin.from('transactions').update({ status: 'failed', metadata: { error: recipientData.message } }).eq('id', transaction.id);
       throw new Error(recipientData.message || 'Recipient creation failed');
     }
 
@@ -168,12 +183,12 @@ Deno.serve(async (req) => {
     const transferData = await transferResponse.json();
 
     if (!transferData.status) {
-      await supabaseClient.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
-      await supabaseClient.from('transactions').update({ status: 'failed', metadata: { error: transferData.message } }).eq('id', transaction.id);
+      await supabaseAdmin.from('wallets').update({ balance: wallet.balance }).eq('id', wallet.id);
+      await supabaseAdmin.from('transactions').update({ status: 'failed', metadata: { error: transferData.message } }).eq('id', transaction.id);
       throw new Error(transferData.message || 'Transfer failed');
     }
 
-    await supabaseClient
+    await supabaseAdmin
       .from('transactions')
       .update({
         external_reference: transferData.data.transfer_code,

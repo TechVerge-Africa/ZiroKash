@@ -21,6 +21,7 @@ import Transactions from "./pages/Transactions";
 import Support from "./pages/Support";
 import About from "./pages/About";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import VerifyReceipt from "./pages/VerifyReceipt";
 
 
 const queryClient = new QueryClient();
@@ -113,6 +114,8 @@ function AppRoutes() {
           <About />
         </MainLayout>
       } />
+
+      <Route path="/verify/:receiptNo" element={<VerifyReceipt />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

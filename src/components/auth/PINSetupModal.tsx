@@ -37,26 +37,6 @@ export function PINSetupModal({ isOpen, onClose, onSuccess }: PINSetupModalProps
     setConfirmPin("");
   };
 
-  const handleSkip = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ pin_setup_completed: true } as any)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-      onSuccess();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSavePin = async () => {
     if (pin !== confirmPin) {
@@ -71,13 +51,9 @@ export function PINSetupModal({ isOpen, onClose, onSuccess }: PINSetupModalProps
 
     try {
       setLoading(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          pin_code: pin,
-          pin_setup_completed: true 
-        } as any)
-        .eq('user_id', user?.id);
+      const { error } = await supabase.rpc('set_user_pin', { 
+        p_pin: pin
+      });
 
       if (error) throw error;
 
@@ -98,12 +74,14 @@ export function PINSetupModal({ isOpen, onClose, onSuccess }: PINSetupModalProps
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleSkip()}>
+    <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-md glass-card border-white/10">
         <DialogHeader className="items-center text-center">
-          <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-            <ShieldCheck className="h-6 w-6 text-primary" />
-          </div>
+          <img 
+            src="/zirokash-logo.png" 
+            alt="ZiroKash Logo" 
+            className="h-16 w-auto mb-4"
+          />
           <DialogTitle className="text-2xl font-bold">
             {step === "enter" ? "Set Security PIN" : "Confirm Security PIN"}
           </DialogTitle>
@@ -142,10 +120,7 @@ export function PINSetupModal({ isOpen, onClose, onSuccess }: PINSetupModalProps
           )}
         </div>
 
-        <DialogFooter className="sm:justify-between gap-2">
-          <Button variant="ghost" onClick={handleSkip} disabled={loading}>
-            Skip for now
-          </Button>
+        <DialogFooter className="sm:justify-end gap-2">
           {step === "enter" ? (
             <Button onClick={handleNext} disabled={pin.length < 4 || loading}>
               Continue

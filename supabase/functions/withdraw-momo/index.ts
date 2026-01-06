@@ -9,6 +9,7 @@ interface WithdrawRequest {
   amount: number;
   phone_number: string;
   provider: 'mtn' | 'vodafone' | 'airteltigo';
+  pin: string;
   currency?: string;
 }
 
@@ -28,12 +29,26 @@ Deno.serve(async (req) => {
       }
     );
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
 
-    const { amount, phone_number, provider, currency = 'GHS' }: WithdrawRequest = await req.json();
+    const { amount, phone_number, provider, pin, currency = 'GHS' }: WithdrawRequest = await req.json();
+
+    // Verify PIN before any processing
+    const { data: isPinValid, error: pinError } = await supabaseClient.rpc('verify_user_pin', {
+      p_pin: pin
+    });
+
+    if (pinError || !isPinValid) {
+      throw new Error('Invalid security PIN');
+    }
 
     // Validation
     if (!amount || amount <= 0) {
@@ -76,8 +91,8 @@ Deno.serve(async (req) => {
       throw new Error('KYC verification required for withdrawals');
     }
 
-    // Create pending transaction
-    const { data: transaction, error: txError } = await supabaseClient
+    // Create pending transaction (using Admin client to bypass RLS)
+    const { data: transaction, error: txError } = await supabaseAdmin
       .from('transactions')
       .insert({
         user_id: user.id,
@@ -99,8 +114,8 @@ Deno.serve(async (req) => {
       throw new Error('Failed to create transaction');
     }
 
-    // Debit wallet immediately (will refund if payout fails)
-    const { error: debitError } = await supabaseClient
+    // Debit wallet immediately (using Admin client to bypass RLS)
+    const { error: debitError } = await supabaseAdmin
       .from('wallets')
       .update({ balance: wallet.balance - totalDebit })
       .eq('id', wallet.id);
@@ -114,7 +129,7 @@ Deno.serve(async (req) => {
     const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
     if (!paystackKey) {
       // Refund wallet
-      await supabaseClient
+      await supabaseAdmin
         .from('wallets')
         .update({ balance: wallet.balance })
         .eq('id', wallet.id);
@@ -142,15 +157,15 @@ Deno.serve(async (req) => {
     });
 
     const recipientData = await recipientResponse.json();
-    
+
     if (!recipientData.status) {
       // Refund wallet
-      await supabaseClient
+      await supabaseAdmin
         .from('wallets')
         .update({ balance: wallet.balance })
         .eq('id', wallet.id);
 
-      await supabaseClient
+      await supabaseAdmin
         .from('transactions')
         .update({ status: 'failed', metadata: { error: recipientData.message } })
         .eq('id', transaction.id);
@@ -178,12 +193,12 @@ Deno.serve(async (req) => {
 
     if (!transferData.status) {
       // Refund wallet
-      await supabaseClient
+      await supabaseAdmin
         .from('wallets')
         .update({ balance: wallet.balance })
         .eq('id', wallet.id);
 
-      await supabaseClient
+      await supabaseAdmin
         .from('transactions')
         .update({ status: 'failed', metadata: { error: transferData.message } })
         .eq('id', transaction.id);
@@ -192,7 +207,7 @@ Deno.serve(async (req) => {
     }
 
     // Update transaction
-    await supabaseClient
+    await supabaseAdmin
       .from('transactions')
       .update({
         external_reference: transferData.data.transfer_code,
@@ -208,7 +223,7 @@ Deno.serve(async (req) => {
     console.log(`MoMo withdrawal initiated: ${transaction.id} for user ${user.id}`);
 
     // Get user profile for notification
-    const { data: profile } = await supabaseClient
+    const { data: notificationProfile } = await supabaseClient
       .from('profiles')
       .select('full_name')
       .eq('user_id', user.id)
@@ -230,7 +245,7 @@ Deno.serve(async (req) => {
           recipient: {
             email: user.email,
             phone: phone_number,
-            name: profile?.full_name || user.email?.split('@')[0] || 'User',
+            name: notificationProfile?.full_name || user.email?.split('@')[0] || 'User',
           },
           data: {
             transactionType: 'Withdrawal',

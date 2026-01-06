@@ -75,7 +75,7 @@ export function Receipt({
   date,
 }: ReceiptProps) {
   const visibleMappings = fieldMappings.filter(m => m.showOnReceipt);
-  const verificationUrl = `https://zirokash.com/verify/${receiptNumber}?code=${verificationCode}`;
+  const verificationUrl = `${window.location.origin}/verify/${receiptNumber}?code=${verificationCode}`;
 
   // Generate barcode pattern based on receipt number
   const generateBarcodePattern = (text: string) => {
@@ -116,7 +116,7 @@ export function Receipt({
         >
           <div className="absolute inset-0 flex items-center justify-center select-none overflow-hidden">
             <p 
-              className="text-[120px] font-black transform -rotate-45 text-slate-900 print:text-black whitespace-nowrap"
+              className="text-[60px] sm:text-[120px] font-black transform -rotate-45 text-slate-900 print:text-black whitespace-nowrap"
               style={{ 
                 letterSpacing: '0.15em',
                 textShadow: '0 0 10px rgba(0,0,0,0.05)'
@@ -144,10 +144,10 @@ export function Receipt({
           )}
 
           <div className="space-y-2">
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 print:text-black">
+            <h2 className="text-xl sm:text-4xl font-extrabold tracking-tight text-slate-900 print:text-black">
               {template.headerText || "Payment Receipt"}
             </h2>
-            <div className="h-1 w-20 bg-primary mx-auto rounded-full print:hidden" />
+            <div className="h-1 w-12 sm:w-20 bg-primary mx-auto rounded-full print:hidden" />
           </div>
 
           {template.securityFeatures?.enableNumbering !== false && (
@@ -213,9 +213,9 @@ export function Receipt({
                 }
 
                 return (
-                  <div key={mapping.formFieldId} className="flex justify-between items-center py-3 px-4 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 print:bg-transparent print:border-none print:px-0">
-                    <span className="text-sm font-medium text-slate-500">{mapping.receiptLabel}</span>
-                    <span className="text-sm font-bold text-slate-900 border-b-2 border-primary/20 print:border-none">{value}</span>
+                  <div key={mapping.formFieldId} className="flex justify-between items-center py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 print:bg-transparent print:border-none print:px-0">
+                    <span className="text-xs sm:text-sm font-medium text-slate-500">{mapping.receiptLabel}</span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 border-b-2 border-primary/20 print:border-none text-right">{value}</span>
                   </div>
                 );
               })}
@@ -226,10 +226,10 @@ export function Receipt({
         {/* Total Highlight */}
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500 print:hidden"></div>
-          <div className="relative bg-slate-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 print:bg-white print:text-black print:border-2 print:border-black print:rounded-none">
-            <span className="text-sm sm:text-lg font-bold uppercase tracking-widest opacity-80">Final Amount Paid</span>
+          <div className="relative bg-slate-900 text-white rounded-2xl p-4 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 print:bg-white print:text-black print:border-2 print:border-black print:rounded-none">
+            <span className="text-xs sm:text-lg font-bold uppercase tracking-widest opacity-80">Final Amount Paid</span>
             <div className="text-center sm:text-right">
-              <span className="text-3xl sm:text-5xl font-black text-primary print:text-black">
+              <span className="text-2xl sm:text-5xl font-black text-primary print:text-black">
                 {submissionData.Amount || submissionData.Total || "₵1,000.00"}
               </span>
               <div className="flex items-center justify-center sm:justify-end gap-1.5 mt-1 text-[10px] font-bold text-primary-foreground/60 print:text-black uppercase tracking-tighter">

@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTheme } from "@/hooks/use-theme";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MerchantOnboarding } from "@/components/merchant/MerchantOnboarding";
 import { MerchantWallet } from "@/components/merchant/MerchantWallet";
 import { useMerchant } from "@/hooks/useMerchant";
@@ -50,6 +50,8 @@ export default function Settings() {
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [dob, setDob] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Password state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -59,6 +61,7 @@ export default function Settings() {
   // Session info state
   const [locationInfo, setLocationInfo] = useState("Loading location...");
   const [browserInfo, setBrowserInfo] = useState("Loading browser...");
+  const [securityPin, setSecurityPin] = useState("");
   
   // Notification Preferences State
   const [notifLoading, setNotifLoading] = useState(false);
@@ -73,6 +76,11 @@ export default function Settings() {
     newsletter_enabled: true,
     whatsapp_enabled: false
   });
+
+  // Appearance Local States
+  const [compactMode, setCompactMode] = useState(false);
+  const [showBalance, setShowBalance] = useState(true);
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
   useEffect(() => {
     setInitialTheme(theme);
@@ -135,6 +143,7 @@ export default function Settings() {
         setState((data as any).state || "");
         setZipCode((data as any).zip_code || "");
         setDob((data as any).date_of_birth || "");
+        setAvatarUrl((data as any).avatar_url || null);
       }
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
@@ -181,6 +190,7 @@ export default function Settings() {
           city: city,
           state: state,
           zip_code: zipCode,
+          avatar_url: avatarUrl,
           date_of_birth: dob || null
         })
         .eq('user_id', user?.id);
@@ -191,6 +201,78 @@ export default function Settings() {
         title: "Profile updated",
         description: "Your personal information has been saved successfully.",
       });
+      fetchProfile();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingLoading(false);
+    }
+  };
+
+  const handleUploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) return;
+      
+      setSavingLoading(true);
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user?.id}/${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl);
+      
+      // Also update the profile immediately
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user?.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Avatar updated",
+        description: "Your profile picture has been updated.",
+      });
+      fetchProfile();
+    } catch (error: any) {
+      toast({
+        title: "Upload Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingLoading(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    try {
+      setSavingLoading(true);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setAvatarUrl(null);
+      toast({
+        title: "Avatar removed",
+        description: "Your profile picture has been removed.",
+      });
+      fetchProfile();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -409,14 +491,45 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent className="space-y-4 text-center">
                   <div className="flex justify-center">
-                    <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold">
-                      {(user?.user_metadata as any)?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
-                    </div>
+                    {avatarUrl ? (
+                      <img 
+                        src={avatarUrl} 
+                        alt="Profile" 
+                        className="h-24 w-24 rounded-full object-cover border-2 border-primary"
+                      />
+                    ) : (
+                      <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold">
+                        {(user?.user_metadata as any)?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex justify-center gap-2">
-                    <Button variant="outline">Upload</Button>
-                    <Button variant="outline">Remove</Button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleUploadAvatar}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={savingLoading}
+                    >
+                      {savingLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Upload
+                    </Button>
+                    {avatarUrl && (
+                      <Button 
+                        variant="outline" 
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={handleRemoveAvatar}
+                        disabled={savingLoading}
+                      >
+                        Remove
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -559,18 +672,16 @@ export default function Settings() {
                 <CardHeader>
                   <CardTitle>PIN Login</CardTitle>
                   <CardDescription>
-                    {profile?.pin_code ? "Change your security PIN" : "Set up a PIN for easy login"}
+                    {profile?.pin_hash ? "Change your security PIN" : "Set up a PIN for easy login"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-col items-center space-y-4">
                     <InputOTP 
                       maxLength={4} 
-                      value={newPassword === "SET_PIN_MODE" ? confirmPassword : ""} 
+                      value={securityPin} 
                       onChange={(val) => {
-                        // Using confirmPassword temporarily as a PIN buffer to avoid creating too many new states
-                        // In a real refactor, dedicated states would be better.
-                        setConfirmPassword(val);
+                        setSecurityPin(val);
                       }}
                     >
                       <InputOTPGroup className="gap-2">
@@ -584,16 +695,12 @@ export default function Settings() {
                     <Button 
                       className="w-full" 
                       onClick={async () => {
-                        if (confirmPassword.length < 4) return;
+                        if (securityPin.length < 4) return;
                         try {
                           setSavingLoading(true);
-                          const { error } = await supabase
-                            .from('profiles')
-                            .update({ 
-                              pin_code: confirmPassword,
-                              pin_setup_completed: true 
-                            } as any)
-                            .eq('user_id', user?.id);
+                          const { error } = await supabase.rpc('set_user_pin', { 
+                            p_pin: securityPin
+                          });
                             
                           if (error) throw error;
                           
@@ -601,7 +708,7 @@ export default function Settings() {
                             title: "PIN Updated",
                             description: "Your security PIN has been saved.",
                           });
-                          setConfirmPassword("");
+                          setSecurityPin("");
                           fetchProfile();
                         } catch (err: any) {
                           toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -609,7 +716,7 @@ export default function Settings() {
                           setSavingLoading(false);
                         }
                       }}
-                      disabled={savingLoading || confirmPassword.length < 4}
+                      disabled={savingLoading || securityPin.length < 4}
                     >
                       {savingLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                       Save PIN
@@ -878,7 +985,11 @@ export default function Settings() {
                         Make the UI more compact
                       </p>
                     </div>
-                    <Switch id="compact-mode" />
+                    <Switch 
+                      id="compact-mode" 
+                      checked={compactMode}
+                      onCheckedChange={setCompactMode}
+                    />
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -888,7 +999,11 @@ export default function Settings() {
                         Display your account balance on the dashboard
                       </p>
                     </div>
-                    <Switch id="show-balance" defaultChecked />
+                    <Switch 
+                      id="show-balance" 
+                      checked={showBalance}
+                      onCheckedChange={setShowBalance}
+                    />
                   </div>
                   
                   <div className="flex items-center justify-between">
@@ -898,13 +1013,24 @@ export default function Settings() {
                         Enable UI animations and transitions
                       </p>
                     </div>
-                    <Switch id="animations" defaultChecked />
+                    <Switch 
+                      id="animations" 
+                      checked={animationsEnabled}
+                      onCheckedChange={setAnimationsEnabled}
+                    />
                   </div>
                 </div>
               </div>
               
               <div className="flex justify-end">
-                <Button>Save Preferences</Button>
+                <Button onClick={() => {
+                  toast({
+                    title: "Appearance saved",
+                    description: "Your display preferences have been updated locally.",
+                  });
+                }}>
+                  Save Preferences
+                </Button>
               </div>
             </CardContent>
           </Card>

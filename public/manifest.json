@@ -1,12 +1,12 @@
 {
-  "name": "ZiroKash - Digital Wallet & Fintech",
+  "name": "ZiroKash - Modern Payment Forms & Wallet",
   "short_name": "ZiroKash",
-  "description": "Your all-in-one digital wallet for payments, transfers, investments, and financial management",
+  "description": "Collect payments with ease, send money, and manage your merchant finances in one premium dashboard.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
+  "background_color": "#ffffff",
   "theme_color": "#2563EB",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "categories": [
     "finance",
     "business",
@@ -17,15 +17,22 @@
     {
       "src": "/favicon.png",
       "sizes": "192x192 512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
-      "name": "Send Money",
-      "short_name": "Send",
-      "description": "Quick send money to contacts",
-      "url": "/payments?tab=send",
+      "name": "Merchant Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your revenue and recent activity",
+      "url": "/dashboard",
       "icons": [
         {
           "src": "/favicon.png",
@@ -34,10 +41,10 @@
       ]
     },
     {
-      "name": "Pay Bills",
-      "short_name": "Bills",
-      "description": "Pay utility bills and airtime",
-      "url": "/payments?tab=bills",
+      "name": "My Payment Forms",
+      "short_name": "Forms",
+      "description": "Create and manage your payment forms",
+      "url": "/zirokash",
       "icons": [
         {
           "src": "/favicon.png",
@@ -46,10 +53,10 @@
       ]
     },
     {
-      "name": "My Cards",
-      "short_name": "Cards",
-      "description": "View and manage your cards",
-      "url": "/cards",
+      "name": "Transaction History",
+      "short_name": "Transactions",
+      "description": "Analyze your payments and payouts",
+      "url": "/transactions",
       "icons": [
         {
           "src": "/favicon.png",

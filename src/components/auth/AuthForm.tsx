@@ -9,7 +9,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { FcGoogle } from "react-icons/fc";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -27,9 +26,8 @@ const signUpSchema = z.object({
 });
 
 export function AuthForm() {
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -72,18 +70,6 @@ export function AuthForm() {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const onGoogleSignIn = async () => {
-    setIsGoogleLoading(true);
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        console.error("Google sign in error:", error.message);
-      }
-    } finally {
-      setIsGoogleLoading(false);
     }
   };
 
@@ -173,20 +159,7 @@ export function AuthForm() {
                 </div>
               </div>
               
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full bg-background/50 hover:bg-muted/50 border-white/10 h-11 transition-all"
-                disabled={isGoogleLoading}
-                onClick={onGoogleSignIn}
-              >
-                {isGoogleLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <FcGoogle className="mr-2 h-5 w-5" />
-                )}
-                Continue with Google
-              </Button>
+
             </TabsContent>
             
             <TabsContent value="signup" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -282,30 +255,9 @@ export function AuthForm() {
                   </Button>
                 </form>
               </Form>
+
               
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-white/10" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-transparent px-2 text-muted-foreground font-medium">Or continue with</span>
-                </div>
-              </div>
-              
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full bg-background/50 hover:bg-muted/50 border-white/10 h-11 transition-all"
-                disabled={isGoogleLoading}
-                onClick={onGoogleSignIn}
-              >
-                {isGoogleLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <FcGoogle className="mr-2 h-5 w-5" />
-                )}
-                Continue with Google
-              </Button>
+
             </TabsContent>
           </Tabs>
         </CardContent>

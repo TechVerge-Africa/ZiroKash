@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
@@ -43,6 +44,7 @@ export default function Sidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { merchant, hasSubaccount, loading: merchantLoading } = useMerchant();
+  const { isAdmin } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -95,11 +97,20 @@ export default function Sidebar() {
             {additionalNavItems.map((item) => (
               <NavLink key={item.name} item={item} />
             ))}
-           </div> */}
+            </div> */}
           
           {/* Show account settings on both */}
-          <div className="mt-6 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground px-3 mb-2">ACCOUNT</p>
+          <div className={cn("space-y-1", !isMobile && "mt-6")}>
+            <p className="text-xs font-medium text-muted-foreground px-3 mb-2">MANAGEMENT</p>
+            {isAdmin && (
+              <NavLink 
+                item={{ 
+                  name: "Admin Dashboard", 
+                  href: "/admin", 
+                  icon: <ShieldCheck size={20} className="text-emerald-500" /> 
+                }} 
+              />
+            )}
             {accountNavItems.map(item => <NavLink key={item.name} item={item} />)}
           </div>
           

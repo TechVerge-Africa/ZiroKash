@@ -22,6 +22,7 @@ import Support from "./pages/Support";
 import About from "./pages/About";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import VerifyReceipt from "./pages/VerifyReceipt";
+import AdminDashboard from "./pages/AdminDashboard";
 
 
 const queryClient = new QueryClient();
@@ -73,6 +74,14 @@ function AppRoutes() {
         <ProtectedRoute>
           <MainLayout>
             <Dashboard />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <AdminDashboard />
           </MainLayout>
         </ProtectedRoute>
       } />

@@ -18,13 +18,46 @@ self.addEventListener('install', event => {
 });
 
 // Cache and return requests
+// Cache and return requests
 self.addEventListener('fetch', event => {
-  // Use a "Network First" approach for a dynamic fintech app
-  // This ensures users always see the latest data if online
+  const url = new URL(event.request.url);
+
+  // 1. Ignore API calls, Supabase requests, and non-GET requests (Everything dynamic)
+  // Let the browser handle these directly for best real-time performance.
+  if (
+    event.request.method !== 'GET' ||
+    url.pathname.startsWith('/auth') ||
+    url.pathname.startsWith('/rest') ||
+    url.hostname.includes('supabase') || 
+    url.hostname.includes('paystack')
+  ) {
+    return;
+  }
+
+  // 2. For HTML (Navigation), use Network First, fallback to cached offline page
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/index.html');
+      })
+    );
+    return;
+  }
+
+  // 3. For Static Assets (CSS, JS, Images), use Stale-While-Revalidate
+  // Serve from cache immediately, but update in background
   event.respondWith(
-    fetch(event.request).catch(() => {
-      // If network fails, try the cache
-      return caches.match(event.request);
+    caches.match(event.request).then(response => {
+      const fetchPromise = fetch(event.request).then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      });
+      return response || fetchPromise;
     })
   );
 });

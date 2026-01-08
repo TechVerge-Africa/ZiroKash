@@ -148,18 +148,42 @@ serve(async (req) => {
       updatePayload.paystack_subaccount_code = backupSubaccountCode;
     }
 
-    const { error: updateError } = await supabaseAdmin
+    // Try to update with v2 column first
+    let updateResult = await supabaseAdmin
       .from('merchants')
       .update(updatePayload)
       .eq('user_id', user.id);
 
-    if (updateError) {
-      console.error('Failed to update merchant:', updateError);
+    // If update failed and we tried to set v2, it might be because the column doesn't exist yet
+    // Retry without v2 column
+    if (updateResult.error && primarySubaccountCode) {
+      console.log('Update with v2 failed, retrying without v2 column:', updateResult.error);
+      const fallbackPayload: any = {
+        settlement_bank_code: bankCode,
+        settlement_account_number: accountNumber,
+        settlement_account_name: accountName,
+        verification_status: 'verified',
+        updated_at: new Date().toISOString(),
+      };
+
+      if (backupSubaccountCode) {
+        fallbackPayload.paystack_subaccount_code = backupSubaccountCode;
+      }
+
+      updateResult = await supabaseAdmin
+        .from('merchants')
+        .update(fallbackPayload)
+        .eq('user_id', user.id);
+    }
+
+    if (updateResult.error) {
+      console.error('Failed to update merchant:', updateResult.error);
       return new Response(
         JSON.stringify({
           warning: 'Subaccounts created but database update failed',
           primary: primarySubaccountCode,
-          backup: backupSubaccountCode
+          backup: backupSubaccountCode,
+          error: updateResult.error.message
         }),
         { status: 207, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

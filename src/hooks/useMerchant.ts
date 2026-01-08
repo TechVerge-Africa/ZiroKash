@@ -60,7 +60,7 @@ export function useMerchant() {
   useEffect(() => {
     if (user) {
       fetchMerchant();
-      
+
       // Set up real-time subscription for merchant updates
       const channelName = `merchants-${user.id}`;
       const channel = supabase
@@ -84,13 +84,13 @@ export function useMerchant() {
         .subscribe((status) => {
           console.log('Channel subscription status:', status);
         });
-      
+
       // Fallback: Poll for updates every 3 seconds if needed
       const pollInterval = setInterval(() => {
         console.log('Polling merchant data...');
         fetchMerchant();
       }, 3000);
-      
+
       return () => {
         channel.unsubscribe();
         clearInterval(pollInterval);
@@ -218,6 +218,6 @@ export function useMerchant() {
     setupPaystackSubaccount,
     withdrawToMobileMoney,
     isMerchant: !!merchant,
-    hasSubaccount: !!merchant?.paystack_subaccount_code_v2, // Require v2 for complete setup status
+    hasSubaccount: !!(merchant?.paystack_subaccount_code_v2 || merchant?.paystack_subaccount_code), // Accept either v1 or v2
   };
 }

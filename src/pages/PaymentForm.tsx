@@ -190,12 +190,13 @@ export default function PaymentForm() {
           console.log(`[Payment] Initializing ${isBackup ? 'Backup' : 'Primary'} Gateway`, gatewayConfig);
           
           const paystack = new PaystackPop();
-          paystack.checkout({
+          
+          // Build checkout config - only include subaccount if it exists
+          const checkoutConfig: any = {
             key: gatewayConfig.key,
             email: data.email,
             amount: data.amount,
             reference: data.reference,
-            subaccount: gatewayConfig.subaccount, // Undefined for Primary (direct), defined for Backup (split)
             metadata: data.metadata,
             onSuccess: (response: any) => {
               console.log('Payment successful:', response);
@@ -238,7 +239,14 @@ export default function PaymentForm() {
                 setSubmitting(false);
               }
             }
-          });
+          };
+          
+          // Only add subaccount if it exists and is not empty
+          if (gatewayConfig.subaccount) {
+            checkoutConfig.subaccount = gatewayConfig.subaccount;
+          }
+          
+          paystack.checkout(checkoutConfig);
         };
 
         // Start with Primary if available, otherwise Backup
@@ -254,12 +262,12 @@ export default function PaymentForm() {
       } else if (data?.publicKey) {
          // Legacy single-gateway support (backward compatibility)
         const paystack = new PaystackPop();
-        paystack.checkout({
+        
+        const legacyConfig: any = {
           key: data.publicKey,
           email: data.email,
           amount: data.amount,
           reference: data.reference,
-          subaccount: data.subaccount,
           metadata: data.metadata,
           onSuccess: (response: any) => {
             console.log('Payment successful:', response);
@@ -279,7 +287,14 @@ export default function PaymentForm() {
             toast.error('Payment initialization error');
             setSubmitting(false);
           }
-        });
+        };
+        
+        // Only add subaccount if it exists
+        if (data.subaccount) {
+          legacyConfig.subaccount = data.subaccount;
+        }
+        
+        paystack.checkout(legacyConfig);
 
       } else if (data?.payment_url) {
         // Fallback for when the edge function hasn't been re-deployed with the new InlineJS logic

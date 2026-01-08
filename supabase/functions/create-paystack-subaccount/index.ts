@@ -35,10 +35,10 @@ serve(async (req) => {
       );
     }
 
-    const { 
-      businessName, 
-      bankCode, 
-      accountNumber, 
+    const {
+      businessName,
+      bankCode,
+      accountNumber,
       accountName,
       percentageCharge = 5 // ZiroKash takes 5% by default
     } = await req.json();
@@ -52,80 +52,130 @@ serve(async (req) => {
 
     console.log(`Creating subaccount for: ${businessName}`);
 
-    const paystackKey = Deno.env.get('PAYSTACK_SECRET_KEY');
-    if (!paystackKey) {
-      throw new Error('PAYSTACK_SECRET_KEY not configured');
+    const primarySecretKey = Deno.env.get('PAYSTACK_PRIMARY_SECRET_KEY');
+    const backupSecretKey = Deno.env.get('PAYSTACK_SECRET_KEY');
+
+    if (!primarySecretKey && !backupSecretKey) {
+      throw new Error('No PAYSTACK_SECRET_KEYs configured (Primary or Backup)');
     }
 
-    // Create Paystack subaccount
-    const paystackResponse = await fetch('https://api.paystack.co/subaccount', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${paystackKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        business_name: businessName,
-        settlement_bank: bankCode,
-        account_number: accountNumber,
-        percentage_charge: percentageCharge,
-        primary_contact_email: user.email,
-      }),
-    });
+    let primarySubaccountCode = null;
+    let backupSubaccountCode = null;
+    const errors = [];
 
-    const paystackData = await paystackResponse.json();
+    // Helper function to create subaccount
+    const createSubaccount = async (secretKey: string, label: string) => {
+      try {
+        console.log(`Attempting to create ${label} subaccount...`);
+        const response = await fetch('https://api.paystack.co/subaccount', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${secretKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            business_name: businessName,
+            settlement_bank: bankCode,
+            account_number: accountNumber,
+            percentage_charge: percentageCharge,
+            primary_contact_email: user.email,
+          }),
+        });
 
-    if (!paystackData.status) {
-      console.error('Paystack subaccount creation failed:', paystackData);
+        const data = await response.json();
+
+        if (!data.status) {
+          console.error(`${label} subaccount creation failed:`, data);
+          throw new Error(data.message || `Failed to create ${label} subaccount`);
+        }
+
+        console.log(`${label} subaccount created: ${data.data.subaccount_code}`);
+        return data.data;
+      } catch (err) {
+        console.error(`Error creating ${label} subaccount:`, err);
+        errors.push(`${label}: ${err.message}`);
+        return null;
+      }
+    };
+
+    // 1. Attempt Primary Creation
+    if (primarySecretKey) {
+      const primaryData = await createSubaccount(primarySecretKey, 'Primary');
+      if (primaryData) {
+        primarySubaccountCode = primaryData.subaccount_code;
+      }
+    }
+
+    // 2. Attempt Backup Creation
+    if (backupSecretKey) {
+      const backupData = await createSubaccount(backupSecretKey, 'Backup');
+      if (backupData) {
+        backupSubaccountCode = backupData.subaccount_code;
+      }
+    }
+
+    // 3. Validation: We need at least one success to proceed, preferably Primary
+    if (!primarySubaccountCode && !backupSubaccountCode) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to create subaccount', 
-          details: paystackData.message 
+        JSON.stringify({
+          error: 'Failed to create subaccount on any gateway',
+          details: errors
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Subaccount created: ${paystackData.data.subaccount_code}`);
-
-    // Update merchant record with subaccount details using service role
+    // Update merchant record with available subaccount details
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    const updatePayload: any = {
+      settlement_bank_code: bankCode,
+      settlement_account_number: accountNumber,
+      settlement_account_name: accountName,
+      verification_status: 'verified', // Mark merchant as verified when subaccount setup is complete
+      updated_at: new Date().toISOString(),
+    };
+
+    if (primarySubaccountCode) {
+      updatePayload.paystack_subaccount_code_v2 = primarySubaccountCode;
+    }
+
+    // Always update legacy/backup code if we got one - facilitates the "switch back" logic
+    if (backupSubaccountCode) {
+      updatePayload.paystack_subaccount_code = backupSubaccountCode;
+    }
+
     const { error: updateError } = await supabaseAdmin
       .from('merchants')
-      .update({
-        paystack_subaccount_code: paystackData.data.subaccount_code,
-        settlement_bank_code: bankCode,
-        settlement_account_number: accountNumber,
-        settlement_account_name: accountName,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('user_id', user.id);
 
     if (updateError) {
       console.error('Failed to update merchant:', updateError);
-      // Subaccount was created but we failed to save it - log for manual fix
       return new Response(
-        JSON.stringify({ 
-          warning: 'Subaccount created but failed to save to database',
-          subaccountCode: paystackData.data.subaccount_code 
+        JSON.stringify({
+          warning: 'Subaccounts created but database update failed',
+          primary: primarySubaccountCode,
+          backup: backupSubaccountCode
         }),
         { status: 207, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        subaccountCode: paystackData.data.subaccount_code,
-        businessName: paystackData.data.business_name,
-        percentageCharge: paystackData.data.percentage_charge,
+        primarySubaccount: primarySubaccountCode,
+        backupSubaccount: backupSubaccountCode,
+        businessName: businessName, // Assume same for both
+        warnings: errors.length > 0 ? errors : undefined
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
 
   } catch (error) {
     console.error('Error creating subaccount:', error);

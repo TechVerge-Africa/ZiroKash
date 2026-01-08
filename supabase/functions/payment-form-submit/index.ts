@@ -112,16 +112,19 @@ serve(async (req) => {
 
     // For InlineJS, we don't call transaction/initialize on the server.
     // Instead, we return the data needed for the frontend PaystackPop instance.
-    // Check both common naming conventions for public keys
-    const paystackPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY') || Deno.env.get('VITE_PAYSTACK_PUBLIC_KEY');
+    // Check for Primary Key (New Account)
+    const primaryPublicKey = Deno.env.get('PAYSTACK_PRIMARY_PUBLIC_KEY');
 
-    if (!paystackPublicKey) {
-      console.error('[Payment Form Submit] PAYSTACK_PUBLIC_KEY not configured in Supabase Secrets');
+    // Check for Backup Key (Existing Account - currently mapped to PAYSTACK_PUBLIC_KEY or VITE_PAYSTACK_PUBLIC_KEY)
+    const backupPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY') || Deno.env.get('VITE_PAYSTACK_PUBLIC_KEY');
+
+    if (!primaryPublicKey && !backupPublicKey) {
+      console.error('[Payment Form Submit] No Paystack Public Keys configured');
       return new Response(
         JSON.stringify({
           status: 'error',
-          error: 'Payment gateway configuration error: Missing Public Key',
-          details: 'Please ensure PAYSTACK_PUBLIC_KEY is set in Supabase Edge Function secrets.'
+          error: 'Payment gateway configuration error',
+          details: 'No payment keys (Primary or Backup) are configured.'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -138,16 +141,31 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[Payment Form Submit] Successfully prepared InlineJS metadata for reference: ${submission.id}`);
+    console.log(`[Payment Form Submit] Returning dual-gateway config for reference: ${submission.id}`);
+
+    // Construct response with both configs
+    const gateways = {
+      primary: primaryPublicKey ? {
+        key: primaryPublicKey,
+        // Primary account uses the NEW subaccount code (v2)
+        subaccount: merchant?.paystack_subaccount_code_v2 || undefined,
+        label: 'Primary Gateway'
+      } : null,
+      backup: backupPublicKey ? {
+        key: backupPublicKey,
+        // Backup uses the existing merchant subaccount code from the database
+        subaccount: merchant?.paystack_subaccount_code || undefined,
+        label: 'Backup Gateway'
+      } : null
+    };
 
     return new Response(
       JSON.stringify({
         status: 'success',
-        publicKey: paystackPublicKey,
+        gateways,
         email: payerEmail,
         amount: amount, // In pesewas
         reference: submission.id,
-        subaccount: merchant?.paystack_subaccount_code || undefined,
         metadata: {
           form_id: formId,
           submission_id: submission.id,

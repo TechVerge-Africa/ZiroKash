@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -117,7 +117,7 @@ export default function ZiroKash() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { forms, stats, isLoading, refetch } = usePaymentForms();
-  const { isMerchant, hasSubaccount, loading: merchantLoading } = useMerchant();
+  const { isMerchant, hasSubaccount, loading: merchantLoading, fetchMerchant } = useMerchant();
 
   const checkMerchantStatus = () => {
     if (merchantLoading) return false;
@@ -169,6 +169,20 @@ export default function ZiroKash() {
   const totalSubmissions = Object.values(stats).reduce((sum, s) => sum + s.totalSubmissions, 0);
   const totalPaid = Object.values(stats).reduce((sum, s) => sum + s.paidSubmissions, 0);
   const activeForms = forms.filter(f => f.is_active).length;
+
+  // Refresh merchant data when page comes into focus (after returning from Settings)
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('Page regained focus - refreshing merchant data');
+      fetchMerchant();
+    };
+    
+    // Also refresh on initial mount
+    fetchMerchant();
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchMerchant]);
 
   // Sync form fields to receipt mappings
   useEffect(() => {
@@ -462,25 +476,79 @@ export default function ZiroKash() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {!merchantLoading && (!isMerchant || !hasSubaccount) && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-amber-600 text-sm">Merchant Setup Required</h3>
+              <p className="text-sm text-amber-600/80 mt-1">Complete your business profile and bank setup to create payment forms and copy links.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-3 bg-amber-600/10 hover:bg-amber-600/20 border-amber-600/30 text-amber-600 hover:text-amber-700"
+                asChild
+              >
+                <Link to="/settings?tab=business">Complete Setup</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Payment Forms</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">Create forms, collect payments, and generate receipts</p>
         </div>
         
-        <Dialog open={isCreating || isEditing} onOpenChange={(open) => {
-          if (!open) {
-            setIsCreating(false);
-            setIsEditing(false);
-            resetFormState();
-          }
-        }}>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              console.log('Manual refresh triggered');
+              fetchMerchant();
+            }}
+            className="gap-2"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36"></path>
+            </svg>
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={isCreating || isEditing} onOpenChange={(open) => {
+        if (!open) {
+          setIsCreating(false);
+          setIsEditing(false);
+          resetFormState();
+        }
+      }}>
           <DialogTrigger asChild>
-            <Button className="gap-2 w-full sm:w-auto" onClick={() => {
-              if (!checkMerchantStatus()) return;
-              resetFormState();
-              setIsCreating(true);
-            }}>
+            <Button 
+              className="gap-2 w-full sm:w-auto" 
+              disabled={merchantLoading || !isMerchant || !hasSubaccount}
+              onClick={() => {
+                if (!isMerchant || !hasSubaccount) {
+                  toast.error("Merchant Setup Required", {
+                    description: "You need to complete your business profile and bank setup before creating payment forms.",
+                    action: {
+                      label: "Complete Setup",
+                      onClick: () => navigate("/settings?tab=business")
+                    }
+                  });
+                  return;
+                }
+                resetFormState();
+                setIsCreating(true);
+              }}
+              title={!hasSubaccount ? "Complete merchant setup to create forms" : ""}
+            >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Create Payment Form</span>
               <span className="sm:hidden">Create Form</span>
@@ -881,7 +949,6 @@ export default function ZiroKash() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
 
       {/* Payment Forms List */}
       <Card>
@@ -901,11 +968,24 @@ export default function ZiroKash() {
               </div>
               <h3 className="text-lg font-semibold mb-2">No payment forms yet</h3>
               <p className="text-muted-foreground mb-6">Create your first payment form to start collecting payments</p>
-              <Button onClick={() => {
-                if (!checkMerchantStatus()) return;
-                resetFormState();
-                setIsCreating(true);
-              }} className="gap-2">
+              <Button 
+                onClick={() => {
+                  if (!isMerchant || !hasSubaccount) {
+                    toast.error("Merchant Setup Required", {
+                      description: "You need to complete your business profile and bank setup before creating payment forms.",
+                      action: {
+                        label: "Complete Setup",
+                        onClick: () => navigate("/settings?tab=business")
+                      }
+                    });
+                    return;
+                  }
+                  resetFormState();
+                  setIsCreating(true);
+                }} 
+                disabled={merchantLoading || !isMerchant || !hasSubaccount}
+                className="gap-2"
+              >
                 <Plus className="h-4 w-4" />
                 Create Your First Form
               </Button>
@@ -942,12 +1022,13 @@ export default function ZiroKash() {
                         variant="outline" 
                         size="sm" 
                         className="gap-2 flex-1 sm:flex-initial"
+                        disabled={merchantLoading || !isMerchant || !hasSubaccount}
                         onClick={() => {
-                          if (!checkMerchantStatus()) return;
                           const link = `${window.location.origin}/pay/${form.id}`;
                           navigator.clipboard.writeText(link);
                           toast.success('Payment link copied!');
                         }}
+                        title={!hasSubaccount ? "Complete merchant setup to copy links" : ""}
                       >
                         <Copy className="h-4 w-4" />
                         <span className="hidden sm:inline">Copy Link</span>

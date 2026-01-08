@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ export interface Merchant {
   verification_status: string | null;
   is_active: boolean | null;
   paystack_subaccount_code: string | null;
+  paystack_subaccount_code_v2?: string | null; // New field for Primary Gateway
   settlement_bank_code: string | null;
   settlement_account_number: string | null;
   settlement_account_name: string | null;
@@ -36,31 +37,69 @@ export function useMerchant() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loadingBanks, setLoadingBanks] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchMerchant();
-    } else {
-      setMerchant(null);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchMerchant = async () => {
+  const fetchMerchant = useCallback(async () => {
+    if (!user) return;
     try {
+      console.log('Fetching merchant data for user:', user.id);
       const { data, error } = await supabase
         .from('merchants')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       if (error) throw error;
+      console.log('Merchant data fetched:', data);
       setMerchant(data);
     } catch (error) {
       console.error('Error fetching merchant:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchMerchant();
+      
+      // Set up real-time subscription for merchant updates
+      const channelName = `merchants-${user.id}`;
+      const channel = supabase
+        .channel(channelName, { config: { broadcast: { self: true } } })
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'merchants',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Merchant update received:', payload);
+            if (payload.new) {
+              console.log('Updating merchant state with:', payload.new);
+              setMerchant(payload.new as Merchant);
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log('Channel subscription status:', status);
+        });
+      
+      // Fallback: Poll for updates every 3 seconds if needed
+      const pollInterval = setInterval(() => {
+        console.log('Polling merchant data...');
+        fetchMerchant();
+      }, 3000);
+      
+      return () => {
+        channel.unsubscribe();
+        clearInterval(pollInterval);
+      };
+    } else {
+      setMerchant(null);
+      setLoading(false);
+    }
+  }, [user, fetchMerchant]);
 
   const fetchBanks = async () => {
     setLoadingBanks(true);
@@ -179,6 +218,6 @@ export function useMerchant() {
     setupPaystackSubaccount,
     withdrawToMobileMoney,
     isMerchant: !!merchant,
-    hasSubaccount: !!merchant?.paystack_subaccount_code,
+    hasSubaccount: !!merchant?.paystack_subaccount_code_v2, // Require v2 for complete setup status
   };
 }

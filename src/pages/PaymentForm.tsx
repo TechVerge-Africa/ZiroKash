@@ -183,9 +183,76 @@ export default function PaymentForm() {
 
       console.log('[DEBUG] Payment form submission response data:', data);
 
-      // Check if we received the expected data
-      if (data?.publicKey && data?.reference) {
-        // Initialize Paystack Inline popup
+      // Check if we received the expected data structure
+      if (data?.gateways) {
+        
+        const processPayment = (gatewayConfig: any, isBackup = false) => {
+          console.log(`[Payment] Initializing ${isBackup ? 'Backup' : 'Primary'} Gateway`, gatewayConfig);
+          
+          const paystack = new PaystackPop();
+          paystack.checkout({
+            key: gatewayConfig.key,
+            email: data.email,
+            amount: data.amount,
+            reference: data.reference,
+            subaccount: gatewayConfig.subaccount, // Undefined for Primary (direct), defined for Backup (split)
+            metadata: data.metadata,
+            onSuccess: (response: any) => {
+              console.log('Payment successful:', response);
+              toast.success('Payment successful!');
+              setPaymentSuccess(true);
+              setTimeout(() => {
+                navigate(`/pay/${formId}/success?reference=${data.reference}`);
+              }, 1000);
+            },
+            onCancel: () => {
+              console.log('Payment cancelled by user');
+              // If Primary was cancelled/closed, we could optionally prompt to try Backup, 
+              // but standard UI behavior is just "Cancel". 
+              // However, if the user couldn't *load* the modal (which triggers onError often), we fallback.
+              // For purely user-initiated cancel, we just notify.
+              // UNLESS we want to be aggressive: "Issue with payment? Try alternative method."
+              
+              if (!isBackup && data.gateways.backup) {
+                 toast.info("Payment cancelled. If you faced issues, you can try our backup gateway.", {
+                   action: {
+                     label: "Use Backup Method",
+                     onClick: () => processPayment(data.gateways.backup, true)
+                   }
+                 });
+              } else {
+                 toast.info('Payment cancelled. You can try again.');
+              }
+              setSubmitting(false);
+            },
+            onError: (err: any) => {
+              console.error(`Paystack ${isBackup ? 'Backup' : 'Primary'} error:`, err);
+              
+              if (!isBackup && data.gateways.backup) {
+                console.log('Primary gateway failed, switching to backup...');
+                toast.error('Primary gateway unavailable. Switching to fallback provider...');
+                // Recursive call to backup
+                processPayment(data.gateways.backup, true);
+              } else {
+                toast.error('Payment initialization error. Please try again later.');
+                setSubmitting(false);
+              }
+            }
+          });
+        };
+
+        // Start with Primary if available, otherwise Backup
+        if (data.gateways.primary) {
+          processPayment(data.gateways.primary, false);
+        } else if (data.gateways.backup) {
+           console.log('Primary gateway not configured, using backup.');
+           processPayment(data.gateways.backup, true);
+        } else {
+           throw new Error('No available payment gateways returned from server.');
+        }
+
+      } else if (data?.publicKey) {
+         // Legacy single-gateway support (backward compatibility)
         const paystack = new PaystackPop();
         paystack.checkout({
           key: data.publicKey,
@@ -194,7 +261,7 @@ export default function PaymentForm() {
           reference: data.reference,
           subaccount: data.subaccount,
           metadata: data.metadata,
-          onSuccess: (response) => {
+          onSuccess: (response: any) => {
             console.log('Payment successful:', response);
             toast.success('Payment successful!');
             setPaymentSuccess(true);
@@ -203,16 +270,17 @@ export default function PaymentForm() {
             }, 1000);
           },
           onCancel: () => {
-            console.log('Payment cancelled by user');
-            toast.info('Payment cancelled. You can try again.');
+            console.log('Payment cancelled');
+            toast.info('Payment cancelled');
             setSubmitting(false);
           },
-          onError: (err) => {
+          onError: (err: any) => {
             console.error('Paystack error:', err);
-            toast.error('Payment initialization error. Please try again.');
+            toast.error('Payment initialization error');
             setSubmitting(false);
           }
         });
+
       } else if (data?.payment_url) {
         // Fallback for when the edge function hasn't been re-deployed with the new InlineJS logic
         console.log('[DEBUG] Server returned a payment URL. Falling back to redirect-based checkout...');
@@ -220,14 +288,8 @@ export default function PaymentForm() {
         return;
       } else {
         // Handle cases where data is returned but missing keys
-        const missing = [];
-        if (!data?.publicKey) missing.push('Public Key');
-        if (!data?.reference) missing.push('Reference');
-        
         console.error('Incomplete data from edge function:', data);
-        const serverError = data?.error || data?.message;
-        
-        throw new Error(serverError || `Incomplete payment data received: Missing ${missing.join(' and ')}. If you just updated the code, make sure to deploy the edge function using 'supabase functions deploy payment-form-submit'.`);
+        throw new Error('Incomplete payment data received');
       }
     } catch (error: any) {
       console.error('Payment submission error:', error);

@@ -3,19 +3,15 @@ import { Link } from "react-router-dom";
 import { 
   ArrowRight, 
   CheckCircle, 
-  Menu,
-  X,
   Star,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
-  Globe
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedCounter } from "@/components/landing/AnimatedCounter";
+import PublicLayout from "@/components/layout/PublicLayout";
 import {
   stats,
   howItWorksSteps,
@@ -32,18 +28,9 @@ import {
  * Premium design with animated sections and interactive elements
  */
 export default function Landing() {
-  const [scrollY, setScrollY] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [statsVisible, setStatsVisible] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
-
-  // Handle scroll for header background
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Intersection observer for stats animation
   useEffect(() => {
@@ -87,101 +74,8 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Header */}
-      <motion.header 
-        className="fixed w-full z-50 transition-all duration-300"
-        style={{ 
-          backgroundColor: scrollY > 50 ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-          backdropFilter: scrollY > 50 ? 'blur(12px)' : 'none',
-          borderBottom: scrollY > 50 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none'
-        }}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            <Link to="/" className="flex items-center gap-2">
-              <img 
-                src="/zirokash-logo.png" 
-                alt="ZiroKash - Custom Payment Forms & Digital Wallet for Africa" 
-                className="h-20 sm:h-24 w-auto scale-[1.5] sm:scale-[1.8] transform origin-left transition-transform hover:scale-[1.9]"
-              />
-            </Link>
-            
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-              <a href="#features" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
-                Features
-              </a>
-              <a href="#how-it-works" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
-                How It Works
-              </a>
-              <a href="#pricing" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
-                Pricing
-              </a>
-            </nav>
-            
-            {/* Auth Buttons */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link to="/auth">
-                <Button variant="ghost" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/auth">
-                <Button size="sm" className="bg-gradient-to-r from-primary to-secondary cta-button">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
+    <PublicLayout transparentHeader>
 
-            {/* Mobile Menu Button */}
-            <button 
-              className="md:hidden p-2"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle mobile menu"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t bg-background/95 backdrop-blur-lg"
-          >
-            <div className="container mx-auto px-4 py-4 space-y-3">
-              <a href="#features" className="block py-2 text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
-                Features
-              </a>
-              <a href="#how-it-works" className="block py-2 text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
-                How It Works
-              </a>
-              <a href="#pricing" className="block py-2 text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
-                Pricing
-              </a>
-              <div className="pt-2 space-y-2">
-                <Link to="/auth" className="block">
-                  <Button variant="ghost" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/auth" className="block" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-gradient-to-r from-primary to-secondary">
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </motion.header>
 
       {/* Hero Section */}
       <section className="pt-32 sm:pt-40 pb-20 sm:pb-32 relative overflow-hidden">
@@ -649,79 +543,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-muted/50 py-12 sm:py-16 border-t">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <img 
-                  src="/zirokash-logo.png" 
-                  alt="ZiroKash Fintech Solutions" 
-                  className="h-16 w-auto"
-                />
-              </div>
-              <p className="text-sm text-foreground/70 mb-4">
-                The easiest way to collect payments online. Trusted by schools, churches, and businesses across Africa.
-              </p>
-              
-              {/* Newsletter */}
-              <div className="mt-4">
-                <p className="text-sm font-semibold mb-2">Stay updated</p>
-                <div className="flex gap-2">
-                  <input 
-                    type="email" 
-                    placeholder="Your email" 
-                    className="flex-1 px-3 py-2 text-sm rounded-lg border bg-background"
-                    aria-label="Email for newsletter"
-                  />
-                  <Button size="sm" className="bg-primary">
-                    Subscribe
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-sm sm:text-base">Product</h4>
-              <ul className="space-y-2 text-sm text-foreground/70">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-sm sm:text-base">Company</h4>
-              <ul className="space-y-2 text-sm text-foreground/70">
-                <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
-                <li><Link to="/support" className="hover:text-foreground transition-colors">Contact</Link></li>
-                <li><Link to="/support" className="hover:text-foreground transition-colors">FAQ</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-sm sm:text-base">Legal</h4>
-              <ul className="space-y-2 text-sm text-foreground/70">
-                <li><Link to="/about" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/about" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-foreground/60">
-            <p>© {new Date().getFullYear()} ZiroKash. All rights reserved.</p>
-            
-            <div className="flex items-center gap-2 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100">
-              <span className="text-xs font-medium">Product of</span>
-              <a href="https://techverge.africa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-bold text-foreground">
-                <img src="/techverge-logo.png" alt="TechVerge Africa - Empowering African Innovation" className="h-6 w-auto" />
-                TechVerge Africa
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </PublicLayout>
   );
 }

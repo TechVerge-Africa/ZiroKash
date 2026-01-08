@@ -25,6 +25,11 @@ import VerifyReceipt from "./pages/VerifyReceipt";
 import AdminDashboard from "./pages/AdminDashboard";
 
 
+import Contact from "./pages/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+
+
 const queryClient = new QueryClient();
 
 
@@ -48,6 +53,12 @@ function AppRoutes() {
       
       {/* Fallback for legacy /landing links */}
       <Route path="/landing" element={<Navigate to="/" replace />} />
+      
+      {/* Public Pages */}
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
       
       {/* Public payment form routes */}
       <Route path="/pay/:formId" element={<PaymentForm />} />
@@ -86,7 +97,6 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-
       
       <Route path="/forms/:formId" element={
         <ProtectedRoute>
@@ -118,12 +128,6 @@ function AppRoutes() {
         </MainLayout>
       } />
 
-      <Route path="/about" element={
-        <MainLayout>
-          <About />
-        </MainLayout>
-      } />
-
       <Route path="/verify/:receiptNo" element={<VerifyReceipt />} />
       
       <Route path="*" element={<NotFound />} />
@@ -134,7 +138,7 @@ function AppRoutes() {
 // Main App component
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />

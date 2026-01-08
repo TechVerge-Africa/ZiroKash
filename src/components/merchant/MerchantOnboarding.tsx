@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ export function MerchantOnboarding() {
   const [step, setStep] = useState<Step>('bank');
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const initialStepSetRef = useRef(false);
 
   // Bank form
   const [selectedBank, setSelectedBank] = useState('');
@@ -36,20 +37,26 @@ export function MerchantOnboarding() {
   const [accountVerified, setAccountVerified] = useState(false);
 
   useEffect(() => {
-    if (merchant) {
-      if (merchant.paystack_subaccount_code) {
+    // Only set the initial step once based on merchant data
+    if (!loading && !initialStepSetRef.current) {
+      if (merchant && merchant.paystack_subaccount_code_v2) {
         setStep('complete');
+        console.log('Merchant setup complete - transitioning to complete step', { 
+          subaccount_v2: merchant.paystack_subaccount_code_v2,
+          verification_status: merchant.verification_status 
+        });
       } else {
         setStep('bank');
       }
+      initialStepSetRef.current = true;
     }
-  }, [merchant]);
+  }, [loading, merchant]);
 
   useEffect(() => {
     if (step === 'bank' && banks.length === 0) {
       fetchBanks();
     }
-  }, [step]);
+  }, [step, banks.length, fetchBanks]);
 
   // Auto-verify account when user stops typing (debounced)
   useEffect(() => {
@@ -145,8 +152,11 @@ export function MerchantOnboarding() {
         accountName
       );
       
+      // 3. Refresh merchant data to ensure UI reflects the updated verification status and subaccount code
+      await fetchMerchant();
+      
       toast.success('Merchant setup complete! You can now receive payments.');
-      setStep('complete');
+      // The step will automatically transition to 'complete' via the useEffect when merchant is updated with paystack_subaccount_code_v2
     } catch (error: any) {
       console.error('Setup error:', error);
       toast.error(error.message || 'Failed to complete setup. Please try again.');
@@ -174,6 +184,17 @@ export function MerchantOnboarding() {
 
   return (
     <div className="space-y-6">
+      {/* Alert for legacy merchants migrating to v2 */}
+      {merchant && merchant.paystack_subaccount_code && !merchant.paystack_subaccount_code_v2 && step === 'bank' && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-6">
+           <h4 className="font-semibold text-amber-600 mb-1">Action Required: Update Bank Details</h4>
+           <p className="text-sm text-muted-foreground">
+             We've upgraded our payment system. Please confirm or re-enter your bank details to enable the new high-performance gateway. 
+             Your existing payments are safe, but new features require this update.
+           </p>
+        </div>
+      )}
+
       {/* Step indicators */}
       <div className="flex items-center justify-center gap-2 mb-6">
         {steps.map((s, index) => {

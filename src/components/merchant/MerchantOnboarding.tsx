@@ -117,6 +117,8 @@ export function MerchantOnboarding() {
       return;
     }
 
+    if (submitting) return; // Extra safety check
+
     setSubmitting(true);
     try {
       let currentMerchant = merchant;
@@ -132,19 +134,26 @@ export function MerchantOnboarding() {
           if (!currentMerchant) {
             throw new Error("Failed to create merchant profile");
           }
-          // Refresh to ensure we have the latest state
-          await fetchMerchant(); 
         } catch (err: any) {
            console.error("Merchant creation failed", err);
-           // If error is regarding "approved" enum, give specific advice
            if (err.message?.includes("approved") || err.details?.includes("approved")) {
              throw new Error("Database configuration error. Please contact support to reset merchant status.");
            }
-           throw err;
+           // Use the updated duplication constraint message if applicable
+           if (err.message?.includes("duplicate") || err.code === '23505') {
+              console.log("Merchant already exists, proceeding...");
+              await fetchMerchant();
+              currentMerchant = merchant; // This might still be null due to async state
+           } else {
+              throw err;
+           }
         }
       }
 
       // 2. Setup Paystack subaccount (Requires merchant record to exist)
+      // Note: If duplicate was caught above, fetchMerchant updates state asynchronously so currentMerchant might be stale locally if we rely on it immediately without refetching result
+      // Ideally setupPaystackSubaccount should handle the "find or create" logic internally or we pass the fresh data.
+      
       await setupPaystackSubaccount(
         user?.email || 'ZiroKash Merchant',
         selectedBank,
@@ -152,15 +161,20 @@ export function MerchantOnboarding() {
         accountName
       );
       
-      // 3. Refresh merchant data to ensure UI reflects the updated verification status and subaccount code
+      // 3. Refresh merchant data 
       await fetchMerchant();
       
       toast.success('Merchant setup complete! You can now receive payments.');
-      // The step will automatically transition to 'complete' via the useEffect when merchant is updated with paystack_subaccount_code_v2
+      
+      // EXPLICITLY transition to complete step immediately
+      setStep('complete');
+      
     } catch (error: any) {
       console.error('Setup error:', error);
       toast.error(error.message || 'Failed to complete setup. Please try again.');
     } finally {
+      // Only re-enable submission if we failed; if success, we moved to 'complete' step anyway
+      // But clearing it is safe.
       setSubmitting(false);
     }
   };

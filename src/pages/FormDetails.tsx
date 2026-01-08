@@ -46,7 +46,37 @@ export default function FormDetails() {
   }, [formId]);
 
   useEffect(() => {
-    fetchSubmissions();
+    fetchFormDetails();
+  }, [formId]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      await fetchSubmissions();
+    }
+    fetch();
+
+    // Set up realtime subscription
+    const channel = supabase
+      .channel(`form-submissions-${formId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'form_submissions',
+          filter: `form_id=eq.${formId}`
+        },
+        (payload) => {
+          console.log('Submission update received:', payload);
+          // Refresh submissions when any change occurs
+          fetchSubmissions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [formId, currentPage, searchQuery]);
 
   const fetchFormDetails = async () => {
@@ -124,10 +154,43 @@ export default function FormDetails() {
     }
   };
 
-  const copyPaymentLink = () => {
+  const copyPaymentLink = async () => {
     const link = `${window.location.origin}/pay/${formId}`;
-    navigator.clipboard.writeText(link);
-    toast.success('Payment link copied to clipboard');
+    
+    // Try modern API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(link);
+        toast.success('Payment link copied to clipboard');
+        return;
+      } catch (err) {
+        console.warn('Clipboard API failed', err);
+      }
+    }
+
+    // Fallback
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = link;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        toast.success('Payment link copied to clipboard');
+      } else {
+        toast.error('Failed to copy link');
+      }
+    } catch (err) {
+      console.error('Copy failed:', err);
+      toast.error('Failed to copy link manually');
+    }
   };
 
   const exportSubmissions = async () => {
@@ -212,7 +275,17 @@ export default function FormDetails() {
         </div>
 
         <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-          <Button variant="outline" size="sm" onClick={copyPaymentLink} className="flex-1 sm:flex-initial">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              copyPaymentLink();
+            }} 
+            className="flex-1 sm:flex-initial"
+          >
             <Copy className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Copy Link</span>
             <span className="sm:hidden">Copy</span>

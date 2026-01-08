@@ -17,3 +17,15 @@ DROP CONSTRAINT IF EXISTS merchants_verification_status_check;
 
 -- 5. Inspect for any other triggers (Optional, for manual debugging if this fails)
 -- SELECT tgname FROM pg_trigger WHERE tgrelid = 'public.merchants'::regclass;
+
+-- 6. RESET ALL MERCHANTS (As requested)
+-- Reset all merchant subaccount codes to force re-setup
+UPDATE merchants
+SET 
+  paystack_subaccount_code = NULL,
+  verification_status = 'pending'
+WHERE paystack_subaccount_code IS NOT NULL;
+
+-- Verify the update
+SELECT id, user_id, paystack_subaccount_code, verification_status 
+FROM merchants;

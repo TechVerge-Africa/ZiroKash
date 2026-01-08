@@ -85,15 +85,8 @@ export function useMerchant() {
           console.log('Channel subscription status:', status);
         });
 
-      // Fallback: Poll for updates every 3 seconds if needed
-      const pollInterval = setInterval(() => {
-        console.log('Polling merchant data...');
-        fetchMerchant();
-      }, 3000);
-
       return () => {
         channel.unsubscribe();
-        clearInterval(pollInterval);
       };
     } else {
       setMerchant(null);

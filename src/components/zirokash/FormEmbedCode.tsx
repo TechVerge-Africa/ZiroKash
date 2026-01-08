@@ -22,9 +22,44 @@ export default function FormEmbedCode({ formId }: FormEmbedCodeProps) {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(formUrl)}`
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copied to clipboard`);
+  const copyToClipboard = async (text: string, label: string) => {
+    // Try modern API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success(`${label} copied to clipboard`);
+        return;
+      } catch (err) {
+        console.warn("Clipboard API failed, trying fallback...", err);
+      }
+    }
+
+    // Fallback for older browsers or non-secure contexts (HTTP)
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      
+      // Ensure it's not visible but part of DOM
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        toast.success(`${label} copied to clipboard`);
+      } else {
+        throw new Error("execCommand failed");
+      }
+    } catch (err) {
+      console.error('Copy failed:', err);
+      toast.error(`Could not copy ${label.toLowerCase()}. Please copy manually.`);
+    }
   };
 
   return (

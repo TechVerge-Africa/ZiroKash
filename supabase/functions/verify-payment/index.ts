@@ -85,25 +85,47 @@ serve(async (req) => {
                 );
             }
 
+            if (!submission) {
+                console.error(`[Verify Payment] No submission found with ID ${reference} to update.`);
+                // This means the reference didn't match any row in form_submissions
+                return new Response(
+                    JSON.stringify({ error: 'Submission record not found', reference }),
+                    { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+            }
+
             // Credit wallet if not already done
             if (submission) {
                 console.log(`[Verify Payment] Submission ${reference} updated to paid. Checking wallet...`);
 
-                const { data: formData } = await supabase
+                const { data: formData, error: formError } = await supabase
                     .from('payment_forms')
                     .select('user_id')
                     .eq('id', submission.form_id)
                     .single();
 
+                if (formError) {
+                    console.error('[Verify Payment] Error fetching form data:', formError);
+                }
+
                 if (formData) {
                     const creditAmount = submission.amount / 100;
-                    await supabase.rpc('increment_wallet_balance', {
+                    console.log(`[Verify Payment] Attempting to credit ${creditAmount} GHS into wallet for user ${formData.user_id}`);
+
+                    const { error: rpcError } = await supabase.rpc('increment_wallet_balance', {
                         _user_id: formData.user_id,
                         _wallet_type: 'merchant',
                         _amount: creditAmount,
                         _currency: 'GHS'
                     });
-                    console.log(`[Verify Payment] Credited ${creditAmount} GHS to merchant ${formData.user_id}`);
+
+                    if (rpcError) {
+                        console.error('[Verify Payment] Wallet credit RPC failed:', rpcError);
+                        // We do NOT fail the request here, because payment IS successful.
+                        // We just log it so we can fix wallet sync later or via reconciliation.
+                    } else {
+                        console.log(`[Verify Payment] Successfully credited ${creditAmount} GHS to merchant ${formData.user_id}`);
+                    }
                 }
             }
 

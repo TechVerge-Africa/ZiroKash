@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface FormField {
   type: string;
@@ -40,6 +40,7 @@ export default function PaymentForm() {
   const [originalAmount, setOriginalAmount] = useState<number>(0);
   const [processingFee, setProcessingFee] = useState<number>(0);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [paystackLoaded, setPaystackLoaded] = useState(false);
 
   const calculateProcessingFee = (amount: number): number => {
     if (!amount || amount <= 0) return 0;
@@ -59,6 +60,17 @@ export default function PaymentForm() {
   }, [originalAmount, form?.fee_bearer]);
 
   useEffect(() => {
+    // Check if PaystackPop is loaded
+    const checkPaystack = () => {
+      if (typeof window !== 'undefined' && (window as any).PaystackPop) {
+        setPaystackLoaded(true);
+      } else {
+        // Retry after a short delay
+        setTimeout(checkPaystack, 100);
+      }
+    };
+    checkPaystack();
+    
     fetchForm();
   }, [formId]);
 
@@ -104,6 +116,15 @@ export default function PaymentForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if Paystack is loaded
+    if (!paystackLoaded) {
+      toast.error('Payment system is still loading', {
+        description: 'Please wait a moment and try again'
+      });
+      return;
+    }
+    
     setSubmitting(true);
 
     try {
@@ -203,7 +224,7 @@ export default function PaymentForm() {
               toast.success('Payment successful!');
               setPaymentSuccess(true);
               setTimeout(() => {
-                navigate(`/pay/${formId}/success?reference=${data.reference}`);
+                navigate(`/pay/${formId}/success?reference=${data.reference}`, { replace: true });
               }, 1000);
             },
             onCancel: () => {
@@ -274,7 +295,7 @@ export default function PaymentForm() {
             toast.success('Payment successful!');
             setPaymentSuccess(true);
             setTimeout(() => {
-              navigate(`/pay/${formId}/success?reference=${data.reference}`);
+              navigate(`/pay/${formId}/success?reference=${data.reference}`, { replace: true });
             }, 1000);
           },
           onCancel: () => {
@@ -365,6 +386,15 @@ export default function PaymentForm() {
             )}
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
+            {!paystackLoaded && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-amber-800 font-medium">Payment system is loading...</p>
+                  <p className="text-xs text-amber-700 mt-1">Please wait a moment before submitting.</p>
+                </div>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {form.fields.map((field, index) => (
                 <div key={index} className="space-y-2">

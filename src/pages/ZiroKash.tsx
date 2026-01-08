@@ -20,7 +20,7 @@ import { usePaymentForms } from "@/hooks/usePaymentForms";
 import { useMerchant } from "@/hooks/useMerchant";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { cn, copyToClipboard } from "@/lib/utils";
 
 interface FormField {
   id: string;
@@ -1023,10 +1023,11 @@ export default function ZiroKash() {
                         size="sm" 
                         className="gap-2 flex-1 sm:flex-initial"
                         disabled={merchantLoading || !isMerchant || !hasSubaccount}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           const link = `${window.location.origin}/pay/${form.id}`;
-                          navigator.clipboard.writeText(link);
-                          toast.success('Payment link copied!');
+                          copyToClipboard(link, 'Payment link');
                         }}
                         title={!hasSubaccount ? "Complete merchant setup to copy links" : ""}
                       >

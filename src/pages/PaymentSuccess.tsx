@@ -39,76 +39,98 @@ export default function PaymentSuccess() {
       const submissionId = reference || trxref;
       
       if (!submissionId) {
+        console.error('No submission ID (reference/trxref) found in URL');
         setStatus('failed');
         return;
       }
 
-      // Fetch submission status
+      console.log(`[PaymentSuccess] Verifying submission: ${submissionId}`);
+
+      // 1. Initial Check: Is it already paid?
       const { data: sub, error: subError } = await supabase
         .from('form_submissions')
         .select('*')
         .eq('id', submissionId)
         .maybeSingle();
 
-      if (subError || !sub) {
-        console.error('Submission fetch error:', subError);
+      if (subError) {
+        console.error('[PaymentSuccess] Initial fetch error:', subError);
         setStatus('failed');
         return;
       }
+      
+      if (!sub) {
+        console.error('[PaymentSuccess] Submission not found locally yet. Waiting for sync...');
+        // It might be a new submission that hasn't synced to this client if strict RLS or latency
+      } else {
+        setSubmission(sub);
+      }
 
-      setSubmission(sub);
+      // Fetch form details if available
+      if (formId) {
+        const { data: formData } = await supabase
+          .from('payment_forms')
+          .select('*')
+          .eq('id', formId)
+          .maybeSingle();
+        setForm(formData);
+      }
 
-      // Fetch form details
-      const { data: formData } = await supabase
-        .from('payment_forms')
+      if (sub?.status === 'paid') {
+        console.log('[PaymentSuccess] Submission already marked as paid locally.');
+        setStatus('success');
+        return;
+      }
+
+      // 2. Direct Verification via Edge Function
+      console.log('[PaymentSuccess] triggering verify-payment edge function...');
+      try {
+        const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+          body: { reference: submissionId }
+        });
+
+        if (verifyError) {
+          console.error('[PaymentSuccess] Edge verification failed:', verifyError);
+          // Don't fail immediately, try polling check as last resort
+        } else if (verifyData?.status === 'success') {
+          console.log('[PaymentSuccess] Verified successfully via Edge Function!');
+          setStatus('success');
+          setSubmission(verifyData.submission);
+          return;
+        } else {
+          console.warn('[PaymentSuccess] Edge verification returned non-success:', verifyData);
+        }
+      } catch (vErr) {
+        console.error('[PaymentSuccess] Verification invocation exception:', vErr);
+      }
+
+      // 3. Final Polling Check (Give webhook/edge function a moment)
+      console.log('[PaymentSuccess] Polling for status update...');
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const { data: finalSub, error: finalError } = await supabase
+        .from('form_submissions')
         .select('*')
-        .eq('id', formId)
+        .eq('id', submissionId)
         .maybeSingle();
 
-      setForm(formData);
-
-      // Check if payment was successful
-      if (sub.status === 'paid') {
-        setStatus('success');
+      if (finalSub?.status === 'paid') {
+         console.log('[PaymentSuccess] Final polling confirmed payment.');
+         setStatus('success');
+         setSubmission(finalSub);
       } else {
-        // Direct verification fallback
-        console.log('[PaymentSuccess] Status is pending. Triggering direct verification...');
-        try {
-          const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
-            body: { reference: submissionId }
-          });
-
-          if (!verifyError && verifyData?.status === 'success') {
-            console.log('[PaymentSuccess] Direct verification succeeded!');
-            setStatus('success');
-            setSubmission(verifyData.submission);
-            return;
-          }
-        } catch (vErr) {
-          console.error('[PaymentSuccess] Verification error:', vErr);
-        }
-
-        // Final fallback: Give webhook time to process, then check again
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const { data: updatedSub } = await supabase
-          .from('form_submissions')
-          .select('*')
-          .eq('id', submissionId)
-          .maybeSingle();
-
-        if (updatedSub?.status === 'paid') {
-          setStatus('success');
-          setSubmission(updatedSub);
-        } else {
-          setStatus('success');
-        }
+         console.error('[PaymentSuccess] Verification timed out. Status is still:', finalSub?.status);
+         // Do NOT set success if it failed.
+         setStatus('failed'); 
       }
     } catch (error) {
-      console.error('Verification error:', error);
+      console.error('[PaymentSuccess] Critical verification error:', error);
       setStatus('failed');
     }
   };
+
+// Auto-transition header removed to allow user to download receipt first.
+// Logic moved to handleDownloadPDF completion.
 
   // Automatic download removed as per user request to let users initiate it manually
 

@@ -38,38 +38,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Finalize loading state as soon as we have a session (or lack thereof)
+        // Admin status can load in the background
+        setLoading(false);
+
+        if (session?.user) {
+          checkAdminStatus(session.user.id);
+        } else {
+          setIsAdmin(false);
+        }
+      }
+    );
+
+    // Initial session check
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await checkAdminStatus(session.user.id);
-        } else {
-          setIsAdmin(false);
+          // Trigger admin check but don't await it here as it's not critical for initial render
+          checkAdminStatus(session.user.id);
         }
-        
-        setLoading(false);
+      } catch (err) {
+        console.error('Unexpected error in initSession:', err);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    );
+    };
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await checkAdminStatus(session.user.id);
-      }
-      
-      setLoading(false);
-    }).catch((error) => {
-      console.error('Error getting session:', error);
-      setLoading(false);
-    });
+    initSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {

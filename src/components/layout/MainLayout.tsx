@@ -29,10 +29,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
   });
   
   const [userHasPIN, setUserHasPIN] = useState<boolean | null>(null);
+  const [checkingPIN, setCheckingPIN] = useState(true);
 
   useEffect(() => {
     if (user) {
       checkPINStatus();
+    } else {
+      setCheckingPIN(false);
     }
   }, [user]);
 
@@ -68,24 +71,34 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }, [user, isUnlocked]);
 
   const checkPINStatus = async () => {
+    if (!user) {
+      setCheckingPIN(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('pin_setup_completed, pin_hash')
-        .eq('user_id', user?.id)
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
       
       if (!error && data) {
         const profile = data as any;
         setUserHasPIN(!!profile.pin_hash);
 
-        if (profile.pin_setup_completed === false) {
+        if (profile.pin_setup_completed === false && !!profile.pin_hash) {
           // Show onboarding after a small delay for better UX
           setTimeout(() => setShowPINOnboarding(true), 2000);
         }
+      } else {
+        setUserHasPIN(false);
       }
     } catch (err) {
       console.error("Error checking PIN status:", err);
+      setUserHasPIN(false);
+    } finally {
+      setCheckingPIN(false);
     }
   };
 
@@ -97,6 +110,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }
   };
   
+  // Show a local loader while checking PIN status
+  if (checkingPIN) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   // If user has a PIN but isn't unlocked yet, show the unlock screen
   if (user && userHasPIN && !isUnlocked) {
     return <PINUnlockScreen onUnlock={handleUnlock} />;

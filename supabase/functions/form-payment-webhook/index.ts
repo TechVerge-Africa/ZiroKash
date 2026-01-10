@@ -133,14 +133,34 @@ serve(async (req) => {
         if (submissionData) {
           const { data: formData } = await supabase
             .from('payment_forms')
-            .select('user_id')
+            .select('user_id, fee_bearer')
             .eq('id', submissionData.form_id)
             .single();
 
           if (formData) {
             console.log(`[Form Payment Webhook] Crediting wallet for user: ${formData.user_id}`);
-            // Use net_amount if available, otherwise fallback to amount (converted to GHS)
-            const creditAmount = (submissionData.net_amount || submissionData.amount) / 100;
+
+            // Determine the correct amount to credit the merchant
+            let creditAmount: number;
+
+            if (formData.fee_bearer === 'customer') {
+              // If customer pays the fee, merchant gets precisely their requested amount
+              // This is stored in GHS in submission_data.original_amount
+              const originalAmount = (submissionData as any).submission_data?.original_amount;
+
+              if (originalAmount !== undefined && originalAmount !== null) {
+                creditAmount = Number(originalAmount);
+                console.log(`[Form Payment Webhook] Fee bearer is 'customer'. Crediting original amount: ${creditAmount} GHS`);
+              } else {
+                // Fallback if original_amount is missing
+                creditAmount = (submissionData.net_amount || submissionData.amount) / 100;
+                console.warn(`[Form Payment Webhook] original_amount missing for customer fee bearer. Using fallback: ${creditAmount} GHS`);
+              }
+            } else {
+              // If merchant pays the fee (default), they get the net amount (total - paystack fees)
+              creditAmount = (submissionData.net_amount || submissionData.amount) / 100;
+              console.log(`[Form Payment Webhook] Fee bearer is 'merchant'. Crediting net amount: ${creditAmount} GHS`);
+            }
 
             const { error: walletError } = await supabase.rpc('increment_wallet_balance', {
               _user_id: formData.user_id,

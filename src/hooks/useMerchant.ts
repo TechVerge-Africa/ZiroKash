@@ -21,6 +21,9 @@ export interface Merchant {
   settlement_account_name: string | null;
   created_at: string | null;
   updated_at: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
 }
 
 export interface Bank {

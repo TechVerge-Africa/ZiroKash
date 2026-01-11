@@ -144,6 +144,9 @@ export type Database = {
           updated_at: string | null
           user_id: string
           verification_status: Database["public"]["Enums"]["kyc_status"] | null
+          city: string | null
+          state: string | null
+          zip_code: string | null
         }
         Insert: {
           business_address?: string | null
@@ -164,6 +167,9 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
+          city?: string | null
+          state?: string | null
+          zip_code?: string | null
         }
         Update: {
           business_address?: string | null
@@ -184,6 +190,9 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           verification_status?: Database["public"]["Enums"]["kyc_status"] | null
+          city?: string | null
+          state?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }
@@ -276,6 +285,9 @@ export type Database = {
           pin_hash: string | null
           pin_setup_completed: boolean | null
           avatar_url: string | null
+          city: string | null
+          state: string | null
+          zip_code: string | null
         }
         Insert: {
           address?: string | null

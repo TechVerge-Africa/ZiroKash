@@ -123,9 +123,33 @@ serve(async (req) => {
         const ledgerBalance = paystackData.data[0]?.total_balance || 0;
         const currency = paystackData.data[0]?.currency || 'GHS';
 
-        // Convert from kobo to main currency (divide by 100)
+        // Convert from kobo/pesewas to main currency for cache (divide by 100)
         const availableBalanceMain = availableBalance / 100;
         const ledgerBalanceMain = ledgerBalance / 100;
+
+        // Update wallets table to ensure Dashboard/UI is in sync
+        // Using RPC increment_wallet_balance would normally be used for additions, 
+        // but here we want to SYNC/SET the absolute balance from the source of truth (Paystack).
+        // However, looking at the schema, it's safer to use the already established RPC or a direct update.
+        // Let's use a direct update to the 'merchant' wallet for this user.
+
+        console.log(`[Fetch Balance] Syncing wallet balance for user ${user.id} to ${availableBalanceMain} ${currency}`);
+
+        const { error: walletSyncError } = await supabase
+            .from('wallets')
+            .update({
+                balance: availableBalance, // Store in subunits (pesewas)
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id)
+            .eq('wallet_type', 'merchant')
+            .eq('currency', currency);
+
+        if (walletSyncError) {
+            console.error('[Fetch Balance] Wallet sync failed:', walletSyncError);
+            // We don't want to fail the whole request if only the local sync fails, 
+            // but we should log it.
+        }
 
         // Update cache
         await supabase

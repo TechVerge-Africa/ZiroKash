@@ -14,10 +14,18 @@ import { WithdrawalModal } from "@/components/merchant/WithdrawalModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Dashboard() {
-  const { wallets, transactions, loading: walletLoading, getWalletByType } = useWallet();
+  const { wallets, transactions, loading: walletLoading, getWalletByType, fetchPaystackBalance } = useWallet();
   const { forms, stats, isLoading: formsLoading } = usePaymentForms();
   const { isMerchant, loading: merchantLoading } = useMerchant();
   const [showWithdraw, setShowWithdraw] = useState(false);
+  
+  // Fetch real-time Paystack balance on mount if user is a merchant
+  useEffect(() => {
+    if (isMerchant && !merchantLoading) {
+      console.log('[Dashboard] Fetching real-time Paystack balance...');
+      fetchPaystackBalance();
+    }
+  }, [isMerchant, merchantLoading, fetchPaystackBalance]);
   
   const mainWallet = getWalletByType('main');
   const merchantWallet = getWalletByType('merchant');

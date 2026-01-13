@@ -114,14 +114,16 @@ Deno.serve(async (req) => {
       throw new Error('Failed to create transaction');
     }
 
-    // Debit wallet immediately (using Admin client to bypass RLS)
-    const { error: debitError } = await supabaseAdmin
-      .from('wallets')
-      .update({ balance: wallet.balance - totalDebit })
-      .eq('id', wallet.id);
+    // Debit wallet immediately using RPC for thread-safety (prevents lost updates)
+    const { error: debitError } = await supabaseAdmin.rpc('increment_wallet_balance', {
+      _user_id: user.id,
+      _wallet_type: 'main',
+      _amount: -(totalDebit / 100), // Convert to main currency GHS and make negative for debit
+      _currency: currency
+    });
 
     if (debitError) {
-      console.error('Failed to debit wallet:', debitError);
+      console.error('Failed to debit wallet via RPC:', debitError);
       throw new Error('Failed to process withdrawal');
     }
 

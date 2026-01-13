@@ -125,7 +125,8 @@ serve(async (req) => {
           .select(`
             amount,
             net_amount,
-            form_id
+            form_id,
+            submission_data
           `)
           .eq('id', targetSubmissionId) // Use the resolved target ID
           .single();

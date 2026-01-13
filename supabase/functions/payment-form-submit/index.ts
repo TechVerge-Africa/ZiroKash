@@ -51,7 +51,7 @@ serve(async (req) => {
     // Verify form exists and is active
     const { data: form, error: formError } = await supabase
       .from('payment_forms')
-      .select('*')
+      .select('*, fee_bearer')
       .eq('id', formId)
       .eq('is_active', true)
       .maybeSingle();
@@ -72,14 +72,37 @@ serve(async (req) => {
       );
     }
 
-    // Get merchant subaccount via user_id (separate query to avoid join issues)
+    // Fee calculation logic
+    const PAYSTACK_PERCENTAGE = 0.0195; // 1.95%
+    const PAYSTACK_CAP = 10000; // GHS 100 in pesewas
+
+    // amount is passed in pesewas from the frontend for total payment
+    // originalAmount is in GHS
+    const baseAmountPesewas = Math.round(originalAmount * 100);
+    const feeBearer = form.fee_bearer || 'customer';
+
+    let finalAmountPesewas = baseAmountPesewas;
+    let processingFeePesewas = 0;
+
+    if (feeBearer === 'customer') {
+      // Formula: finalAmount = baseAmount / (1 - 0.0195)
+      const calculatedFee = Math.round(baseAmountPesewas * PAYSTACK_PERCENTAGE / (1 - PAYSTACK_PERCENTAGE));
+      processingFeePesewas = Math.min(calculatedFee, PAYSTACK_CAP);
+      finalAmountPesewas = baseAmountPesewas + processingFeePesewas;
+    } else {
+      // Merchant pays - amount stays same, fee deducted from settlement
+      processingFeePesewas = Math.min(Math.round(baseAmountPesewas * PAYSTACK_PERCENTAGE), PAYSTACK_CAP);
+      finalAmountPesewas = baseAmountPesewas;
+    }
+
+    console.log(`[Payment] Bearer: ${feeBearer}, Base: ${baseAmountPesewas}, Fee: ${processingFeePesewas}, Total: ${finalAmountPesewas}`);
+
+    // Get merchant subaccount via user_id
     const { data: merchant } = await supabase
       .from('merchants')
-      .select('paystack_subaccount_code')
+      .select('paystack_subaccount_code, paystack_subaccount_code_v2')
       .eq('user_id', form.user_id)
       .maybeSingle();
-
-    console.log(`[Payment Form Submit] Merchant subaccount: ${merchant?.paystack_subaccount_code || 'none'}`);
 
     // Create submission
     const { data: submission, error: submissionError } = await supabase
@@ -89,10 +112,11 @@ serve(async (req) => {
         submission_data: {
           ...submissionData,
           original_amount: originalAmount,
-          fee_amount: feeAmount,
-          total_amount: amount / 100, // Store total in GHS 
+          fee_amount: processingFeePesewas / 100,
+          total_amount: finalAmountPesewas / 100,
+          fee_bearer: feeBearer
         },
-        amount: amount, // Store total in pesewas
+        amount: finalAmountPesewas,
         payer_name: payerName || 'Anonymous',
         payer_email: payerEmail,
         status: 'pending'
@@ -108,53 +132,24 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[Payment Form Submit] Submission created: ${submission.id}`);
-
-    // For InlineJS, we don't call transaction/initialize on the server.
-    // Instead, we return the data needed for the frontend PaystackPop instance.
-    // Check for Primary Key (New Account)
     const primaryPublicKey = Deno.env.get('PAYSTACK_PRIMARY_PUBLIC_KEY');
-
-    // Check for Backup Key (Existing Account - currently mapped to PAYSTACK_PUBLIC_KEY or VITE_PAYSTACK_PUBLIC_KEY)
     const backupPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY') || Deno.env.get('VITE_PAYSTACK_PUBLIC_KEY');
 
-    if (!primaryPublicKey && !backupPublicKey) {
-      console.error('[Payment Form Submit] No Paystack Public Keys configured');
-      return new Response(
-        JSON.stringify({
-          status: 'error',
-          error: 'Payment gateway configuration error',
-          details: 'No payment keys (Primary or Backup) are configured.'
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!submission?.id) {
-      console.error('[Payment Form Submit] Submission ID missing despite successful insert');
-      return new Response(
-        JSON.stringify({
-          status: 'error',
-          error: 'Internal server error: Failed to generate submission reference'
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`[Payment Form Submit] Returning dual-gateway config for reference: ${submission.id}`);
-
     // Construct response with both configs
+    // 'bearer' logic: 'account' if customer pays, 'subaccount' if merchant pays
+    const paystackBearer = feeBearer === 'customer' ? 'account' : 'subaccount';
+
     const gateways = {
       primary: primaryPublicKey ? {
         key: primaryPublicKey,
-        // Primary account uses the NEW subaccount code (v2)
         subaccount: merchant?.paystack_subaccount_code_v2 || undefined,
+        bearer: paystackBearer,
         label: 'Primary Gateway'
       } : null,
       backup: backupPublicKey ? {
         key: backupPublicKey,
-        // Backup uses the existing merchant subaccount code from the database
         subaccount: merchant?.paystack_subaccount_code || undefined,
+        bearer: paystackBearer,
         label: 'Backup Gateway'
       } : null
     };
@@ -164,12 +159,22 @@ serve(async (req) => {
         status: 'success',
         gateways,
         email: payerEmail,
-        amount: amount, // In pesewas
+        amount: finalAmountPesewas,
         reference: submission.id,
+        fee_breakdown: {
+          base_amount: originalAmount,
+          processing_fee: processingFeePesewas / 100,
+          total_amount: finalAmountPesewas / 100,
+          fee_bearer: feeBearer,
+          currency: 'GHS'
+        },
         metadata: {
           form_id: formId,
           submission_id: submission.id,
           payer_name: payerName || 'Anonymous',
+          base_amount_pesewas: baseAmountPesewas,
+          processing_fee_pesewas: processingFeePesewas,
+          fee_bearer: feeBearer
         }
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

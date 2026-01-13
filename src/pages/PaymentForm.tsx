@@ -44,7 +44,9 @@ export default function PaymentForm() {
 
   const calculateProcessingFee = (amount: number): number => {
     if (!amount || amount <= 0) return 0;
-    const fee = amount * 0.0195; // 1.95%
+    // New formula: base / 0.9805 - base (to ensure merchant gets exact base amount)
+    const totalAmountWithFee = amount / 0.9805;
+    const fee = totalAmountWithFee - amount;
     return Math.min(fee, 100); // Capped at GHS 100
   };
 
@@ -219,6 +221,7 @@ export default function PaymentForm() {
             amount: data.amount,
             reference: data.reference,
             metadata: data.metadata,
+            bearer: gatewayConfig.bearer, // Pass the bearer (account or subaccount)
             onSuccess: (response: any) => {
               console.log('Payment successful:', response);
               toast.success('Payment successful!');

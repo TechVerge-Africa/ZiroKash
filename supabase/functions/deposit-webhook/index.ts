@@ -70,26 +70,16 @@ Deno.serve(async (req) => {
         throw new Error('Transaction not found');
       }
 
-      // Get wallet
-      const { data: wallet, error: walletError } = await supabaseClient
-        .from('wallets')
-        .select('balance')
-        .eq('id', transaction.to_wallet_id)
-        .single();
+      // Credit wallet using RPC for thread-safety (prevents lost updates)
+      const { error: walletError } = await supabaseClient.rpc('increment_wallet_balance', {
+        _user_id: transaction.user_id,
+        _wallet_type: 'main',
+        _amount: transaction.amount / 100, // Convert to main currency GHS
+        _currency: transaction.currency || 'GHS'
+      });
 
-      if (walletError || !wallet) {
-        throw new Error('Wallet not found');
-      }
-
-      // Credit wallet
-      const newBalance = (wallet.balance || 0) + transaction.amount;
-      const { error: updateError } = await supabaseClient
-        .from('wallets')
-        .update({ balance: newBalance })
-        .eq('id', transaction.to_wallet_id);
-
-      if (updateError) {
-        console.error('Failed to update wallet:', updateError);
+      if (walletError) {
+        console.error('Failed to update wallet balance via RPC:', walletError);
         throw new Error('Failed to credit wallet');
       }
 

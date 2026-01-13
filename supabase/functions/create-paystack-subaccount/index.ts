@@ -40,7 +40,7 @@ serve(async (req) => {
       bankCode,
       accountNumber,
       accountName,
-      percentageCharge = 5 // ZiroKash takes 5% by default
+      percentageCharge = 1 // ZiroKash takes 1% by default
     } = await req.json();
 
     if (!businessName || !bankCode || !accountNumber || !accountName) {
@@ -106,11 +106,17 @@ serve(async (req) => {
       }
     }
 
-    // 2. Attempt Backup Creation
+    // 2. Attempt Backup Creation (only if it's a different key)
     if (backupSecretKey) {
-      const backupData = await createSubaccount(backupSecretKey, 'Backup');
-      if (backupData) {
-        backupSubaccountCode = backupData.subaccount_code;
+      if (backupSecretKey === primarySecretKey) {
+        console.log('Skipping backup creation: Key is identical to Primary key.');
+        // If we only have one key, we use it for both slots for compatibility
+        backupSubaccountCode = primarySubaccountCode;
+      } else {
+        const backupData = await createSubaccount(backupSecretKey, 'Backup');
+        if (backupData) {
+          backupSubaccountCode = backupData.subaccount_code;
+        }
       }
     }
 

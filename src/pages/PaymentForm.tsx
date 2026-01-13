@@ -214,14 +214,13 @@ export default function PaymentForm() {
           
           const paystack = new PaystackPop();
           
-          // Build checkout config - only include subaccount if it exists
+          // Build checkout config
           const checkoutConfig: any = {
             key: gatewayConfig.key,
             email: data.email,
             amount: data.amount,
             reference: data.reference,
             metadata: data.metadata,
-            bearer: gatewayConfig.bearer, // Pass the bearer (account or subaccount)
             onSuccess: (response: any) => {
               console.log('Payment successful:', response);
               toast.success('Payment successful!');
@@ -232,12 +231,6 @@ export default function PaymentForm() {
             },
             onCancel: () => {
               console.log('Payment cancelled by user');
-              // If Primary was cancelled/closed, we could optionally prompt to try Backup, 
-              // but standard UI behavior is just "Cancel". 
-              // However, if the user couldn't *load* the modal (which triggers onError often), we fallback.
-              // For purely user-initiated cancel, we just notify.
-              // UNLESS we want to be aggressive: "Issue with payment? Try alternative method."
-              
               if (!isBackup && data.gateways.backup) {
                  toast.info("Payment cancelled. If you faced issues, you can try our backup gateway.", {
                    action: {
@@ -256,7 +249,6 @@ export default function PaymentForm() {
               if (!isBackup && data.gateways.backup) {
                 console.log('Primary gateway failed, switching to backup...');
                 toast.error('Primary gateway unavailable. Switching to fallback provider...');
-                // Recursive call to backup
                 processPayment(data.gateways.backup, true);
               } else {
                 toast.error('Payment initialization error. Please try again later.');
@@ -265,9 +257,10 @@ export default function PaymentForm() {
             }
           };
           
-          // Only add subaccount if it exists and is not empty
+          // Only add split payment parameters if subaccount exists
           if (gatewayConfig.subaccount) {
             checkoutConfig.subaccount = gatewayConfig.subaccount;
+            checkoutConfig.bearer = gatewayConfig.bearer;
           }
           
           paystack.checkout(checkoutConfig);

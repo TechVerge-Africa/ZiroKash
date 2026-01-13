@@ -141,6 +141,7 @@ serve(async (req) => {
       settlement_bank_code: bankCode,
       settlement_account_number: accountNumber,
       settlement_account_name: accountName,
+      commission_rate: percentageCharge / 100, // Ensure DB matches Paystack split
       verification_status: 'verified', // Mark merchant as verified when subaccount setup is complete
       updated_at: new Date().toISOString(),
     };
@@ -168,6 +169,7 @@ serve(async (req) => {
         settlement_bank_code: bankCode,
         settlement_account_number: accountNumber,
         settlement_account_name: accountName,
+        commission_rate: percentageCharge / 100,
         verification_status: 'verified',
         updated_at: new Date().toISOString(),
       };

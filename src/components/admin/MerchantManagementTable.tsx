@@ -42,7 +42,8 @@ export default function MerchantManagementTable() {
 
   const handleEdit = (merchant: MerchantData) => {
     setEditingId(merchant.id);
-    setEditValue((merchant.commission_rate * 100).toString());
+    const rate = merchant.commission_rate ?? 0.01; // Default to 1% if null
+    setEditValue((rate * 100).toString());
   };
 
   const handleSave = async (merchant: MerchantData) => {
@@ -243,7 +244,7 @@ export default function MerchantManagementTable() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <span className="font-mono">{(merchant.commission_rate * 100).toFixed(2)}%</span>
+                          <span className="font-mono">{((merchant.commission_rate ?? 0.01) * 100).toFixed(2)}%</span>
                           {merchant.paystack_subaccount_code && (
                             <Button
                               size="sm"

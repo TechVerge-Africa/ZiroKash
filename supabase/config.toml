@@ -67,3 +67,9 @@ verify_jwt = false
 
 [functions.create-paystack-subaccount]
 verify_jwt = true
+
+[functions.check-subaccount]
+verify_jwt = true
+
+[functions.update-paystack-subaccount]
+verify_jwt = true

@@ -207,80 +207,10 @@ export default function PaymentForm() {
       console.log('[DEBUG] Payment form submission response data:', data);
 
       // Check if we received the expected data structure
-      if (data?.gateways) {
-        
-        const processPayment = (gatewayConfig: any, isBackup = false) => {
-          console.log(`[Payment] Initializing ${isBackup ? 'Backup' : 'Primary'} Gateway`, gatewayConfig);
-          
-          const paystack = new PaystackPop();
-          
-          // Build checkout config
-          const checkoutConfig: any = {
-            key: gatewayConfig.key,
-            email: data.email,
-            amount: data.amount,
-            reference: data.reference,
-            metadata: data.metadata,
-            onSuccess: (response: any) => {
-              console.log('Payment successful:', response);
-              toast.success('Payment successful!');
-              setPaymentSuccess(true);
-              setTimeout(() => {
-                navigate(`/pay/${formId}/success?reference=${data.reference}`, { replace: true });
-              }, 1000);
-            },
-            onCancel: () => {
-              console.log('Payment cancelled by user');
-              if (!isBackup && data.gateways.backup) {
-                 toast.info("Payment cancelled. If you faced issues, you can try our backup gateway.", {
-                   action: {
-                     label: "Use Backup Method",
-                     onClick: () => processPayment(data.gateways.backup, true)
-                   }
-                 });
-              } else {
-                 toast.info('Payment cancelled. You can try again.');
-              }
-              setSubmitting(false);
-            },
-            onError: (err: any) => {
-              console.error(`Paystack ${isBackup ? 'Backup' : 'Primary'} error:`, err);
-              
-              if (!isBackup && data.gateways.backup) {
-                console.log('Primary gateway failed, switching to backup...');
-                toast.error('Primary gateway unavailable. Switching to fallback provider...');
-                processPayment(data.gateways.backup, true);
-              } else {
-                toast.error('Payment initialization error. Please try again later.');
-                setSubmitting(false);
-              }
-            }
-          };
-          
-          // Only add split payment parameters if subaccount exists
-          if (gatewayConfig.subaccount) {
-            checkoutConfig.subaccount = gatewayConfig.subaccount;
-            checkoutConfig.bearer = gatewayConfig.bearer;
-          }
-          
-          paystack.checkout(checkoutConfig);
-        };
-
-        // Start with Primary if available, otherwise Backup
-        if (data.gateways.primary) {
-          processPayment(data.gateways.primary, false);
-        } else if (data.gateways.backup) {
-           console.log('Primary gateway not configured, using backup.');
-           processPayment(data.gateways.backup, true);
-        } else {
-           throw new Error('No available payment gateways returned from server.');
-        }
-
-      } else if (data?.publicKey) {
-         // Legacy single-gateway support (backward compatibility)
+      if (data?.publicKey) {
         const paystack = new PaystackPop();
         
-        const legacyConfig: any = {
+        const checkoutConfig: any = {
           key: data.publicKey,
           email: data.email,
           amount: data.amount,
@@ -296,25 +226,26 @@ export default function PaymentForm() {
           },
           onCancel: () => {
             console.log('Payment cancelled');
-            toast.info('Payment cancelled');
+            toast.info('Payment cancelled. You can try again.');
             setSubmitting(false);
           },
           onError: (err: any) => {
             console.error('Paystack error:', err);
-            toast.error('Payment initialization error');
+            toast.error('Payment initialization error. Please try again later.');
             setSubmitting(false);
           }
         };
         
-        // Only add subaccount if it exists
+        // Only add split payment parameters if subaccount exists
         if (data.subaccount) {
-          legacyConfig.subaccount = data.subaccount;
+          checkoutConfig.subaccount = data.subaccount;
+          checkoutConfig.bearer = data.bearer;
         }
         
-        paystack.checkout(legacyConfig);
+        paystack.checkout(checkoutConfig);
 
       } else if (data?.payment_url) {
-        // Fallback for when the edge function hasn't been re-deployed with the new InlineJS logic
+        // Fallback for redirect-based checkout
         console.log('[DEBUG] Server returned a payment URL. Falling back to redirect-based checkout...');
         window.location.href = data.payment_url;
         return;

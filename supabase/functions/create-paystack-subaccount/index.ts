@@ -52,92 +52,53 @@ serve(async (req) => {
 
     console.log(`Creating subaccount for: ${businessName}`);
 
-    const primarySecretKey = Deno.env.get('PAYSTACK_PRIMARY_SECRET_KEY');
-    const backupSecretKey = Deno.env.get('PAYSTACK_SECRET_KEY');
+    const paystackSecretKey = Deno.env.get('PAYSTACK_SECRET_KEY');
 
-    if (!primarySecretKey && !backupSecretKey) {
-      throw new Error('No PAYSTACK_SECRET_KEYs configured (Primary or Backup)');
+    if (!paystackSecretKey) {
+      throw new Error('PAYSTACK_SECRET_KEY is not configured');
     }
 
-    let primarySubaccountCode = null;
-    let backupSubaccountCode = null;
-    const errors = [];
+    // Create subaccount on Paystack
+    console.log('Creating Paystack subaccount...');
+    const response = await fetch('https://api.paystack.co/subaccount', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        business_name: businessName,
+        settlement_bank: bankCode,
+        account_number: accountNumber,
+        percentage_charge: percentageCharge,
+        primary_contact_email: user.email,
+      }),
+    });
 
-    // Helper function to create subaccount
-    const createSubaccount = async (secretKey: string, label: string) => {
-      try {
-        console.log(`Attempting to create ${label} subaccount...`);
-        const response = await fetch('https://api.paystack.co/subaccount', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${secretKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            business_name: businessName,
-            settlement_bank: bankCode,
-            account_number: accountNumber,
-            percentage_charge: percentageCharge,
-            primary_contact_email: user.email,
-          }),
-        });
+    const data = await response.json();
 
-        const data = await response.json();
-
-        if (!data.status) {
-          console.error(`${label} subaccount creation failed:`, data);
-          throw new Error(data.message || `Failed to create ${label} subaccount`);
-        }
-
-        console.log(`${label} subaccount created: ${data.data.subaccount_code}`);
-        return data.data;
-      } catch (err) {
-        console.error(`Error creating ${label} subaccount:`, err);
-        errors.push(`${label}: ${err.message}`);
-        return null;
-      }
-    };
-
-    // 1. Attempt Primary Creation
-    if (primarySecretKey) {
-      const primaryData = await createSubaccount(primarySecretKey, 'Primary');
-      if (primaryData) {
-        primarySubaccountCode = primaryData.subaccount_code;
-      }
-    }
-
-    // 2. Attempt Backup Creation (only if it's a different key)
-    if (backupSecretKey) {
-      if (backupSecretKey === primarySecretKey) {
-        console.log('Skipping backup creation: Key is identical to Primary key.');
-        // If we only have one key, we use it for both slots for compatibility
-        backupSubaccountCode = primarySubaccountCode;
-      } else {
-        const backupData = await createSubaccount(backupSecretKey, 'Backup');
-        if (backupData) {
-          backupSubaccountCode = backupData.subaccount_code;
-        }
-      }
-    }
-
-    // 3. Validation: We need at least one success to proceed, preferably Primary
-    if (!primarySubaccountCode && !backupSubaccountCode) {
+    if (!data.status) {
+      console.error('Subaccount creation failed:', data);
       return new Response(
         JSON.stringify({
-          error: 'Failed to create subaccount on any gateway',
-          details: errors
+          error: data.message || 'Failed to create subaccount',
+          details: data
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Update merchant record with available subaccount details
+    const subaccountCode = data.data.subaccount_code;
+    console.log(`Subaccount created: ${subaccountCode}`);
+
+    // Update merchant record with subaccount details
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const updatePayload: any = {
+    const updatePayload = {
+      paystack_subaccount_code: subaccountCode,
       settlement_bank_code: bankCode,
       settlement_account_number: accountNumber,
       settlement_account_name: accountName,
@@ -146,52 +107,18 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     };
 
-    if (primarySubaccountCode) {
-      updatePayload.paystack_subaccount_code_v2 = primarySubaccountCode;
-    }
-
-    // Always update legacy/backup code if we got one - facilitates the "switch back" logic
-    if (backupSubaccountCode) {
-      updatePayload.paystack_subaccount_code = backupSubaccountCode;
-    }
-
-    // Try to update with v2 column first
-    let updateResult = await supabaseAdmin
+    const { error: updateError } = await supabaseAdmin
       .from('merchants')
       .update(updatePayload)
       .eq('user_id', user.id);
 
-    // If update failed and we tried to set v2, it might be because the column doesn't exist yet
-    // Retry without v2 column
-    if (updateResult.error && primarySubaccountCode) {
-      console.log('Update with v2 failed, retrying without v2 column:', updateResult.error);
-      const fallbackPayload: any = {
-        settlement_bank_code: bankCode,
-        settlement_account_number: accountNumber,
-        settlement_account_name: accountName,
-        commission_rate: percentageCharge / 100,
-        verification_status: 'verified',
-        updated_at: new Date().toISOString(),
-      };
-
-      if (backupSubaccountCode) {
-        fallbackPayload.paystack_subaccount_code = backupSubaccountCode;
-      }
-
-      updateResult = await supabaseAdmin
-        .from('merchants')
-        .update(fallbackPayload)
-        .eq('user_id', user.id);
-    }
-
-    if (updateResult.error) {
-      console.error('Failed to update merchant:', updateResult.error);
+    if (updateError) {
+      console.error('Failed to update merchant:', updateError);
       return new Response(
         JSON.stringify({
-          warning: 'Subaccounts created but database update failed',
-          primary: primarySubaccountCode,
-          backup: backupSubaccountCode,
-          error: updateResult.error.message
+          warning: 'Subaccount created but database update failed',
+          subaccount: subaccountCode,
+          error: updateError.message
         }),
         { status: 207, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -200,10 +127,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        primarySubaccount: primarySubaccountCode,
-        backupSubaccount: backupSubaccountCode,
-        businessName: businessName, // Assume same for both
-        warnings: errors.length > 0 ? errors : undefined
+        subaccount: subaccountCode,
+        businessName: businessName
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

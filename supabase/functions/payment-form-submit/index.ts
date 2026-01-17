@@ -100,7 +100,7 @@ serve(async (req) => {
     // Get merchant subaccount via user_id
     const { data: merchant } = await supabase
       .from('merchants')
-      .select('paystack_subaccount_code, paystack_subaccount_code_v2')
+      .select('paystack_subaccount_code')
       .eq('user_id', form.user_id)
       .maybeSingle();
 
@@ -132,32 +132,25 @@ serve(async (req) => {
       );
     }
 
-    const primaryPublicKey = Deno.env.get('PAYSTACK_PRIMARY_PUBLIC_KEY');
-    const backupPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY') || Deno.env.get('VITE_PAYSTACK_PUBLIC_KEY');
+    const paystackPublicKey = Deno.env.get('PAYSTACK_PUBLIC_KEY');
 
-    // Construct response with both configs
+    if (!paystackPublicKey) {
+      console.error('PAYSTACK_PUBLIC_KEY is not configured');
+      return new Response(
+        JSON.stringify({ error: 'Payment gateway not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // 'bearer' logic: 'account' if customer pays, 'subaccount' if merchant pays
     const paystackBearer = feeBearer === 'customer' ? 'account' : 'subaccount';
-
-    const gateways = {
-      primary: primaryPublicKey ? {
-        key: primaryPublicKey,
-        subaccount: merchant?.paystack_subaccount_code_v2 || undefined,
-        bearer: paystackBearer,
-        label: 'Primary Gateway'
-      } : null,
-      backup: backupPublicKey ? {
-        key: backupPublicKey,
-        subaccount: merchant?.paystack_subaccount_code || undefined,
-        bearer: paystackBearer,
-        label: 'Backup Gateway'
-      } : null
-    };
 
     return new Response(
       JSON.stringify({
         status: 'success',
-        gateways,
+        publicKey: paystackPublicKey,
+        subaccount: merchant?.paystack_subaccount_code || undefined,
+        bearer: paystackBearer,
         email: payerEmail,
         amount: finalAmountPesewas,
         reference: submission.id,

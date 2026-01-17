@@ -29,6 +29,7 @@ import { Progress } from "@/components/ui/progress";
 
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import MerchantManagementTable from "@/components/admin/MerchantManagementTable";
 // ... imports
 
 const AdminDashboard = () => {
@@ -259,6 +260,9 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Merchant Management Section */}
+      <MerchantManagementTable />
 
       {/* Investor Note Section */}
       <Card className="border-primary/20 bg-primary/5 border-dashed overflow-hidden relative">

@@ -208,6 +208,27 @@ export default function PaymentForm() {
 
       // Check if we received the expected data structure
       if (data?.publicKey) {
+        console.log('[Payment] Using publicKey flow');
+        console.log('[Payment] Data structure:', {
+          hasPublicKey: !!data.publicKey,
+          hasEmail: !!data.email,
+          hasAmount: !!data.amount,
+          hasReference: !!data.reference,
+          hasMetadata: !!data.metadata,
+          hasSubaccount: !!data.subaccount,
+          hasBearer: !!data.bearer
+        });
+
+        // Validate required fields
+        if (!data.email || !data.amount || !data.reference) {
+          console.error('[Payment] Missing required fields:', {
+            email: data.email,
+            amount: data.amount,
+            reference: data.reference
+          });
+          throw new Error('Incomplete payment data received - missing email, amount, or reference');
+        }
+
         const paystack = new PaystackPop();
         
         const checkoutConfig: any = {
@@ -215,7 +236,7 @@ export default function PaymentForm() {
           email: data.email,
           amount: data.amount,
           reference: data.reference,
-          metadata: data.metadata,
+          metadata: data.metadata || {},
           onSuccess: (response: any) => {
             console.log('Payment successful:', response);
             toast.success('Payment successful!');
@@ -238,10 +259,15 @@ export default function PaymentForm() {
         
         // Only add split payment parameters if subaccount exists
         if (data.subaccount) {
+          console.log('[Payment] Adding split payment config:', {
+            subaccount: data.subaccount,
+            bearer: data.bearer
+          });
           checkoutConfig.subaccount = data.subaccount;
           checkoutConfig.bearer = data.bearer;
         }
         
+        console.log('[Payment] Initializing Paystack checkout with config:', checkoutConfig);
         paystack.checkout(checkoutConfig);
 
       } else if (data?.payment_url) {

@@ -81,11 +81,14 @@ export function ReceiptViewer({ isOpen, onClose, transaction }: ReceiptViewerPro
       const container = receiptRef.current.querySelector('[data-receipt-container="true"]');
       if (!container) throw new Error("Receipt container not found");
 
+      // Capture at higher scale for better quality
       const canvas = await html2canvas(container as HTMLElement, {
-        scale: 2,
+        scale: 3,
         backgroundColor: "#ffffff",
         useCORS: true,
-        logging: false
+        logging: false,
+        windowHeight: (container as HTMLElement).scrollHeight,
+        windowWidth: (container as HTMLElement).scrollWidth
       });
       
       const imgData = canvas.toDataURL("image/png");
@@ -96,9 +99,27 @@ export function ReceiptViewer({ isOpen, onClose, transaction }: ReceiptViewerPro
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      // Calculate dimensions to fit on one page
+      const imgAspectRatio = canvas.width / canvas.height;
+      const pdfAspectRatio = pdfWidth / pdfHeight;
+      
+      let finalWidth, finalHeight, xOffset = 0, yOffset = 0;
+      
+      if (imgAspectRatio > pdfAspectRatio) {
+        // Image is wider - fit to width
+        finalWidth = pdfWidth;
+        finalHeight = pdfWidth / imgAspectRatio;
+        yOffset = (pdfHeight - finalHeight) / 2;
+      } else {
+        // Image is taller - fit to height
+        finalHeight = pdfHeight;
+        finalWidth = pdfHeight * imgAspectRatio;
+        xOffset = (pdfWidth - finalWidth) / 2;
+      }
+      
+      pdf.addImage(imgData, "PNG", xOffset, yOffset, finalWidth, finalHeight);
       pdf.save(`receipt-${transaction.id?.slice(0, 8)}.pdf`);
       toast.success("Receipt downloaded");
     } catch (err) {

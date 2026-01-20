@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
+import { useEffect } from "react";
 
 export interface FormField {
   id: string;
@@ -90,6 +91,48 @@ export function Receipt({
   const visibleMappings = fieldMappings.filter(m => m.showOnReceipt);
   const verificationUrl = `${window.location.origin}/verify/${receiptNumber}?code=${verificationCode}`;
 
+  // Dynamic scaling for print to ensure it fits on one A4 page
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      const receiptElement = document.querySelector(`#${id}`) as HTMLElement;
+      if (!receiptElement) return;
+
+      // A4 dimensions in pixels at 96 DPI (standard screen DPI)
+      const A4_HEIGHT_MM = 297;
+      const A4_MARGIN_MM = 20; // 10mm top + 10mm bottom
+      const AVAILABLE_HEIGHT_MM = A4_HEIGHT_MM - A4_MARGIN_MM;
+      const MM_TO_PX = 3.7795275591; // 1mm = 3.78px at 96 DPI
+      const maxHeight = AVAILABLE_HEIGHT_MM * MM_TO_PX;
+
+      // Get actual height of content
+      const actualHeight = receiptElement.scrollHeight;
+
+      // Calculate scale factor if content is too tall
+      if (actualHeight > maxHeight) {
+        const scale = maxHeight / actualHeight;
+        receiptElement.style.transform = `scale(${scale})`;
+        receiptElement.style.transformOrigin = 'top center';
+        receiptElement.style.marginBottom = `${(actualHeight * (1 - scale))}px`;
+      }
+    };
+
+    const handleAfterPrint = () => {
+      const receiptElement = document.querySelector(`#${id}`) as HTMLElement;
+      if (receiptElement) {
+        receiptElement.style.transform = '';
+        receiptElement.style.marginBottom = '';
+      }
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, [id]);
+
   // Generate barcode pattern based on receipt number
   const generateBarcodePattern = (text: string) => {
     const hash = text.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -116,8 +159,37 @@ export function Receipt({
           ? "border-4 border-dashed border-primary/30 print:border-black" 
           : "border border-slate-200"
       }`}
-      style={{ margin: '0 auto' }}
+      style={{ 
+        margin: '0 auto',
+        // Print-specific styles to ensure it fits on one A4 page
+        maxHeight: 'none',
+      }}
     >
+      <style>{`
+        @media print {
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+          
+          [data-receipt-container="true"] {
+            max-height: 277mm !important; /* A4 height minus margins */
+            overflow: hidden !important;
+            page-break-inside: avoid !important;
+            page-break-after: avoid !important;
+          }
+          
+          /* Scale down content if it's too tall */
+          [data-receipt-container="true"] > div {
+            transform-origin: top center;
+          }
+          
+          /* Hide scrollbars in print */
+          * {
+            overflow: visible !important;
+          }
+        }
+      `}</style>
       {/* Premium Security Hologram / Watermark */}
       {template.securityFeatures?.showWatermark && (
         <div 
@@ -141,9 +213,9 @@ export function Receipt({
         </div>
       )}
       
-      <CardContent className="p-4 sm:p-10 print:p-8 space-y-8 relative z-10 text-slate-900 print:text-black">
+      <CardContent className="p-4 sm:p-6 print:p-4 space-y-4 print:space-y-3 relative z-10 text-slate-900 print:text-black">
         {/* Header Section */}
-        <div className="flex flex-col items-center text-center space-y-4">
+        <div className="flex flex-col items-center text-center space-y-2 print:space-y-1">
           {/* Logo with Glow */}
           {template.showLogo && logoUrl && (
             <div className="relative group">
@@ -151,16 +223,16 @@ export function Receipt({
               <img 
                 src={logoUrl} 
                 alt="Logo" 
-                className="relative h-16 sm:h-24 w-auto object-contain print:h-20" 
+                className="relative h-12 sm:h-16 w-auto object-contain print:h-12" 
               />
             </div>
           )}
 
-          <div className="space-y-2">
-            <h2 className="text-xl sm:text-4xl font-extrabold tracking-tight text-slate-900 print:text-black">
+          <div className="space-y-1">
+            <h2 className="text-lg sm:text-2xl print:text-xl font-extrabold tracking-tight text-slate-900 print:text-black">
               {template.headerText || "Payment Receipt"}
             </h2>
-            <div className="h-1 w-12 sm:w-20 bg-primary mx-auto rounded-full print:hidden" />
+            <div className="h-0.5 w-12 bg-primary mx-auto rounded-full print:hidden" />
           </div>
 
           {template.securityFeatures?.enableNumbering !== false && (
@@ -176,7 +248,7 @@ export function Receipt({
         </div>
 
         {/* Info Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 py-6 border-y border-slate-100 print:border-slate-300">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-3 print:py-2 border-y border-slate-100 print:border-slate-300">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Transaction Date</label>
             <p className="text-sm font-semibold">
@@ -204,12 +276,12 @@ export function Receipt({
 
         {/* Dynamic Fields Section */}
         {visibleMappings.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-2 print:space-y-1">
             <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               Payment Information
             </h3>
-            <div className="grid gap-3">
+            <div className="grid gap-2 print:gap-1">
               {visibleMappings.map((mapping) => {
                 const formField = formFields.find(f => f.id === mapping.formFieldId);
                 let value = submissionData[mapping.receiptLabel] || submissionData[formField?.label || ''] || "N/A";
@@ -226,7 +298,7 @@ export function Receipt({
                 }
 
                 return (
-                  <div key={mapping.formFieldId} className="flex justify-between items-center py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 print:bg-transparent print:border-none print:px-0">
+                  <div key={mapping.formFieldId} className="flex justify-between items-center py-1.5 sm:py-2 print:py-1 px-2 sm:px-3 print:px-0 rounded-lg bg-slate-50/50 hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 print:bg-transparent print:border-none">
                     <span className="text-xs sm:text-sm font-medium text-slate-500">{mapping.receiptLabel}</span>
                     <span className="text-xs sm:text-sm font-bold text-slate-900 border-b-2 border-primary/20 print:border-none text-right">{value}</span>
                   </div>
@@ -239,10 +311,10 @@ export function Receipt({
         {/* Total Highlight */}
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500 print:hidden"></div>
-          <div className="relative bg-slate-900 text-white rounded-2xl p-4 sm:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 print:bg-white print:text-black print:border-2 print:border-black print:rounded-none">
+          <div className="relative bg-slate-900 text-white rounded-xl p-3 sm:p-4 print:p-3 flex flex-col sm:flex-row justify-between items-center gap-2 print:bg-white print:text-black print:border-2 print:border-black print:rounded-none">
             <span className="text-xs sm:text-lg font-bold uppercase tracking-widest opacity-80">Final Amount Paid</span>
             <div className="text-center sm:text-right">
-              <span className="text-2xl sm:text-5xl font-black text-primary print:text-black">
+              <span className="text-xl sm:text-3xl print:text-2xl font-black text-primary print:text-black">
                 {submissionData.Amount || submissionData.Total || "₵1,000.00"}
               </span>
               <div className="flex items-center justify-center sm:justify-end gap-1.5 mt-1 text-[10px] font-bold text-primary-foreground/60 print:text-black uppercase tracking-tighter">
@@ -254,7 +326,7 @@ export function Receipt({
         </div>
 
         {/* Footer Grid: Signature & QR */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 print:pt-2">
           {/* Signature Area */}
           <div className="flex flex-col items-center sm:items-start justify-end px-4">
             {template.showSignature && signatureUrl && (
@@ -262,7 +334,7 @@ export function Receipt({
                 <img 
                   src={signatureUrl} 
                   alt="Signature" 
-                  className="h-16 w-auto object-contain mx-auto print:h-16" 
+                  className="h-12 w-auto object-contain mx-auto print:h-10" 
                 />
                 <div className="border-t-2 border-slate-200 pt-2">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -279,10 +351,10 @@ export function Receipt({
               <div className="relative p-2 rounded-2xl bg-white border border-slate-100 shadow-sm transition-transform hover:scale-105 group print:border-black print:rounded-none print:p-1">
                 <QRCodeSVG
                   value={verificationUrl}
-                  size={100}
+                  size={80}
                   level="H"
                   includeMargin={false}
-                  className="w-24 h-24 sm:w-28 sm:h-28"
+                  className="w-20 h-20 sm:w-24 sm:h-24 print:w-20 print:h-20"
                   imageSettings={{
                     src: logoUrl || "",
                     x: undefined,
@@ -321,8 +393,8 @@ export function Receipt({
         )}
 
         {/* Footer message */}
-        <div className="text-center pt-4">
-          <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed italic border-t border-slate-100 pt-6">
+        <div className="text-center pt-2 print:pt-1">
+          <p className="text-xs text-slate-500 font-medium leading-relaxed italic border-t border-slate-100 pt-3 print:pt-2">
             {template.footerText || "This is an electronically generated document. Thank you for your business."}
           </p>
         </div>

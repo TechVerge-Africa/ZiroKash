@@ -47,13 +47,13 @@ export default function PublicHeader({ transparent = false }: PublicHeaderProps)
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-            <Link to="/#features" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+            <Link to="/#features" className={`text-sm font-medium transition-colors ${showBackground ? 'text-slate-900 hover:text-black' : 'text-foreground/70 hover:text-foreground'}`}>
               Features
             </Link>
-            <Link to="/#how-it-works" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+            <Link to="/#how-it-works" className={`text-sm font-medium transition-colors ${showBackground ? 'text-slate-900 hover:text-black' : 'text-foreground/70 hover:text-foreground'}`}>
               How It Works
             </Link>
-            <Link to="/#pricing" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+            <Link to="/#pricing" className={`text-sm font-medium transition-colors ${showBackground ? 'text-slate-900 hover:text-black' : 'text-foreground/70 hover:text-foreground'}`}>
               Pricing
             </Link>
           </nav>
@@ -61,7 +61,7 @@ export default function PublicHeader({ transparent = false }: PublicHeaderProps)
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Link to="/auth">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className={showBackground ? "text-slate-900 hover:text-black hover:bg-slate-100" : ""}>
                 Sign In
               </Button>
             </Link>

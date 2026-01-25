@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Loader from "@/components/ui/loader";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -959,7 +960,7 @@ export default function ZiroKash() {
         <CardContent>
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <Loader variant="spinner" size="md" className="mx-auto" />
             </div>
           ) : forms.length === 0 ? (
             <div className="text-center py-12">

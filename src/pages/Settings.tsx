@@ -16,7 +16,7 @@ import { MerchantWallet } from "@/components/merchant/MerchantWallet";
 import { useMerchant } from "@/hooks/useMerchant";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import Loader from "@/components/ui/loader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Settings() {
@@ -392,7 +392,7 @@ export default function Settings() {
               <Card className="glass-card border-white/10 relative overflow-hidden">
                 {profileLoading && (
                   <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader variant="spinner" size="md" className="text-primary" />
                   </div>
                 )}
                 <CardHeader>
@@ -476,7 +476,7 @@ export default function Settings() {
                   
                   <div className="flex justify-end">
                     <Button onClick={handleSaveProfile} disabled={savingLoading}>
-                      {savingLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      {savingLoading ? <Loader variant="dots" size="sm" className="mr-2" /> : null}
                       Save Changes
                     </Button>
                   </div>
@@ -517,7 +517,7 @@ export default function Settings() {
                       onClick={() => fileInputRef.current?.click()}
                       disabled={savingLoading}
                     >
-                      {savingLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      {savingLoading ? <Loader variant="dots" size="sm" className="mr-2" /> : null}
                       Upload
                     </Button>
                     {avatarUrl && (
@@ -610,7 +610,7 @@ export default function Settings() {
                   
                   <div className="flex justify-end">
                     <Button onClick={handleUpdatePassword} disabled={passwordLoading}>
-                      {passwordLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      {passwordLoading ? <Loader variant="dots" size="sm" className="mr-2" /> : null}
                       Update Password
                     </Button>
                   </div>
@@ -718,7 +718,7 @@ export default function Settings() {
                       }}
                       disabled={savingLoading || securityPin.length < 4}
                     >
-                      {savingLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      {savingLoading ? <Loader variant="dots" size="sm" className="mr-2" /> : null}
                       Save PIN
                     </Button>
                   </div>
@@ -763,7 +763,7 @@ export default function Settings() {
             <CardContent className="space-y-6">
               {notifLoading && (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <Loader variant="spinner" size="md" className="text-primary" />
                 </div>
               )}
               
@@ -912,7 +912,7 @@ export default function Settings() {
                   
                   <div className="flex justify-end">
                     <Button onClick={handleSavePreferences} disabled={savingLoading}>
-                      {savingLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {savingLoading && <Loader variant="dots" size="sm" className="mr-2" />}
                       Save Preferences
                     </Button>
                   </div>

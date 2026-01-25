@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import Loader from "@/components/ui/loader";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,7 +22,7 @@ export default function Auth() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <Loader variant="spinner" size="lg" />
           <div className="absolute inset-0 animate-pulse bg-primary/20 rounded-full blur-xl"></div>
         </div>
       </div>

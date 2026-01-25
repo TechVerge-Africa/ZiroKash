@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Loader from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -291,11 +292,7 @@ export default function PaymentForm() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <Loader variant="infinity" size="xl" centered className="min-h-screen bg-background" />;
   }
 
   if (!form) {
@@ -438,8 +435,8 @@ export default function PaymentForm() {
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    <Loader variant="dots" size="sm" className="bg-white/20" />
+                    <span className="ml-2">Processing...</span>
                   </>
                 ) : (
                   `Pay GH₵ ${totalAmount.toFixed(2)}`

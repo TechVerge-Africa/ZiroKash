@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Loader from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
@@ -51,7 +52,7 @@ export function TransactionHistory() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader variant="spinner" size="md" />
           </div>
         </CardContent>
       </Card>

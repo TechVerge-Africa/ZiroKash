@@ -12,6 +12,7 @@ import { RecentSettlements } from "@/components/merchant/RecentSettlements";
 import { RecentTransactions } from "@/components/merchant/RecentTransactions";
 import { WithdrawalModal } from "@/components/merchant/WithdrawalModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Loader from "@/components/ui/loader";
 
 export default function Dashboard() {
   const { wallets, transactions, loading: walletLoading, getWalletByType, fetchPaystackBalance } = useWallet();
@@ -64,7 +65,7 @@ export default function Dashboard() {
 
       {loading ? (
         <div className="flex items-center justify-center min-h-[200px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <Loader variant="spinner" size="lg" />
         </div>
       ) : (
         <Tabs defaultValue="overview" className="space-y-6">

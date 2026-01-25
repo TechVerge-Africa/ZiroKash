@@ -1,4 +1,5 @@
 
+import Loader from "@/components/ui/loader";
 import { ArrowDownLeft, ArrowUpRight, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +59,7 @@ export default function TransactionsList({ className }: TransactionsListProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader variant="spinner" size="md" />
           </div>
         </CardContent>
       </Card>

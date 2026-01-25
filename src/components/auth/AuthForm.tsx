@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import Loader from "@/components/ui/loader";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -144,7 +145,7 @@ export function AuthForm() {
                     )}
                   />
                   <Button type="submit" className="w-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-11" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && <Loader variant="dots" size="sm" className="mr-2" />}
                     Sign Into Account
                   </Button>
                 </form>
@@ -250,7 +251,7 @@ export function AuthForm() {
                     )}
                   />
                   <Button type="submit" className="w-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-11" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && <Loader variant="dots" size="sm" className="mr-2" />}
                     Create Your Account
                   </Button>
                 </form>

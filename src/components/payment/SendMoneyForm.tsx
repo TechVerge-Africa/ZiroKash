@@ -9,7 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, QrCode, Phone, Mail, CheckCircle2 } from "lucide-react";
+import { Send, QrCode, Phone, Mail, CheckCircle2 } from "lucide-react";
+import Loader from "@/components/ui/loader";
 import { useWallet } from "@/hooks/useWallet";
 import { useLookup } from "@/hooks/useLookup";
 import { supabase } from "@/integrations/supabase/client";
@@ -203,7 +204,7 @@ export function SendMoneyForm({ onSuccess }: SendMoneyFormProps = {}) {
                             <Input placeholder="Enter phone number" {...field} />
                             {lookupLoading && (
                               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <Loader variant="dots" size="sm" className="mr-2" />
                                 Looking up recipient...
                               </p>
                             )}
@@ -292,7 +293,7 @@ export function SendMoneyForm({ onSuccess }: SendMoneyFormProps = {}) {
             />
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading && <Loader variant="dots" size="sm" className="mr-2" />}
               Send Payment
             </Button>
           </form>

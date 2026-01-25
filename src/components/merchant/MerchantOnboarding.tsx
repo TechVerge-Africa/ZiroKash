@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMerchant, Bank } from "@/hooks/useMerchant";
 import { toast } from "sonner";
-import { Loader2, Banknote, UserCheck, CheckCircle2 } from "lucide-react";
+import { Banknote, UserCheck, CheckCircle2 } from "lucide-react";
+import Loader from "@/components/ui/loader";
 import { useAuth } from "@/hooks/useAuth";
 
 type Step = 'bank' | 'verify' | 'complete';
@@ -182,7 +183,9 @@ export function MerchantOnboarding() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center p-8">
+        <Loader variant="spinner" size="md" className="text-primary" />
+      </div>
       </div>
     );
   }
@@ -286,7 +289,7 @@ export function MerchantOnboarding() {
             )}
             {verifying && (
               <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                <Loader variant="dots" size="sm" className="text-blue-500" />
                 <p className="text-sm text-blue-600">Verifying account...</p>
               </div>
             )}
@@ -303,7 +306,7 @@ export function MerchantOnboarding() {
               disabled={verifying || !selectedBank || !accountNumber}
               className="w-full"
             >
-              {verifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {verifying ? <Loader variant="dots" size="sm" className="mr-2" /> : null}
               Verify Account
             </Button>
             )}
@@ -344,7 +347,7 @@ export function MerchantOnboarding() {
                 Change Bank
               </Button>
               <Button onClick={handleCompleteSetup} disabled={submitting} className="flex-1">
-                {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {submitting ? <Loader variant="dots" size="sm" className="mr-2" /> : null}
                 Complete Setup
               </Button>
             </div>

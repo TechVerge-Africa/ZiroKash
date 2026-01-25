@@ -1,4 +1,5 @@
 import { useIsMobile } from "@/hooks/use-mobile";
+import Loader from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -114,7 +115,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   if (checkingPIN) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader variant="spinner" size="md" />
       </div>
     );
   }

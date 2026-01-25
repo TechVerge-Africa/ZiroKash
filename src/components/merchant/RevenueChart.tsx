@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import Loader from "@/components/ui/loader";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { usePaymentForms } from "@/hooks/usePaymentForms";
 import { useMemo } from "react";
@@ -67,7 +68,7 @@ export function RevenueChart() {
         <div className="h-[350px]">
           {isLoading ? (
             <div className="h-full w-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <Loader variant="spinner" size="md" />
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">

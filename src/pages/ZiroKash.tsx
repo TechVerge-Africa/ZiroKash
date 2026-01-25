@@ -3,7 +3,7 @@ import Loader from "@/components/ui/loader";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2, AlertCircle, Bot, CircuitBoard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,9 @@ import { useMerchant } from "@/hooks/useMerchant";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import { cn, copyToClipboard } from "@/lib/utils";
+import { TemplateGallery } from "@/components/zirokash/templates/TemplateGallery";
+import { AIFormWizard } from "@/components/zirokash/ai/AIFormWizard";
+import { FORM_TEMPLATES, FormTemplate } from "@/data/formTemplates";
 
 interface FormField {
   id: string;
@@ -56,64 +59,6 @@ interface ReceiptTemplate {
   };
 }
 
-// Quick start templates
-const QUICK_TEMPLATES = [
-  {
-    name: "School Fees",
-    icon: "🎓",
-    templateDescription: "Collect school fees from students with professional receipts",
-    defaultTheme: "#0056D2",
-    receiptHeader: "SCHOOL FEES RECEIPT",
-    fields: [
-      { type: "text" as const, label: "Student Name", required: true },
-      { type: "text" as const, label: "Student ID", required: true },
-      { type: "email" as const, label: "Email Address", required: true },
-      { type: "amount" as const, label: "Amount", required: true, defaultValue: "0" },
-    ],
-    title: "School Fees Payment",
-    formDescription: "Please fill in student details to complete the payment",
-  },
-  {
-    name: "Event Registration",
-    icon: "🎫",
-    templateDescription: "Ticketing and registration for events and conferences",
-    defaultTheme: "#7C3AED",
-    receiptHeader: "EVENT TICKET / RECEIPT",
-    fields: [
-      { type: "text" as const, label: "Full Name", required: true },
-      { type: "email" as const, label: "Email", required: true },
-      { type: "text" as const, label: "Phone Number", required: true },
-      { type: "dropdown" as const, label: "Ticket Type", required: true, options: ["VIP - ₵500", "Standard - ₵200", "Early Bird - ₵150"] },
-    ],
-    title: "Event Registration",
-    formDescription: "Register and pay for the event",
-  },
-  {
-    name: "Donation",
-    icon: "❤️",
-    templateDescription: "Collect donations for charities, churches, or causes",
-    defaultTheme: "#10B981",
-    receiptHeader: "DONATION ACKNOWLEDGMENT",
-    fields: [
-      { type: "text" as const, label: "Donor Name", required: true },
-      { type: "email" as const, label: "Email", required: false },
-      { type: "amount" as const, label: "Donation Amount", required: true, defaultValue: "0" },
-    ],
-    title: "Make a Donation",
-    formDescription: "Your contribution makes a difference",
-  },
-  {
-    name: "Custom",
-    icon: "✨",
-    templateDescription: "Start from scratch and build your own flow",
-    defaultTheme: "#0056D2",
-    receiptHeader: "OFFICIAL RECEIPT",
-    fields: [],
-    title: "",
-    formDescription: "",
-  },
-];
-
 export default function ZiroKash() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -138,7 +83,8 @@ export default function ZiroKash() {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFormId, setEditingFormId] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(1); // 1: Template, 2: Form, 3: Design, 4: Receipt
+  const [currentStep, setCurrentStep] = useState(1); // 1: Template/AI Selection, 2: Form, 3: Design, 4: Receipt
+  const [creationMode, setCreationMode] = useState<"select" | "ai" | "templates">("select"); // New: track which creation mode
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState("");
   const [formDescription, setFormDescription] = useState("");
@@ -353,6 +299,7 @@ export default function ZiroKash() {
     setEditingFormId(null);
     setCurrentStep(1);
     setSelectedTemplate(null);
+    setCreationMode("select"); // Reset to initial selection screen
     setReceiptTemplate({
       headerText: "Official Payment Receipt",
       footerText: "Thank you for your payment",
@@ -371,14 +318,14 @@ export default function ZiroKash() {
     });
   };
 
-  const applyTemplate = (template: typeof QUICK_TEMPLATES[0]) => {
+  const applyTemplate = (template: FormTemplate) => {
     setThemeColor(template.defaultTheme);
     setReceiptTemplate(prev => ({
       ...prev,
-      headerText: (template as any).receiptHeader || prev.headerText
+      headerText: template.receiptHeader || prev.headerText
     }));
 
-    if (template.name === "Custom") {
+    if (template.id === "custom" || template.name === "Start from Scratch") {
       // Start with basic amount and email fields
       const now = Date.now();
       setFormFields([
@@ -402,6 +349,8 @@ export default function ZiroKash() {
           defaultValue: "0",
         },
       ]);
+      setFormTitle("");
+      setFormDescription("");
     } else {
       setFormTitle(template.title);
       setFormDescription(template.formDescription || "");
@@ -413,7 +362,7 @@ export default function ZiroKash() {
         }))
       );
     }
-    setSelectedTemplate(template.name);
+    setSelectedTemplate(template.id);
     setCurrentStep(2);
 
     // Auto-setup basic mappings for the template fields
@@ -425,6 +374,29 @@ export default function ZiroKash() {
         showOnReceipt: true
       }))
     }));
+  };
+
+  const handleAIGenerate = (generatedForm: {
+    title: string;
+    description: string;
+    fields: FormField[];
+    themeColor: string;
+    receiptHeader: string;
+  }) => {
+    setFormTitle(generatedForm.title);
+    setFormDescription(generatedForm.description);
+    setFormFields(generatedForm.fields);
+    setThemeColor(generatedForm.themeColor);
+    setReceiptTemplate(prev => ({
+      ...prev,
+      headerText: generatedForm.receiptHeader,
+      fieldMappings: generatedForm.fields.map((field) => ({
+        formFieldId: field.id,
+        receiptLabel: field.label,
+        showOnReceipt: true
+      }))
+    }));
+    setCurrentStep(2); // Move to the build step
   };
 
   const getStepProgress = () => {
@@ -597,63 +569,101 @@ export default function ZiroKash() {
             )}
 
             {!isEditing && currentStep === 1 ? (
-              // Step 1: Template Selection
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Choose a Quick Start Template</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                    Select a template to get started quickly, or choose Custom to build from scratch
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {QUICK_TEMPLATES.map((template) => (
-                    <Card
-                      key={template.name}
-                      className={`cursor-pointer transition-all hover:border-primary ${
-                        selectedTemplate === template.name ? "border-primary border-2" : ""
-                      }`}
-                      onClick={() => applyTemplate(template)}
+              // Step 1: Choose Creation Mode (AI or Templates)
+              creationMode === "select" ? (
+                // Initial Selection: AI or Templates
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <h3 className="text-xl font-semibold">How would you like to start?</h3>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                      Let AI generate a form for you, or choose from our template library
+                    </p>
+                  </div>
+
+                  <div className="grid sm:grid-cols-3 gap-4">
+
+                    {/* AI Option */}
+                    <Card 
+                      className="cursor-pointer hover:border-primary hover:shadow-lg transition-all group"
+                      onClick={() => setCreationMode("ai")}
                     >
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-start gap-3 sm:gap-4">
-                          <div className="text-3xl sm:text-4xl flex-shrink-0">{template.icon}</div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold mb-1 text-sm sm:text-base">{template.name}</h4>
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-3">{template.templateDescription}</p>
-                            {template.fields.length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {template.fields.slice(0, 3).map((field, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-xs">
-                                    {field.label}
-                                  </Badge>
-                                ))}
-                                {template.fields.length > 3 && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    +{template.fields.length - 3} more
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          {selectedTemplate === template.name && (
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                          )}
+                      <CardContent className="p-6 text-center space-y-4">
+                        <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/20">
+                          <Bot className="h-8 w-8 text-white" />
                         </div>
+                        <div>
+                          <h4 className="font-semibold text-lg mb-2">AI Generator</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Describe what you need and let AI create a complete form in seconds
+                          </p>
+                        </div>
+                        <Badge className="gap-1 text-center justify-center w-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200">
+                          <Bot className="h-3 w-3" />
+                          Recommended
+                        </Badge>
                       </CardContent>
                     </Card>
-                  ))}
+
+                    {/* Template Library Option */}
+                    <Card 
+                      className="cursor-pointer hover:border-primary hover:shadow-lg transition-all group"
+                      onClick={() => setCreationMode("templates")}
+                    >
+                      <CardContent className="p-6 text-center space-y-4">
+                        <div className="mx-auto h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-lg mb-2">Use Templates</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Browse 20+ pre-built templates for education, events, business & more
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="gap-1 justify-center w-full">
+                          20+ Templates
+                        </Badge>
+                      </CardContent>
+                    </Card>
+
+                    {/* Manual Build Option */}
+                    <Card 
+                      className="cursor-pointer hover:border-primary hover:shadow-lg transition-all group"
+                      onClick={() => applyTemplate({ id: "custom", name: "Start from Scratch", category: "other", icon: "✨", description: "Build from scratch", whenToUse: "For experts", defaultTheme: "#0056D2", receiptHeader: "RECEIPT", title: "", formDescription: "", fields: [] })}
+                    >
+                      <CardContent className="p-6 text-center space-y-4">
+                        <div className="mx-auto h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <svg className="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-lg mb-2">Build from Scratch</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Start with a blank canvas and build your form field by field manually
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="gap-1 justify-center w-full border-dashed">
+                          For Experts
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={() => setCurrentStep(2)} 
-                    disabled={!canProceedToNextStep()}
-                    className="gap-2"
-                  >
-                    Continue
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              ) : creationMode === "ai" ? (
+                // AI Form Wizard
+                <AIFormWizard 
+                  onGenerate={handleAIGenerate}
+                  onSkip={() => setCreationMode("templates")}
+                />
+              ) : (
+                // Template Gallery
+                <TemplateGallery 
+                  onSelectTemplate={applyTemplate}
+                  selectedTemplateId={selectedTemplate}
+                />
+              )
             ) : (
               <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Left Panel - Builder */}

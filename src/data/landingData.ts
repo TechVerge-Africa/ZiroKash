@@ -188,7 +188,8 @@ export const pricingPlans: PricingPlan[] = [
         description: "Get started today",
         features: [
             "Unlimited payment forms",
-            "Custom branding",
+            "AI Form Generator ✨",
+            "20+ Premium Templates",
             "Real-time dashboard",
             "Email support"
         ],
@@ -202,8 +203,9 @@ export const pricingPlans: PricingPlan[] = [
         features: [
             "Everything in Free",
             "Mobile Money & Bank payments",
-            "Instant settlements",
-            "Priority support"
+            "Instant wallet settlements",
+            "Automated receipts",
+            "Priority WhatsApp support"
         ],
         isPopular: true,
         ctaText: "Activate ZiroKash",

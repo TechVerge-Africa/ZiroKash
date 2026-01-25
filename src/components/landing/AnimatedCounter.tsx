@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 interface AnimatedCounterProps {
-  value: string;
+  value: string | number;
   isVisible: boolean;
   className?: string;
 }

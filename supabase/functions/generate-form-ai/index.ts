@@ -46,7 +46,7 @@ serve(async (req) => {
                         'Authorization': `Bearer ${GEMINI_API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: "gemini-1.5-flash",
+                        model: "gemini-2.0-flash",
                         messages: [
                             {
                                 role: "system",
@@ -83,9 +83,9 @@ serve(async (req) => {
         if (!generatedText) {
             // List of model/version combinations to try in order of preference
             const attempts = [
-                { model: 'gemini-1.5-flash', version: 'v1beta' },
-                { model: 'gemini-1.5-flash-latest', version: 'v1beta' },
-                { model: 'gemini-pro', version: 'v1' },
+                { model: 'gemini-2.0-flash', version: 'v1beta' },
+                { model: 'gemini-2.5-flash', version: 'v1beta' },
+                { model: 'gemini-2.0-flash-lite', version: 'v1beta' },
             ];
 
             for (const attempt of attempts) {

@@ -125,7 +125,7 @@ export default function Landing() {
           ))}
         </div>
         <span className="text-xs font-semibold tracking-wide text-primary/80 uppercase">
-          10k+ businesses trust ZiroKash
+          {realStats.activeMerchants > 0 ? `${realStats.activeMerchants.toLocaleString()}+` : 'Thousands of'} businesses trust ZiroKash
         </span>
       </motion.div>
 
@@ -547,7 +547,7 @@ export default function Landing() {
               Ready to modernize your <span className="text-emerald-500 italic">payment experience?</span>
             </h2>
             <p className="text-xl sm:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium">
-              Join 10,000+ organizations streamlining their global collections with ZiroKash.
+              Join {realStats.activeMerchants > 0 ? `${realStats.activeMerchants.toLocaleString()}+` : ''} organizations streamlining their global collections with ZiroKash.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link to="/auth">

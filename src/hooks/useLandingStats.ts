@@ -21,37 +21,50 @@ export function useLandingStats() {
     useEffect(() => {
         async function fetchStats() {
             try {
-                // In a real production app, we would use a dedicated RPC function for performance
-                // and security. For now, we'll use count() queries which are relatively efficient.
+                // Run all queries in parallel for better performance
+                const [formsResult, merchantsResult, submissionsResult, volumeResult] = await Promise.all([
+                    // 1. Count Total Payment Forms
+                    supabase
+                        .from('payment_forms')
+                        .select('*', { count: 'exact', head: true }),
 
-                // 1. Count Total Forms
-                const { count: formsCount } = await supabase
-                    .from('payment_forms')
-                    .select('*', { count: 'exact', head: true });
+                    // 2. Count Active Merchants
+                    supabase
+                        .from('merchants')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('is_active', true),
 
-                // 2. Count Total Transactions (if you have a transactions table)
-                // If not, we might simulate or skip this. Assuming 'payments' or similar exists.
-                // Let's verify table names first, but for now I'll placeholder it.
-                const { count: txCount } = await supabase
-                    .from('form_submissions') // Corrected table name based on schema
-                    .select('*', { count: 'exact', head: true });
+                    // 3. Count Total Form Submissions (transactions)
+                    supabase
+                        .from('form_submissions')
+                        .select('*', { count: 'exact', head: true }),
+
+                    // 4. Sum Total Volume from paid submissions
+                    supabase
+                        .from('form_submissions')
+                        .select('amount')
+                        .eq('status', 'paid')
+                ]);
+
+                // Calculate total volume from paid submissions
+                const totalVolume = volumeResult.data?.reduce((sum, row) => sum + (row.amount || 0), 0) || 0;
 
                 setStats({
-                    totalForms: formsCount || 120, // Fallback to simulated data if 0 (for new apps)
-                    totalTransactions: txCount || 450,
-                    totalVolume: (txCount || 450) * 150, // Simulated average volume
-                    activeMerchants: Math.floor((formsCount || 120) * 0.8),
+                    totalForms: formsResult.count || 0,
+                    totalTransactions: submissionsResult.count || 0,
+                    totalVolume: Math.round(totalVolume),
+                    activeMerchants: merchantsResult.count || 0,
                     isLoading: false
                 });
 
             } catch (error) {
                 console.error("Error fetching landing stats:", error);
-                // Fallback to impressive demo numbers if fetch fails
+                // Show zeros on error - real data only
                 setStats({
-                    totalForms: 154,
-                    totalTransactions: 2890,
-                    totalVolume: 450000,
-                    activeMerchants: 89,
+                    totalForms: 0,
+                    totalTransactions: 0,
+                    totalVolume: 0,
+                    activeMerchants: 0,
                     isLoading: false
                 });
             }

@@ -73,3 +73,6 @@ verify_jwt = true
 
 [functions.update-paystack-subaccount]
 verify_jwt = true
+
+[functions.migrate-paystack-subaccounts]
+verify_jwt = false

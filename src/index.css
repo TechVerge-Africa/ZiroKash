@@ -4,123 +4,129 @@
 
 @layer base {
   :root {
-    /* Subtle gray background for better card contrast */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 3.9%;
+    /* =============================================
+     * ZiroKash Design System — Light Mode
+     * Palette: Amber/Gold (trust) + Slate surfaces
+     * Recommended by: ui-ux-pro-max skill
+     * Style: Exaggerated Minimalism / Fintech SaaS
+     * ============================================= */
 
-    /* Pure white cards that pop */
+    /* Surfaces */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-
+    --card-foreground: 222 47% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 222 47% 8%;
 
-    /* Electric blue primary */
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary — Amber Gold (trust signal) */
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 8%;
 
-    /* Light gray secondary */
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    /* Secondary — Warm amber tint */
+    --secondary: 43 96% 56%;
+    --secondary-foreground: 222 47% 8%;
 
-    /* Muted grays for subtle elements */
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-
-    /* Electric blue accent */
-    --accent: 221 83% 53%;
+    /* Accent — Purple tech */
+    --accent: 263 70% 64%;
     --accent-foreground: 0 0% 100%;
 
-    /* Standard destructive red */
+    /* Muted */
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Destructive */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Stronger borders for definition */
-    --border: 0 0% 86%;
-    --input: 0 0% 89.8%;
-    --ring: 221 83% 53%;
+    /* Borders & inputs */
+    --border: 214 32% 88%;
+    --input: 214 32% 91%;
+    --ring: 38 92% 50%;
+    --radius: 0.75rem;
 
-    --radius: 0.5rem;
-
-    /* RGB variants for opacity control */
-    --primary-rgb: 37, 99, 235;
-    --accent-rgb: 37, 99, 235;
+    /* RGB for opacity */
+    --primary-rgb: 245, 158, 11;
+    --accent-rgb: 139, 92, 246;
 
     /* Fintech Brand Colors */
-    --fintech-primary: 221 83% 53%;
-    /* Electric blue for CTAs */
+    --fintech-primary: 38 92% 50%;
     --fintech-success: 142 76% 36%;
-    /* Emerald green for success states */
-    --fintech-gradient: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 63%) 100%);
-    --fintech-glass: rgba(255, 255, 255, 0.8);
-    --fintech-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --fintech-gradient: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(43 96% 56%) 100%);
+    --fintech-glass: rgba(255, 255, 255, 0.85);
+    --fintech-shadow: 0 4px 24px 0 rgba(15, 23, 42, 0.08);
 
-    /* Sidebar - clean white */
+    /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 3.9%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96.1%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 89.8%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-foreground: 222 47% 8%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 222 47% 8%;
+    --sidebar-accent: 210 20% 94%;
+    --sidebar-accent-foreground: 222 47% 8%;
+    --sidebar-border: 214 32% 88%;
+    --sidebar-ring: 38 92% 50%;
   }
 
   .dark {
-    /* True black background */
-    --background: 0 0% 3%;
-    --foreground: 0 0% 98%;
+    /* =============================================
+     * ZiroKash Design System — Dark Mode
+     * Background: Deep Navy (#0F172A)
+     * Primary: Amber Gold (#F59E0B)
+     * ============================================= */
 
-    /* Elevated dark cards that stand out */
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
+    /* Surfaces — deep navy */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 96%;
 
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    /* Primary — Amber Gold */
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 6%;
 
-    /* Electric blue primary */
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
+    /* Secondary — Warm amber */
+    --secondary: 43 96% 56%;
+    --secondary-foreground: 222 47% 6%;
 
-    /* Dark gray secondary */
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    /* Muted dark grays */
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-
-    /* Electric blue accent */
-    --accent: 221 83% 53%;
+    /* Accent — Purple tech */
+    --accent: 263 70% 64%;
     --accent-foreground: 0 0% 100%;
 
-    /* Standard destructive red */
+    /* Muted */
+    --muted: 222 47% 13%;
+    --muted-foreground: 215 20% 55%;
+
+    /* Destructive */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Stronger borders for definition */
-    --border: 0 0% 18%;
-    --input: 0 0% 14.9%;
-    --ring: 221 83% 53%;
+    /* Borders & inputs */
+    --border: 217 33% 18%;
+    --input: 217 33% 15%;
+    --ring: 38 92% 50%;
+
+    /* RGB for opacity */
+    --primary-rgb: 245, 158, 11;
+    --accent-rgb: 139, 92, 246;
 
     /* Fintech Dark Colors */
-    --fintech-primary: 221 83% 53%;
-    /* Electric blue */
+    --fintech-primary: 38 92% 50%;
     --fintech-success: 142 76% 36%;
-    /* Emerald green */
-    --fintech-gradient: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 63%) 100%);
-    --fintech-glass: rgba(255, 255, 255, 0.05);
-    --fintech-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+    --fintech-gradient: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(43 96% 56%) 100%);
+    --fintech-glass: rgba(255, 255, 255, 0.04);
+    --fintech-shadow: 0 10px 40px -3px rgba(0, 0, 0, 0.5);
 
-    /* Sidebar - slightly elevated from background */
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 14.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 221 83% 53%;
+    /* Sidebar */
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-accent: 222 47% 13%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 217 33% 18%;
+    --sidebar-ring: 38 92% 50%;
   }
 }
 
@@ -137,7 +143,10 @@
 
   h1,
   h2,
-  h3,
+  h3 {
+    font-family: 'Calistoga', 'Poppins', system-ui, -apple-system, serif;
+  }
+
   h4,
   h5,
   h6 {
@@ -146,11 +155,46 @@
 }
 
 @layer utilities {
+  /* Heading font utility */
+  .font-heading {
+    font-family: 'Calistoga', 'Poppins', system-ui, serif;
+  }
+
+  /* Mono/numbers utility */
+  .font-mono-data {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
   .premium-mesh-gradient {
     background:
-      radial-gradient(at 0% 0%, hsla(221, 83%, 53%, 0.03) 0, transparent 50%),
-      radial-gradient(at 50% 0%, hsla(0, 0%, 0%, 0.02) 0, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(221, 83%, 53%, 0.03) 0, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(38, 92%, 50%, 0.06) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(263, 70%, 64%, 0.04) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(38, 92%, 50%, 0.05) 0, transparent 50%);
+  }
+
+  /* Ambient orb — amber glow */
+  .orb-amber {
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
+    filter: blur(60px);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* Ambient orb — purple glow */
+  .orb-purple {
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.14) 0%, transparent 70%);
+    filter: blur(60px);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* Noise texture overlay */
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    pointer-events: none;
   }
 }
 
@@ -1049,15 +1093,15 @@
 .gradient-shimmer {
   background: linear-gradient(90deg,
       hsl(var(--primary)),
-      #60a5fa,
-      #3b82f6,
+      hsl(var(--accent)),
+      hsl(var(--secondary)),
       hsl(var(--primary)));
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: gradient-shimmer 4s linear infinite;
-  letter-spacing: -0.02em;
+  animation: gradient-shimmer 5s linear infinite;
+  letter-spacing: -0.03em;
 }
 
 /* Smooth scroll behavior */

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,14 +23,11 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import VerifyReceipt from "./pages/VerifyReceipt";
 import AdminDashboard from "./pages/AdminDashboard";
 
-
 import Contact from "./pages/Contact";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 
-
 const queryClient = new QueryClient();
-
 
 import Loader from "@/components/ui/loader";
 
@@ -42,103 +38,133 @@ function AppRoutes() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <Loader variant="infinity" size="xl" centered className="min-h-screen" />;
+    return (
+      <Loader variant="infinity" size="xl" centered className="min-h-screen" />
+    );
   }
 
   return (
     <Routes>
       {/* Landing page is now at the root */}
-      <Route path="/" element={user ? <Navigate to="/zirokash" replace /> : <Landing />} />
+      <Route
+        path="/"
+        element={user ? <Navigate to="/zirokash" replace /> : <Landing />}
+      />
       <Route path="/auth" element={<Auth />} />
-      
+
       {/* Fallback for legacy /landing links */}
       <Route path="/landing" element={<Navigate to="/" replace />} />
-      
+
       {/* Public Pages */}
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
-      
+
       {/* Public payment form routes */}
       <Route path="/pay/:formId" element={<PaymentForm />} />
       <Route path="/pay/:formId/success" element={<PaymentSuccess />} />
-      
+
       {/* Protected Routes */}
-        <Route path="/zirokash" element={
+      <Route
+        path="/zirokash"
+        element={
           <ProtectedRoute>
             <MainLayout>
               <ZiroKash />
             </MainLayout>
           </ProtectedRoute>
-        } />
+        }
+      />
 
-        <Route path="/transactions" element={
+      <Route
+        path="/transactions"
+        element={
           <ProtectedRoute>
             <MainLayout>
               <Transactions />
             </MainLayout>
           </ProtectedRoute>
-        } />
+        }
+      />
 
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Dashboard />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Dashboard />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/admin" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <AdminDashboard />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <AdminDashboard />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      
-      <Route path="/forms/:formId" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <FormDetails />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/forms/:formId"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormDetails />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/zirokash/:formId" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <FormDetails />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <Settings />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/zirokash/:formId"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <FormDetails />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/support" element={
-        <MainLayout>
-          <Support />
-        </MainLayout>
-      } />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Settings />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/support"
+        element={
+          <MainLayout>
+            <Support />
+          </MainLayout>
+        }
+      />
 
       <Route path="/verify/:receiptNo" element={<VerifyReceipt />} />
-      
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
 
-// Main App component
+// Main App component.
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />

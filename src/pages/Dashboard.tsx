@@ -65,7 +65,7 @@ export default function Dashboard() {
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="hidden sm:flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
@@ -89,7 +89,7 @@ export default function Dashboard() {
              {/* Personal / General Overview */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
                 {/* Premium Wallet Balance Card */}
-                <Card className="col-span-2 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-amber-500/30 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-slate-900/40 border border-border/60 transition-all duration-300">
+                <Card className="col-span-2 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-amber-500/30 hover:shadow-[0_0_30px_rgba(245,158,11,0.15),_0_20px_40px_rgba(0,0,0,0.6)] bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-slate-900/40 transition-all duration-300">
                   {/* Premium Glow and Noise */}
                   <div className="absolute top-0 right-0 w-32 h-32 orb-amber opacity-40 -mr-10 -mt-10 group-hover:opacity-60 transition-opacity duration-500" />
                   <div className="absolute inset-0 noise-overlay opacity-[0.03]" />
@@ -124,7 +124,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Total Collected Stats Card */}
-                <Card className="col-span-2 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-primary/20 hover:shadow-[0_0_25px_rgba(245,158,11,0.08)] border border-border/60 transition-all duration-300">
+                <Card className="col-span-2 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-primary/20 hover:shadow-[0_0_25px_rgba(245,158,11,0.08),_0_20px_40px_rgba(0,0,0,0.6)] transition-all duration-300">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary/30 to-transparent" />
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Collected</CardTitle>
@@ -139,7 +139,7 @@ export default function Dashboard() {
                 </Card>
                 
                 {/* Active Forms Stats Card */}
-                <Card className="col-span-1 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-primary/20 hover:shadow-[0_0_25px_rgba(245,158,11,0.08)] border border-border/60 transition-all duration-300">
+                <Card className="col-span-1 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-primary/20 hover:shadow-[0_0_25px_rgba(245,158,11,0.08),_0_20px_40px_rgba(0,0,0,0.6)] transition-all duration-300">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary/30 to-transparent" />
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Active Forms</CardTitle>
@@ -152,7 +152,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Total Submissions Stats Card */}
-                <Card className="col-span-1 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-primary/20 hover:shadow-[0_0_25px_rgba(245,158,11,0.08)] border border-border/60 transition-all duration-300">
+                <Card className="col-span-1 md:col-span-1 lg:col-span-1 glass-card relative overflow-hidden group transform-card hover:border-primary/20 hover:shadow-[0_0_25px_rgba(245,158,11,0.08),_0_20px_40px_rgba(0,0,0,0.6)] transition-all duration-300">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary/30 to-transparent" />
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Submissions</CardTitle>
@@ -165,9 +165,9 @@ export default function Dashboard() {
                 </Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
                 {/* Recent Activity Section */}
-                <Card className="col-span-4 glass-card border border-border/60">
+                <Card className="col-span-1 md:col-span-1 lg:col-span-4 glass-card">
                   <CardHeader>
                     <CardTitle className="text-xl">Recent Activity</CardTitle>
                   </CardHeader>
@@ -210,7 +210,7 @@ export default function Dashboard() {
                 </Card>
                 
                 {/* Quick Actions Bento Card */}
-                <Card className="col-span-3 glass-card border border-border/60">
+                <Card className="col-span-1 md:col-span-1 lg:col-span-3 glass-card">
                     <CardHeader>
                      <CardTitle className="text-xl">Quick Actions</CardTitle>
                     </CardHeader>

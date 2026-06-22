@@ -3,7 +3,7 @@ import Loader from "@/components/ui/loader";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2, AlertCircle, Bot, CircuitBoard } from "lucide-react";
+import { Plus, Eye, DollarSign, Copy, ArrowRight, ArrowLeft, Sparkles, HelpCircle, CheckCircle2, AlertCircle, Bot, CircuitBoard, Users, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -961,11 +961,12 @@ export default function ZiroKash() {
           </DialogContent>
         </Dialog>
 
-      {/* Payment Forms List */}
-      <Card>
+      {/* Redesigned Premium Payment Forms List */}
+      <Card className="glass-card relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-amber-500/40 via-primary/30 to-transparent" />
         <CardHeader>
-          <CardTitle>Your Payment Forms</CardTitle>
-          <CardDescription>Manage and track all your payment collection forms</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl text-white">Your Payment Forms</CardTitle>
+          <CardDescription className="text-slate-400">Manage and track all your payment collection forms</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -973,12 +974,14 @@ export default function ZiroKash() {
               <Loader variant="spinner" size="md" className="mx-auto" />
             </div>
           ) : forms.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit">
-                <DollarSign className="h-12 w-12 text-primary" />
+            <div className="text-center py-12 max-w-md mx-auto space-y-6">
+              <div className="mx-auto p-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full w-fit animate-pulse-subtle shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+                <DollarSign className="h-12 w-12 stroke-[1.5]" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No payment forms yet</h3>
-              <p className="text-muted-foreground mb-6">Create your first payment form to start collecting payments</p>
+              <div>
+                <h3 className="text-lg font-bold text-slate-200">No payment forms yet</h3>
+                <p className="text-sm text-slate-400 mt-2">Create your first payment form and start collecting online payments with custom receipts instantly.</p>
+              </div>
               <Button 
                 onClick={() => {
                   if (!isMerchant || !hasSubaccount) {
@@ -995,9 +998,9 @@ export default function ZiroKash() {
                   setIsCreating(true);
                 }} 
                 disabled={merchantLoading || !isMerchant || !hasSubaccount}
-                className="gap-2"
+                className="gap-2 w-full sm:w-auto h-11 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 transition-all rounded-xl cursor-pointer"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-5 w-5 stroke-[2.5]" />
                 Create Your First Form
               </Button>
             </div>
@@ -1009,30 +1012,53 @@ export default function ZiroKash() {
                 return (
                   <div 
                     key={form.id} 
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-900/30 border border-slate-800/40 hover:bg-slate-900/50 hover:border-slate-800/80 rounded-xl transition-all duration-200 group/item gap-4"
                   >
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-medium text-sm sm:text-base truncate">{form.title}</h3>
-                        <Badge variant={form.is_active ? "default" : "secondary"} className="text-xs flex-shrink-0">
-                          {form.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
+                    <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                      {/* Dynamic colored form icon circle */}
+                      <div 
+                        className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover/item:scale-105 border border-white/5 shadow-inner"
+                        style={{ 
+                          backgroundColor: `${form.theme_color || '#0056D2'}12`, 
+                          color: form.theme_color || '#0056D2',
+                          borderColor: `${form.theme_color || '#0056D2'}20` 
+                        }}
+                      >
+                        <FileText className="h-5 w-5" />
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                        <span>{formStats.totalSubmissions} submissions</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span>{formStats.paidSubmissions} paid</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="font-semibold text-primary">
-                          GHS {formStats.totalCollected.toLocaleString()} collected
-                        </span>
+                      
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <h3 className="font-semibold text-slate-200 text-sm sm:text-base truncate group-hover/item:text-amber-500 transition-colors duration-200">
+                            {form.title}
+                          </h3>
+                          {form.is_active ? (
+                            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-500" /> Inactive
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 font-medium">
+                          <span className="flex items-center gap-1"><Users size={12} className="text-slate-500" /> {formStats.totalSubmissions} submissions</span>
+                          <span className="text-slate-700">•</span>
+                          <span className="flex items-center gap-1"><CheckCircle2 size={12} className="text-slate-500" /> {formStats.paidSubmissions} paid</span>
+                          <span className="text-slate-700">•</span>
+                          <span className="flex items-center gap-1 font-semibold text-amber-500">
+                            ₵{formStats.totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} collected
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto flex-shrink-0">
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="gap-2 flex-1 sm:flex-initial"
+                        className="gap-2 flex-1 sm:flex-initial border-slate-800 hover:border-amber-500/40 hover:bg-amber-500/5 hover:text-amber-500 rounded-xl h-9 text-xs transition-all duration-200 cursor-pointer"
                         disabled={merchantLoading || !isMerchant || !hasSubaccount}
                         onClick={(e) => {
                           e.preventDefault();
@@ -1042,19 +1068,17 @@ export default function ZiroKash() {
                         }}
                         title={!hasSubaccount ? "Complete merchant setup to copy links" : ""}
                       >
-                        <Copy className="h-4 w-4" />
-                        <span className="hidden sm:inline">Copy Link</span>
-                        <span className="sm:hidden">Copy</span>
+                        <Copy className="h-3.5 w-3.5" />
+                        <span>Copy Link</span>
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="gap-2 flex-1 sm:flex-initial"
+                        className="gap-2 flex-1 sm:flex-initial border-slate-800 hover:border-amber-500/40 hover:bg-amber-500/5 hover:text-amber-500 rounded-xl h-9 text-xs transition-all duration-200 cursor-pointer"
                         onClick={() => navigate(`/zirokash/${form.id}`)}
                       >
-                        <Eye className="h-4 w-4" />
-                        <span className="hidden sm:inline">View</span>
-                        <span className="sm:hidden">View</span>
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>View</span>
                       </Button>
                     </div>
                   </div>

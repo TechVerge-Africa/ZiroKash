@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 interface PublicHeaderProps {
   transparent?: boolean;
@@ -17,8 +18,10 @@ const navLinks = [
 export default function PublicHeader({ transparent = false }: PublicHeaderProps) {
   const [scrollY, setScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -41,7 +44,7 @@ export default function PublicHeader({ transparent = false }: PublicHeaderProps)
 
   return (
     <motion.header
-      className="fixed w-full z-50 transition-all duration-500"
+      className={`fixed w-full transition-all duration-500 ${isMobileMenuOpen ? 'z-[100]' : 'z-50'}`}
       style={{
         backgroundColor: showBackground
           ? 'rgba(15, 23, 42, 0.92)'
@@ -120,84 +123,87 @@ export default function PublicHeader({ transparent = false }: PublicHeaderProps)
         </div>
       </div>
 
-      {/* Mobile Menu (Slide-out Drawer) */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 md:hidden"
-            />
-            
-            {/* Drawer Panel */}
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[80%] max-w-[300px] bg-slate-950/95 border-l border-slate-800 shadow-2xl z-50 md:hidden flex flex-col"
-              style={{
-                backdropFilter: 'blur(20px)',
-              }}
-            >
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/60">
-                <div className="flex items-center gap-2">
-                  <img src="/favicon.png" alt="ZiroKash" className="h-8 w-8" />
-                  <span className="font-bold text-lg text-white bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent">
-                    ZiroKash
-                  </span>
-                </div>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                  aria-label="Close menu"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-
-              {/* Drawer Links */}
-              <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" role="navigation" aria-label="Mobile navigation">
-                {navLinks.map((link, i) => (
-                  <motion.div
-                    key={link.label}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
+      {/* Mobile Menu (Slide-out Drawer) rendered via Portal */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] md:hidden"
+              />
+              
+              {/* Drawer Panel */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed top-0 right-0 bottom-0 w-[80%] max-w-[300px] bg-slate-950/95 border-l border-slate-800 shadow-2xl z-[1000] md:hidden flex flex-col"
+                style={{
+                  backdropFilter: 'blur(20px)',
+                }}
+              >
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800/60">
+                  <div className="flex items-center gap-2">
+                    <img src="/favicon.png" alt="ZiroKash" className="h-8 w-8" />
+                    <span className="font-bold text-lg text-white bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent">
+                      ZiroKash
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    aria-label="Close menu"
                   >
-                    <Link
-                      to={link.href}
-                      className="block px-4 py-3 text-base font-semibold text-slate-300 hover:text-amber-400 hover:bg-white/5 rounded-xl transition-all duration-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                ))}
-              </nav>
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
 
-              {/* Drawer Actions */}
-              <div className="p-6 border-t border-slate-800/60 space-y-3 bg-slate-950/20">
-                <Link to="/auth" className="block" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full text-slate-300 hover:text-white hover:bg-white/10 h-11 rounded-xl">
-                    Sign In
+                {/* Drawer Links */}
+                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" role="navigation" aria-label="Mobile navigation">
+                  {navLinks.map((link, i) => (
+                    <motion.div
+                      key={link.label}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                    >
+                      <Link
+                        to={link.href}
+                        className="block px-4 py-3 text-base font-semibold text-slate-300 hover:text-amber-400 hover:bg-white/5 rounded-xl transition-all duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  ))}
+                </nav>
+
+                {/* Drawer Actions */}
+                <div className="p-6 border-t border-slate-800/60 space-y-3 bg-slate-950/20">
+                  <Link to="/auth" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full text-slate-300 hover:text-white hover:bg-white/10 h-11 rounded-xl">
+                      Sign In
                   </Button>
-                </Link>
-                <Link to="/auth" className="block" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold shadow-lg shadow-amber-500/25 h-11 rounded-xl">
-                    Get Started
+                  </Link>
+                  <Link to="/auth" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold shadow-lg shadow-amber-500/25 h-11 rounded-xl">
+                      Get Started
                   </Button>
-                </Link>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                  </Link>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.header>
   );
 }

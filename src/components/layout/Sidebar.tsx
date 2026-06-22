@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, CreditCard, Send, LineChart, Wallet, Shield, ShieldCheck, Settings, Menu, X, DollarSign, Gift, User, HelpCircle, Info, Building, Phone, Car, CheckCircle, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Home, CreditCard, Send, LineChart, Wallet, Shield, ShieldCheck, Settings, Menu, X, DollarSign, Gift, User, HelpCircle, Info, Building, Phone, Car, CheckCircle, CheckCircle2, Clock, AlertCircle, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { useMerchant } from "@/hooks/useMerchant";
@@ -125,54 +125,57 @@ export default function Sidebar() {
       {/* Fixed Footer */}
       <div className="flex-shrink-0 px-3 py-4 border-t border-sidebar-border bg-sidebar">
         {!merchantLoading && merchant ? (
-          <div className="glass-card rounded-lg p-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">Merchant Status</p>
-              {(hasSubaccount || merchant.verification_status === 'verified') ? (
-                <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30 gap-1 px-1.5 py-0.5 font-bold shadow-sm">
-                  <CheckCircle2 size={10} strokeWidth={3} /> Verified
-                </Badge>
-              ) : merchant.verification_status === 'pending' ? (
-                <Badge variant="outline" className="bg-amber-500/5 text-amber-500 border-amber-500/20 gap-1 px-1.5 py-0 font-medium">
-                  <Clock size={10} strokeWidth={3} /> Verification Pending
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="bg-destructive/5 text-destructive border-destructive/20 gap-1 px-1.5 py-0 font-medium">
-                  <AlertCircle size={10} strokeWidth={3} /> Verification failed
-                </Badge>
-              )}
-            </div>
-            
-            <div>
-              <p className="text-sm font-medium truncate">{merchant.business_name}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">ID: {merchant.paystack_subaccount_code || 'Unlinked'}</p>
-            </div>
-            
-            {(hasSubaccount || merchant.verification_status === 'verified') ? (
-              <div className="flex items-center gap-1.5 text-[10px] text-blue-600 font-bold bg-blue-500/5 p-2 rounded border border-blue-500/20">
-                <ShieldCheck size={12} /> Active Merchant Account
+          <Link to="/settings" className="block">
+            <div className="group/footer flex items-center gap-3 p-2 rounded-xl border border-transparent hover:border-slate-800/40 hover:bg-slate-900/30 active:bg-slate-900/50 transition-all duration-300 cursor-pointer">
+              {/* Gold Gradient Initials Avatar */}
+              <div className="relative h-9 w-9 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-500/25 to-amber-500/5 border border-amber-500/20 text-amber-500 font-bold text-sm uppercase flex-shrink-0 select-none">
+                {merchant.business_name ? merchant.business_name.charAt(0) : "M"}
+                {/* Overlay pulsing dot representing verification status */}
+                <span className={cn(
+                  "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-sidebar flex-shrink-0",
+                  (hasSubaccount || merchant.verification_status === 'verified')
+                    ? "bg-emerald-500" 
+                    : merchant.verification_status === 'pending'
+                    ? "bg-amber-500 animate-pulse"
+                    : "bg-rose-500 animate-pulse"
+                )} />
               </div>
-            ) : merchant.verification_status === 'rejected' ? (
-              <Button size="sm" variant="destructive" className="w-full text-xs h-8">
-                Fix Verification
-              </Button>
-            ) : (
-              <div className="flex items-center gap-1.5 text-[10px] text-amber-500 font-medium bg-amber-500/5 p-1.5 rounded border border-amber-500/10">
-                <Clock size={12} /> Processing Application
+              
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-slate-200 truncate group-hover/footer:text-amber-500 transition-colors duration-200">
+                  {merchant.business_name}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                  {(hasSubaccount || merchant.verification_status === 'verified')
+                    ? "Verified Business" 
+                    : merchant.verification_status === 'pending'
+                    ? "Verification Pending"
+                    : merchant.verification_status === 'rejected'
+                    ? "Action Required"
+                    : "Unverified Account"}
+                </p>
               </div>
-            )}
-          </div>
+              <ChevronRight size={16} className="text-muted-foreground/40 group-hover/footer:text-amber-500 group-hover/footer:translate-x-0.5 transition-all duration-200 flex-shrink-0" />
+            </div>
+          </Link>
         ) : (
-          <div className="glass-card rounded-lg p-3">
-            <p className="text-xs text-muted-foreground">Go Pro</p>
-                  <div className="flex justify-center">
-                    <img 
-                      src="/zirokash-logo.png" 
-                      alt="ZiroKash" 
-                      className="h-20 w-auto"
-                    />
-                  </div>
-          </div>
+          <Link to="/settings" className="block">
+            <div className="relative overflow-hidden group/upgrade bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-slate-950/40 hover:from-amber-500/15 hover:via-amber-600/10 hover:to-slate-950/60 border border-amber-500/15 hover:border-amber-500/30 rounded-xl p-3.5 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.03)] hover:shadow-[0_0_20px_rgba(245,158,11,0.08)]">
+              {/* Subtle background light orb */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl -mr-8 -mt-8 group-hover/upgrade:bg-amber-500/10 transition-colors duration-300" />
+              <div className="relative z-10 flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-amber-500 uppercase tracking-wider">Become a Merchant</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                    Unlock online payments & business tools
+                  </p>
+                </div>
+                <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-amber-500/10 text-amber-500 group-hover/upgrade:bg-amber-500 group-hover/upgrade:text-slate-950 transition-all duration-300 flex-shrink-0">
+                  <ChevronRight size={14} className="group-hover/upgrade:translate-x-0.5 transition-transform duration-200" />
+                </div>
+              </div>
+            </div>
+          </Link>
         )}
       </div>
     </div>;
